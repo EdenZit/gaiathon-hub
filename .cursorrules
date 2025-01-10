@@ -1,0 +1,8 @@
+{
+  "rules": [
+    {
+      "description": "Code Replacement Rule",
+      "pattern": "REMEMBER to provide the exact code for each file that needs to be updated so that I will only have to copy and replace"
+    }
+  ]
+}

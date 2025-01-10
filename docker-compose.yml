@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      target: deps
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - MONGODB_URI=mongodb+srv://wiafeg:aF6uZsCmFwP3XDNS@cluster0.cgoye.mongodb.net/gaiathon?retryWrites=true&w=majority&appName=Cluster0
+      - REDIS_URL=redis://redis:6379
+      - HOST=0.0.0.0
+      - NEXTAUTH_SECRET=Gwd5X7Ly0tQpG6b5dh/aY0+V9ZQWeLu5ATKzlDy8zPI=
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data: 
