@@ -1,6 +1,6 @@
 # GAIAthon-Hub
 
-A unified platform for Earth Observation resources, collaboration, and innovation. Access tools from SNAP, WEkEO, Dunia, and more in one place.
+A unified platform for Earth Observation resources, collaboration, and innovation. Access tools from WEkEO, Dunia, and more in one place.
 
 ## Features
 

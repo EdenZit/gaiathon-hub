@@ -3,7 +3,7 @@ import { BeakerIcon, ChatBubbleLeftRightIcon, UserGroupIcon } from '@heroicons/r
 const features = [
   {
     name: 'Centralized Access',
-    description: 'Access tools and datasets from SNAP, WEkEO, Dunia, and more through a single unified platform.',
+    description: 'Access tools and datasets from WEkEO, Dunia, and more through a single unified platform.',
     icon: BeakerIcon,
   },
   {

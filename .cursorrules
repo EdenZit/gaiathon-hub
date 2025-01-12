@@ -1,8 +1,202 @@
 {
+  "project_context": {
+    "name": "GAIAthon-Hub",
+    "description": "A unified platform for Earth Observation resources, collaboration, and innovation. The platform integrates tools from WEkEO, Dunia, and other Earth Observation services into a single, user-friendly interface.",
+    "goal": "To create a collaborative environment where users can access Earth Observation tools, share resources, and work together on projects with AI assistance."
+  },
+
+  "current_implementation": {
+    "completed_features": [
+      "Project initialization with Next.js 14",
+      "Docker containerization setup",
+      "MongoDB Atlas integration",
+      "Redis caching implementation",
+      "User authentication system with NextAuth.js",
+      "Landing page with responsive design",
+      "Basic component structure"
+    ],
+    "tech_stack": {
+      "frontend": ["Next.js 14", "React 19", "Tailwind CSS"],
+      "backend": ["Next.js API Routes", "MongoDB Atlas", "Redis"],
+      "authentication": ["NextAuth.js", "bcrypt"],
+      "infrastructure": ["Docker", "Docker Compose"],
+      "database": {
+        "type": "MongoDB Atlas",
+        "connection": "mongodb+srv://<username>:<password>@cluster0.cgoye.mongodb.net/gaiathon"
+      }
+    },
+    "current_structure": {
+      "src/": {
+        "app/": {
+          "description": "Next.js app router structure",
+          "components": [
+            "page.tsx - Landing page",
+            "layout.tsx - Root layout with AuthProvider",
+            "login/ - Authentication pages",
+            "register/ - User registration",
+            "api/ - Backend API routes"
+          ]
+        },
+        "components/": {
+          "auth/": "Authentication components (LoginForm, RegisterForm)",
+          "home/": "Landing page components (Hero, Features)",
+          "layout/": "Shared layout components (Navbar)",
+          "providers/": "Context providers (AuthProvider)"
+        },
+        "lib/": {
+          "db/": "Database connections and models (User model, MongoDB utility)"
+        },
+        "types/": "TypeScript type definitions (NextAuth types)"
+      }
+    }
+  },
+
+  "next_session_focus": {
+    "priority_features": [
+      {
+        "feature": "Dashboard Implementation",
+        "components": [
+          {
+            "name": "User Profile Section",
+            "elements": [
+              "Profile information display and editing",
+              "User preferences management",
+              "Activity history",
+              "API keys management for Earth Observation services"
+            ]
+          },
+          {
+            "name": "Project Management Interface",
+            "elements": [
+              "Project creation and editing",
+              "Team member management",
+              "Project status tracking",
+              "Resource allocation"
+            ]
+          },
+          {
+            "name": "Tool Integration Panel",
+            "elements": [
+              "WEkEO service integration",
+              "Dunia platform tools",
+              "Data processing options",
+              "Tool configuration management"
+            ]
+          },
+          {
+            "name": "Collaboration Workspace",
+            "elements": [
+              "Real-time project updates",
+              "Team chat integration",
+              "Resource sharing",
+              "Task management"
+            ]
+          }
+        ]
+      },
+      {
+        "feature": "Earth Observation Tools Integration",
+        "components": [
+          {
+            "name": "WEkEO Integration",
+            "elements": [
+              "API authentication",
+              "Data catalog access",
+              "Processing service integration",
+              "Results visualization"
+            ]
+          },
+          {
+            "name": "Dunia Platform Connection",
+            "elements": [
+              "Platform authentication",
+              "Service discovery",
+              "Data access and processing",
+              "Output management"
+            ]
+          },
+          {
+            "name": "Data Visualization",
+            "elements": [
+              "Interactive maps",
+              "Data layers management",
+              "Time series visualization",
+              "Export capabilities"
+            ]
+          }
+        ]
+      },
+      {
+        "feature": "Real-time Collaboration",
+        "components": [
+          "WebSocket setup with Socket.io",
+          "Real-time chat system",
+          "Collaborative workspace",
+          "Project sharing functionality"
+        ]
+      }
+    ],
+    "technical_requirements": [
+      "Implement WebSocket connections for real-time features",
+      "Set up Earth Observation API integrations",
+      "Create data processing pipelines",
+      "Implement file upload and storage system",
+      "Ensure proper error handling and logging",
+      "Implement caching strategies for API responses",
+      "Set up monitoring and analytics"
+    ]
+  },
+
+  "development_environment": {
+    "requirements": [
+      "Docker and Docker Compose installed",
+      "Node.js 18 or later",
+      "MongoDB Atlas account",
+      "Environment variables configured",
+      "Redis for caching"
+    ],
+    "startup_commands": [
+      "docker-compose up --build",
+      "Access application at http://localhost:3000"
+    ],
+    "environment_variables": {
+      "required": [
+        "MONGODB_URI",
+        "NEXTAUTH_SECRET",
+        "NEXTAUTH_URL"
+      ],
+      "optional": [
+        "WEKEO_API_KEY",
+        "DUNIA_API_KEY",
+        "REDIS_URL"
+      ]
+    }
+  },
+
   "rules": [
     {
-      "description": "Code Replacement Rule",
-      "pattern": "REMEMBER to provide the exact code for each file that needs to be updated so that I will only have to copy and replace"
+      "description": "Follow Docker-first development approach",
+      "pattern": "All development should be done within the Docker environment to ensure consistency"
+    },
+    {
+      "description": "MongoDB Atlas Integration",
+      "pattern": "Use MongoDB Atlas for all database operations, ensuring proper connection handling and error management"
+    },
+    {
+      "description": "Component Organization",
+      "pattern": "Place new components in appropriate directories under src/components based on their functionality"
+    },
+    {
+      "description": "Type Safety",
+      "pattern": "Maintain strict TypeScript typing for all new features and components"
+    },
+    {
+      "description": "Authentication Flow",
+      "pattern": "Ensure all protected routes and API endpoints use NextAuth.js authentication"
+    },
+    {
+      "description": "API Integration",
+      "pattern": "Implement proper error handling, rate limiting, and caching for all external API integrations"
     }
   ]
 }
