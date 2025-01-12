@@ -13,7 +13,12 @@
       "Redis caching implementation",
       "User authentication system with NextAuth.js",
       "Landing page with responsive design",
-      "Basic component structure"
+      "Basic component structure",
+      "Legal pages (Terms of Service, Privacy Policy, Cookie Policy)",
+      "Enhanced About page with centered icons and navy theme",
+      "Sponsors page with organization showcase",
+      "Updated navigation with proper routing",
+      "Footer with social media links and sections"
     ],
     "tech_stack": {
       "frontend": ["Next.js 14", "React 19", "Tailwind CSS"],
@@ -32,21 +37,22 @@
           "components": [
             "page.tsx - Landing page",
             "layout.tsx - Root layout with AuthProvider",
-            "login/ - Authentication pages",
-            "register/ - User registration",
+            "company/ - Company pages (About, Sponsors)",
+            "legal/ - Legal pages and policies",
+            "dashboard/ - User dashboard and profile",
             "api/ - Backend API routes"
           ]
         },
         "components/": {
-          "auth/": "Authentication components (LoginForm, RegisterForm)",
-          "home/": "Landing page components (Hero, Features)",
-          "layout/": "Shared layout components (Navbar)",
-          "providers/": "Context providers (AuthProvider)"
+          "auth/": "Authentication components",
+          "home/": "Landing page components",
+          "dashboard/": "Dashboard components",
+          "Footer.tsx": "Global footer component"
         },
         "lib/": {
-          "db/": "Database connections and models (User model, MongoDB utility)"
+          "db/": "Database connections and models"
         },
-        "types/": "TypeScript type definitions (NextAuth types)"
+        "types/": "TypeScript type definitions"
       }
     }
   },
@@ -54,96 +60,54 @@
   "next_session_focus": {
     "priority_features": [
       {
-        "feature": "Dashboard Implementation",
+        "feature": "Company Section Completion",
         "components": [
           {
-            "name": "User Profile Section",
+            "name": "Events Page",
             "elements": [
-              "Profile information display and editing",
-              "User preferences management",
-              "Activity history",
-              "API keys management for Earth Observation services"
+              "Event listing and details",
+              "Event calendar integration",
+              "Registration system"
             ]
           },
           {
-            "name": "Project Management Interface",
+            "name": "Gallery Page",
             "elements": [
-              "Project creation and editing",
-              "Team member management",
-              "Project status tracking",
-              "Resource allocation"
-            ]
-          },
-          {
-            "name": "Tool Integration Panel",
-            "elements": [
-              "WEkEO service integration",
-              "Dunia platform tools",
-              "Data processing options",
-              "Tool configuration management"
-            ]
-          },
-          {
-            "name": "Collaboration Workspace",
-            "elements": [
-              "Real-time project updates",
-              "Team chat integration",
-              "Resource sharing",
-              "Task management"
+              "Image grid layout",
+              "Lightbox viewer",
+              "Image categories and filtering"
             ]
           }
         ]
       },
       {
-        "feature": "Earth Observation Tools Integration",
+        "feature": "Resources Section Implementation",
         "components": [
           {
-            "name": "WEkEO Integration",
+            "name": "Centralized Access",
             "elements": [
-              "API authentication",
-              "Data catalog access",
-              "Processing service integration",
-              "Results visualization"
+              "WEkEO integration",
+              "Dunia platform connection",
+              "Tool discovery interface"
             ]
           },
           {
-            "name": "Dunia Platform Connection",
+            "name": "AI Assistant Interface",
             "elements": [
-              "Platform authentication",
-              "Service discovery",
-              "Data access and processing",
-              "Output management"
-            ]
-          },
-          {
-            "name": "Data Visualization",
-            "elements": [
-              "Interactive maps",
-              "Data layers management",
-              "Time series visualization",
-              "Export capabilities"
+              "Chat interface",
+              "Tool integration",
+              "Response handling"
             ]
           }
-        ]
-      },
-      {
-        "feature": "Real-time Collaboration",
-        "components": [
-          "WebSocket setup with Socket.io",
-          "Real-time chat system",
-          "Collaborative workspace",
-          "Project sharing functionality"
         ]
       }
     ],
     "technical_requirements": [
-      "Implement WebSocket connections for real-time features",
-      "Set up Earth Observation API integrations",
-      "Create data processing pipelines",
-      "Implement file upload and storage system",
-      "Ensure proper error handling and logging",
-      "Implement caching strategies for API responses",
-      "Set up monitoring and analytics"
+      "Set up image upload and storage system for Gallery",
+      "Implement event management system",
+      "Configure external API integrations",
+      "Set up WebSocket for real-time features",
+      "Enhance error handling and logging"
     ]
   },
 
@@ -154,10 +118,6 @@
       "MongoDB Atlas account",
       "Environment variables configured",
       "Redis for caching"
-    ],
-    "startup_commands": [
-      "docker-compose up --build",
-      "Access application at http://localhost:3000"
     ],
     "environment_variables": {
       "required": [
@@ -179,10 +139,6 @@
       "pattern": "All development should be done within the Docker environment to ensure consistency"
     },
     {
-      "description": "MongoDB Atlas Integration",
-      "pattern": "Use MongoDB Atlas for all database operations, ensuring proper connection handling and error management"
-    },
-    {
       "description": "Component Organization",
       "pattern": "Place new components in appropriate directories under src/components based on their functionality"
     },
@@ -197,6 +153,10 @@
     {
       "description": "API Integration",
       "pattern": "Implement proper error handling, rate limiting, and caching for all external API integrations"
+    },
+    {
+      "description": "Styling Guidelines",
+      "pattern": "Use Tailwind CSS for styling, maintaining the navy blue theme for key UI elements"
     }
   ]
 }
