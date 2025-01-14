@@ -28,7 +28,7 @@
       "infrastructure": ["Docker", "Docker Compose"],
       "database": {
         "type": "MongoDB Atlas",
-        "connection": "mongodb+srv://<username>:<password>@cluster0.cgoye.mongodb.net/gaiathon"
+        "connection": "MONGODB_URI"
       }
     },
     "current_structure": {
