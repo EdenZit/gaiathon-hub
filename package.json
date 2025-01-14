@@ -6,7 +6,24 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit && tsc --project scripts/tsconfig.json --noEmit",
+    "task:run": "ts-node --project scripts/tsconfig.json scripts/runTasks.ts",
+    "task:db": "ts-node --project scripts/tsconfig.json scripts/dockerTaskRunner.ts db",
+    "task:api": "ts-node --project scripts/tsconfig.json scripts/dockerTaskRunner.ts api",
+    "task:model": "ts-node --project scripts/tsconfig.json scripts/dockerTaskRunner.ts model",
+    "docker:task": "ts-node scripts/dockerTaskRunner.ts",
+    "composer:auth": "ts-node scripts/composer/index.ts typescript-fixes.auth",
+    "composer:dashboard": "ts-node scripts/composer/index.ts typescript-fixes.dashboard",
+    "composer:api": "ts-node scripts/composer/index.ts typescript-fixes.api",
+    "composer:pages": "ts-node scripts/composer/index.ts typescript-fixes.pages",
+    "composer:all": "ts-node scripts/composer/index.ts typescript-fixes",
+    "agent": "ts-node scripts/composer/agent.ts",
+    "agent:auth": "ts-node scripts/composer/agent.ts auth",
+    "agent:dashboard": "ts-node scripts/composer/agent.ts dashboard",
+    "agent:api": "ts-node scripts/composer/agent.ts api",
+    "agent:pages": "ts-node scripts/composer/agent.ts pages",
+    "agent:all": "ts-node scripts/composer/agent.ts all"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
@@ -16,7 +33,7 @@
     "jose": "^5.2.0",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.3",
-    "next": "14.0.4",
+    "next": "^14.2.23",
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -29,14 +46,17 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
+    "@types/node": "^22.10.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/yaml": "^1.9.6",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3",
+    "yaml": "^2.7.0"
   }
 }

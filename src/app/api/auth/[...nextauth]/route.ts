@@ -1,7 +1,22 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { connectDB } from '@/lib/db/mongodb';
+import { connectDB } from '@/lib/db/connection';
 import { User } from '@/lib/db/models/User';
+import { JWT } from 'next-auth/jwt';
+import { Session } from 'next-auth';
+
+interface ExtendedToken extends JWT {
+  id: string;
+}
+
+interface ExtendedSession extends Session {
+  user: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+  };
+}
 
 const handler = NextAuth({
   providers: [
@@ -43,17 +58,20 @@ const handler = NextAuth({
     signIn: '/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }): Promise<ExtendedToken> {
       if (user) {
         token.id = user.id;
       }
-      return token;
+      return token as ExtendedToken;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-      }
-      return session;
+    async session({ session, token }): Promise<ExtendedSession> {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: (token as ExtendedToken).id
+        }
+      };
     },
   },
 });

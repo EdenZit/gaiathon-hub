@@ -1,0 +1,28 @@
+tasks:
+  database-consolidation:
+    steps:
+      - name: "Consolidate DB Connections"
+        files:
+          - src/lib/db/index.ts
+          - src/lib/db/mongodb.ts
+        rules:
+          - "Database Connection"
+          - "Type Safety"
+        
+  api-standardization:
+    steps:
+      - name: "Standardize API Routes"
+        files:
+          - src/app/api/user/profile/route.ts
+        rules:
+          - "API Route Structure"
+          - "Authentication Flow"
+        
+  model-verification:
+    steps:
+      - name: "Verify User Model"
+        files:
+          - src/lib/db/models/User.ts
+        rules:
+          - "Model Definition"
+          - "Type Safety" 

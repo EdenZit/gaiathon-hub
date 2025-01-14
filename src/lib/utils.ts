@@ -1,4 +1,5 @@
-import { connectToDatabase } from './db';
+import { connectDB } from './db/connection';
+import { User } from './db/models/User';
 
 export async function generateUniqueRegistrationNumber(): Promise<string> {
   const prefix = 'G25-';
@@ -14,10 +15,10 @@ export async function generateUniqueRegistrationNumber(): Promise<string> {
     const registrationNumber = `${prefix}${randomStr}`;
     
     try {
-      const { db } = await connectToDatabase();
+      await connectDB();
       
-      // Verify uniqueness
-      const existing = await db.collection('users').findOne({ registrationNumber });
+      // Verify uniqueness using Mongoose model
+      const existing = await User.findOne({ registrationNumber });
       if (!existing) {
         return registrationNumber;
       }

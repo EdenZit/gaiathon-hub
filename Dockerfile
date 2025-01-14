@@ -47,4 +47,15 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"] 
+CMD ["node", "server.js"]
+
+# Add scripts directory and task configuration
+COPY scripts /app/scripts
+COPY .composer /app/.composer
+
+# Install development dependencies
+RUN npm install --save-dev ts-node typescript @types/node yaml @types/yaml
+
+# Add task runner command to entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh 

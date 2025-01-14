@@ -4,74 +4,80 @@ import { z } from 'zod';
 import { connectDB } from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 
+// Validation schema
 const updateProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  bio: z.string().optional(),
+  organization: z.string().optional(),
+  preferences: z.object({
+    emailNotifications: z.boolean(),
+    theme: z.enum(['light', 'dark', 'system']),
+  }).optional(),
 });
 
-export async function PUT(req: Request) {
+export async function GET() {
   try {
     const session = await getServerSession();
-    if (!session?.user) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const db = await connectDB();
+    const user = await User.findOne({ email: session.user.email })
+      .select('-password -__v')
+      .lean();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const session = await getServerSession();
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    
+    // Validate request body
     const validatedData = updateProfileSchema.parse(body);
 
-    await connectDB();
-
-    // Check if email is already taken by another user
-    const existingUser = await User.findOne({
-      email: validatedData.email,
-      _id: { $ne: session.user.id },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { message: 'Email is already taken' },
-        { status: 400 }
-      );
-    }
-
-    // Update user
-    const updatedUser = await User.findByIdAndUpdate(
-      session.user.id,
-      {
-        name: validatedData.name,
-        email: validatedData.email,
-      },
-      { new: true }
-    );
+    const db = await connectDB();
+    const updatedUser = await User.findOneAndUpdate(
+      { email: session.user.email },
+      { $set: validatedData },
+      { new: true, runValidators: true }
+    ).select('-password -__v');
 
     if (!updatedUser) {
-      return NextResponse.json(
-        { message: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    // Remove sensitive data from response
-    const { password: _, ...userWithoutPassword } = updatedUser.toObject();
-
-    return NextResponse.json(
-      { message: 'Profile updated successfully', user: userWithoutPassword },
-      { status: 200 }
-    );
+    return NextResponse.json(updatedUser);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: 'Validation error', errors: error.errors },
+        { error: 'Invalid data', details: error.errors },
         { status: 400 }
       );
     }
 
     console.error('Profile update error:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

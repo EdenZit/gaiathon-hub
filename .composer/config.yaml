@@ -1,0 +1,51 @@
+name: GAIAthon-Hub
+version: 1.0.0
+description: Earth Observation Platform TypeScript Fixes
+
+tasks:
+  typescript-fixes:
+    - name: "Auth Components"
+      files:
+        - src/components/auth/*.tsx
+        - src/app/api/auth/**/*.ts
+      rules:
+        - "Type Safety"
+        - "Authentication Flow"
+
+    - name: "Dashboard Components"
+      files:
+        - src/app/dashboard/**/*.tsx
+        - src/components/dashboard/**/*.tsx
+      rules:
+        - "Type Safety"
+        - "Component Organization"
+
+    - name: "API Routes"
+      files:
+        - src/app/api/**/*.ts
+      rules:
+        - "Type Safety"
+        - "API Integration"
+
+    - name: "Pages and Layouts"
+      files:
+        - src/app/**/page.tsx
+        - src/app/**/layout.tsx
+      rules:
+        - "Type Safety"
+        - "Component Organization"
+
+validation:
+  typescript:
+    config: tsconfig.json
+    strict: true
+  
+  rules:
+    - source: .cursorrules
+    - section: rules
+
+dependencies:
+  required:
+    - typescript
+    - "@types/react"
+    - "@types/node" 

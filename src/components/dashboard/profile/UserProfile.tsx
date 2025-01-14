@@ -1,11 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { User } from 'next-auth';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 
+interface ExtendedUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
+
 interface UserProfileProps {
-  user: User | undefined;
+  user: ExtendedUser | undefined;
 }
 
 export function UserProfile({ user }: UserProfileProps) {
