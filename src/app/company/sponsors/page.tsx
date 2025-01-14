@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa6';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Our Sponsors - GAIAthon-Hub',
@@ -11,29 +12,34 @@ export default function SponsorsPage() {
   const sponsors = [
     {
       name: 'Edenway Foundation',
-      logo: '/images/sponsors/edenway-logo.png', // Add your logo here
+      logo: '/images/sponsors/eden.png',
       hasArrow: true,
+      website: 'https://edenwayfoundation.com/',
     },
     {
       name: 'GMES and Africa',
-      logo: '/images/sponsors/gmes-africa-logo.png', // Add your logo here
+      logo: '/images/sponsors/gmes.png',
       description: 'The Global Monitoring for Environment and Security and Africa',
-      hasArrow: false,
+      hasArrow: true,
+      website: 'http://gmes.africa-union.org/',
     },
     {
       name: 'African Union Commission',
-      logo: '/images/sponsors/au-commission-logo.png', // Add your logo here
+      logo: '/images/sponsors/auc.png',
       hasArrow: true,
+      website: 'https://au.int/en/commission',
     },
     {
-      name: 'European Union Commission',
-      logo: '/images/sponsors/eu-commission-logo.png', // Add your logo here
+      name: 'European Commission',
+      logo: '/images/sponsors/eu.png',
       hasArrow: true,
+      website: 'https://commission.europa.eu/index_en',
     },
     {
       name: 'Regional Marine Center, University of Ghana',
-      logo: '/images/sponsors/ug-marine-center-logo.png', // Add your logo here
-      hasArrow: false,
+      logo: '/images/sponsors/rmc.png',
+      hasArrow: true,
+      website: 'https://gmes.rmc.africa/',
     },
   ];
 
@@ -58,34 +64,39 @@ export default function SponsorsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-12">
             {sponsors.map((sponsor) => (
-              <div
+              <Link
                 key={sponsor.name}
-                className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                href={sponsor.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block transition-transform duration-300 hover:-translate-y-1"
               >
-                <div className="p-8">
-                  <div className="flex items-center justify-between">
-                    <div className="relative h-24 w-48">
-                      <Image
-                        src={sponsor.logo}
-                        alt={`${sponsor.name} logo`}
-                        fill
-                        className="object-contain"
-                      />
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl">
+                  <div className="p-8">
+                    <div className="flex items-center justify-between">
+                      <div className="relative h-24 w-48">
+                        <Image
+                          src={sponsor.logo}
+                          alt={`${sponsor.name} logo`}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      {sponsor.hasArrow && (
+                        <FaArrowRight className="h-6 w-6 text-green-600" aria-hidden="true" />
+                      )}
                     </div>
-                    {sponsor.hasArrow && (
-                      <FaArrowRight className="h-6 w-6 text-green-600" aria-hidden="true" />
+                    <h3 className="mt-6 text-xl font-semibold text-gray-900">
+                      {sponsor.name}
+                    </h3>
+                    {sponsor.description && (
+                      <p className="mt-2 text-base text-gray-500">
+                        {sponsor.description}
+                      </p>
                     )}
                   </div>
-                  <h3 className="mt-6 text-xl font-semibold text-gray-900">
-                    {sponsor.name}
-                  </h3>
-                  {sponsor.description && (
-                    <p className="mt-2 text-base text-gray-500">
-                      {sponsor.description}
-                    </p>
-                  )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
