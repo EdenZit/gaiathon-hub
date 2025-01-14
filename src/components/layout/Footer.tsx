@@ -20,7 +20,7 @@ export function Footer() {
   ];
 
   const resourceLinks = [
-    { name: 'Centralized Access', href: '/resources/centralized-access' },
+    { name: 'EO Tools', href: '/dashboard/tools' },
     { name: 'AI Assistant', href: '/resources/ai-assistant' },
     { name: 'Team Workspace', href: '/resources/team-workspace' },
     { name: 'Blog', href: '/resources/blog' },

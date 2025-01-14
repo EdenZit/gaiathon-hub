@@ -14,14 +14,14 @@ export function Navbar() {
 
   const navigation = {
     company: [
-      { name: 'Home', href: '/company/home' },
+      { name: 'Home', href: '/' },
       { name: 'About', href: '/company/about' },
       { name: 'Sponsors', href: '/company/sponsors' },
       { name: 'Events', href: '/company/events' },
       { name: 'Gallery', href: '/company/gallery' },
     ],
     resources: [
-      { name: 'Centralized Access', href: '/resources/centralized-access' },
+      { name: 'EO Tools', href: '/dashboard/tools' },
       { name: 'AI Assistant', href: '/resources/ai-assistant' },
       { name: 'Team Workspace', href: '/resources/team-workspace' },
       { name: 'Blog', href: '/resources/blog' },
@@ -56,16 +56,22 @@ export function Navbar() {
             </Link>
             <div className="hidden ml-10 space-x-8 lg:flex">
               {/* Company Dropdown */}
-              <div className="relative">
+              <div 
+                className="relative group"
+              >
                 <button
-                  onClick={() => toggleDropdown('company')}
                   className="flex items-center text-base font-medium text-gray-300 hover:text-white"
+                  onMouseEnter={() => setOpenDropdown('company')}
                 >
                   Company
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
                 </button>
                 {openDropdown === 'company' && (
-                  <div className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5">
+                  <div 
+                    className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+                    onMouseEnter={() => setOpenDropdown('company')}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
                     {navigation.company.map((item) => (
                       <Link
                         key={item.name}
@@ -80,16 +86,22 @@ export function Navbar() {
               </div>
 
               {/* Resources Dropdown */}
-              <div className="relative">
+              <div 
+                className="relative group"
+              >
                 <button
-                  onClick={() => toggleDropdown('resources')}
                   className="flex items-center text-base font-medium text-gray-300 hover:text-white"
+                  onMouseEnter={() => setOpenDropdown('resources')}
                 >
                   Resources
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
                 </button>
                 {openDropdown === 'resources' && (
-                  <div className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5">
+                  <div 
+                    className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+                    onMouseEnter={() => setOpenDropdown('resources')}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
                     {navigation.resources.map((item) => (
                       <Link
                         key={item.name}
@@ -104,16 +116,22 @@ export function Navbar() {
               </div>
 
               {/* Legal Dropdown */}
-              <div className="relative">
+              <div 
+                className="relative group"
+              >
                 <button
-                  onClick={() => toggleDropdown('legal')}
                   className="flex items-center text-base font-medium text-gray-300 hover:text-white"
+                  onMouseEnter={() => setOpenDropdown('legal')}
                 >
                   Legal
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
                 </button>
                 {openDropdown === 'legal' && (
-                  <div className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5">
+                  <div 
+                    className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+                    onMouseEnter={() => setOpenDropdown('legal')}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
                     {navigation.legal.map((item) => (
                       <Link
                         key={item.name}
@@ -126,6 +144,14 @@ export function Navbar() {
                   </div>
                 )}
               </div>
+
+              {/* Contact Link */}
+              <Link
+                href="/contact"
+                className="flex items-center text-base font-medium text-gray-300 hover:text-white"
+              >
+                Contact
+              </Link>
             </div>
           </div>
 

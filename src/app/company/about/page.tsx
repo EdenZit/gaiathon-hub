@@ -33,7 +33,7 @@ export default function AboutPage() {
       <div className="relative bg-gradient-to-r from-green-600 to-green-800">
         <div className="absolute inset-0">
           <Image
-            src="/images/earth-observation.jpg"
+            src="/images/eo.png"
             alt="Earth Observation"
             fill
             className="object-cover mix-blend-overlay"
@@ -133,7 +133,7 @@ export default function AboutPage() {
                 href="/contact"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
               >
-                Learn More
+                Contact Us
               </Link>
             </div>
           </div>

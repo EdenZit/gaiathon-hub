@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Hero() {
   return (
@@ -48,8 +49,16 @@ export function Hero() {
         </div>
       </div>
       <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-        <div className="h-56 w-full bg-blue-100 sm:h-72 md:h-96 lg:w-full lg:h-full">
-          {/* Placeholder for hero image */}
+        <div className="relative h-56 w-full sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center">
+          <div className="relative w-1/2 h-1/2">
+            <Image
+              src="/images/globe.gif"
+              alt="Rotating Earth Globe"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
       </div>
     </div>

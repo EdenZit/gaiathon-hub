@@ -4,7 +4,7 @@ A unified platform for Earth Observation resources, collaboration, and innovatio
 
 ## Features
 
-- Centralized access to Earth Observation tools and datasets
+- EO Tools access to Earth Observation tools and datasets
 - AI-powered assistance for Earth Observation projects
 - Real-time team collaboration workspace
 - User authentication and authorization
