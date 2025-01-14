@@ -1,5 +1,3 @@
-'use client';
-
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
@@ -7,6 +5,11 @@ import { Footer } from '@/components/Footer';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 
 const inter = Inter({ subsets: ['latin'] });
+
+export const metadata = {
+  title: 'GAIAthon-Hub',
+  description: 'A unified platform for Earth Observation resources, collaboration, and innovation.',
+};
 
 export default function RootLayout({
   children,
