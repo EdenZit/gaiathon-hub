@@ -18,10 +18,11 @@
       "Enhanced About page with centered icons and navy theme",
       "Sponsors page with organization showcase",
       "Updated navigation with proper routing",
-      "Footer with social media links and sections"
+      "Footer with social media links and sections",
+      "Reorganized component structure with common directory"
     ],
     "tech_stack": {
-      "frontend": ["Next.js 14", "React 19", "Tailwind CSS"],
+      "frontend": ["Next.js 14", "React 18.2.0", "Tailwind CSS"],
       "backend": ["Next.js API Routes", "MongoDB Atlas", "Redis"],
       "authentication": ["NextAuth.js", "bcrypt"],
       "infrastructure": ["Docker", "Docker Compose"],
@@ -40,17 +41,23 @@
             "company/ - Company pages (About, Sponsors)",
             "legal/ - Legal pages and policies",
             "dashboard/ - User dashboard and profile",
-            "api/ - Backend API routes"
+            "api/ - Backend API routes",
+            "tools/ - Tools integration pages",
+            "team-workspace/ - Collaboration workspace",
+            "ai-assistant/ - AI chat interface",
+            "contact/ - Contact form page"
           ]
         },
         "components/": {
+          "common/": "Shared components (Navbar, Footer)",
           "auth/": "Authentication components",
           "home/": "Landing page components",
           "dashboard/": "Dashboard components",
-          "Footer.tsx": "Global footer component"
+          "providers/": "Context providers"
         },
         "lib/": {
-          "db/": "Database connections and models"
+          "db/": "Database connections and models",
+          "utils.ts": "Utility functions"
         },
         "types/": "TypeScript type definitions"
       }
@@ -60,54 +67,37 @@
   "next_session_focus": {
     "priority_features": [
       {
-        "feature": "Company Section Completion",
+        "feature": "API Routes Organization",
         "components": [
           {
-            "name": "Events Page",
+            "name": "Route Structure",
             "elements": [
-              "Event listing and details",
-              "Event calendar integration",
-              "Registration system"
-            ]
-          },
-          {
-            "name": "Gallery Page",
-            "elements": [
-              "Image grid layout",
-              "Lightbox viewer",
-              "Image categories and filtering"
+              "Review API route organization",
+              "Ensure consistent naming with frontend",
+              "Implement proper error handling"
             ]
           }
         ]
       },
       {
-        "feature": "Resources Section Implementation",
+        "feature": "Type Definitions",
         "components": [
           {
-            "name": "Centralized Access",
+            "name": "Component Types",
             "elements": [
-              "WEkEO integration",
-              "Dunia platform connection",
-              "Tool discovery interface"
-            ]
-          },
-          {
-            "name": "AI Assistant Interface",
-            "elements": [
-              "Chat interface",
-              "Tool integration",
-              "Response handling"
+              "Create proper type definitions",
+              "Ensure consistent type usage",
+              "Document type interfaces"
             ]
           }
         ]
       }
     ],
     "technical_requirements": [
-      "Set up image upload and storage system for Gallery",
-      "Implement event management system",
-      "Configure external API integrations",
-      "Set up WebSocket for real-time features",
-      "Enhance error handling and logging"
+      "Review and organize API routes",
+      "Implement comprehensive type system",
+      "Enhance error handling",
+      "Improve code documentation"
     ]
   },
 
@@ -123,17 +113,21 @@
       "required": [
         "MONGODB_URI",
         "NEXTAUTH_SECRET",
-        "NEXTAUTH_URL"
+        "NEXTAUTH_URL",
+        "REDIS_URL"
       ],
       "optional": [
         "WEKEO_API_KEY",
-        "DUNIA_API_KEY",
-        "REDIS_URL"
+        "DUNIA_API_KEY"
       ]
     }
   },
 
   "rules": [
+    {
+      "description": "React Version Compatibility",
+      "pattern": "Ensure all components and libraries are compatible with React 18.2.0"
+    },
     {
       "description": "Follow Docker-first development approach",
       "pattern": "All development should be done within the Docker environment to ensure consistency"
