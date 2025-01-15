@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { FaUsers, FaLightbulb, FaHandshake } from 'react-icons/fa6';
 
 export const metadata: Metadata = {
-  title: 'About Us - GAIAthon-Hub',
-  description: 'Learn about GAIA Clubs, our mission, programs, and how you can join our community.',
+  title: 'About Edenway Foundation | GAIAthon-Hub',
+  description: 'Learn about Edenway Foundation, our mission, programs, and how we empower youth through technology and innovation.',
 };
 
 export default function AboutPage() {
@@ -42,7 +42,7 @@ export default function AboutPage() {
         </div>
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            About GAIA Clubs
+            About Edenway Foundation
           </h1>
           <p className="mt-6 max-w-3xl text-xl text-gray-100">
             Empowering communities through Earth Observation technology and innovation.
@@ -56,10 +56,23 @@ export default function AboutPage() {
           <div className="text-lg max-w-prose mx-auto">
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">Our Mission</h2>
             <p className="mt-8 text-xl text-gray-500 leading-8">
-              At GAIA Clubs, we believe in the power of technology to drive change and innovation in Earth Observation. 
-              We invite you to become part of our vibrant community of learners, dreamers, and doers who are passionate 
-              about leveraging technology for environmental monitoring and sustainable development.
+              Edenway Foundation is a visionary organization committed to youth empowerment through the GEO-Africa Incubator/Accelerator (GAIA) initiative. Operating from Edenkro, a dynamic innovation hub in Ghana, the Foundation equips young minds with the skills and mindset needed to thrive in the ever-evolving world of technology. Through initiatives like GAIAthon, Edenway is transforming lives and shaping Africa's future—one innovation at a time.
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Logo Section */}
+      <div className="relative py-12 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative h-64 w-full sm:h-72 md:h-96">
+            <Image
+              src="/images/edenway-logo.gif"
+              alt="Edenway Foundation Logo"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
         </div>
       </div>

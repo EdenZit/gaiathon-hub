@@ -23,7 +23,8 @@
         "Protected links in navbar and footer must use handleProtectedLink",
         "All links should open in the same window unless explicitly required otherwise",
         "Maintain consistent navy theme across UI elements",
-        "Tools and features should only be accessible through Navbar and Footer when authenticated"
+        "Tools and features should only be accessible through Navbar and Footer when authenticated",
+        "Team workspace features should be organized under /resources/team-workspace"
       ]
     },
     {
@@ -42,7 +43,8 @@
         "Maintain strict TypeScript typing",
         "Use NextAuth.js for authentication",
         "Keep API routes organized under src/app/api",
-        "Platform-specific tools should be organized under dashboard/tools"
+        "Platform-specific tools should be organized under dashboard/tools",
+        "Team collaboration features should be organized under resources/team-workspace"
       ]
     }
   ],
@@ -63,7 +65,8 @@
       "db",
       "nav",
       "gallery",
-      "tools"
+      "tools",
+      "workspace"
     ]
   }
 }
