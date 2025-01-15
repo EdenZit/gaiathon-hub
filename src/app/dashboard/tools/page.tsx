@@ -18,6 +18,13 @@ const platforms = [
     signupMessage: 'Sign up to use Dunia',
     imagePath: '/images/logo.png',
   },
+  {
+    name: 'TechStacks',
+    description: 'Access other technology resources',
+    url: '/dashboard/tools/techstacks',
+    signupMessage: 'Explore available technologies',
+    imagePath: '/images/logo.png',
+  },
 ];
 
 export default function ToolsPage() {

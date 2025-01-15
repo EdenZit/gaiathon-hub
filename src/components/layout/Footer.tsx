@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   FaXTwitter,
   FaInstagram,
@@ -11,18 +13,30 @@ import {
 } from 'react-icons/fa6';
 
 export function Footer() {
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const handleProtectedLink = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    if (!session) {
+      router.push('/register');
+    } else {
+      router.push(href);
+    }
+  };
+
   const companyLinks = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/company/about' },
     { name: 'Sponsors', href: '/company/sponsors' },
     { name: 'Events', href: '/company/events' },
-    { name: 'Gallery', href: '/company/gallery' },
+    { name: 'Gallery', href: '/gallery' },
   ];
 
   const resourceLinks = [
-    { name: 'EO Tools', href: '/dashboard/tools' },
-    { name: 'AI Assistant', href: '/resources/ai-assistant' },
-    { name: 'Team Workspace', href: '/resources/team-workspace' },
+    { name: 'EO Tools', href: '/dashboard/tools', protected: true },
+    { name: 'AI Assistant', href: '/resources/ai-assistant', protected: true },
+    { name: 'Team Workspace', href: '/resources/team-workspace', protected: true },
     { name: 'Blog', href: '/resources/blog' },
     { name: 'FAQ', href: '/resources/faq' },
   ];
@@ -106,12 +120,21 @@ export function Footer() {
             <ul className="mt-4 space-y-2">
               {resourceLinks.map((item) => (
                 <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    {item.name}
-                  </Link>
+                  {item.protected ? (
+                    <button
+                      onClick={(e) => handleProtectedLink(e, item.href)}
+                      className="text-sm text-gray-400 hover:text-white transition-colors text-left"
+                    >
+                      {item.name}
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="text-sm text-gray-400 hover:text-white transition-colors"
+                    >
+                      {item.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

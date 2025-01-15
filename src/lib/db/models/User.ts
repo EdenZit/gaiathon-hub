@@ -4,7 +4,26 @@ import bcrypt from 'bcryptjs';
 export interface IUser extends mongoose.Document {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  institution: string;
+  department: string;
+  fieldOfStudy: string;
+  yearOfStudy: string;
+  phoneNumber: string;
+  country: string;
+  // Hackathon-specific information
+  techSkills: {
+    coding: boolean;
+    remoteSensing: boolean;
+    gis: boolean;
+    iot: boolean;
+    other?: string;
+  };
+  previousHackathonExperience: string;
+  githubUrl?: string;
+  personalWebsite?: string;
+  linkedinUrl?: string;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -22,9 +41,69 @@ const userSchema = new mongoose.Schema<IUser>({
     required: [true, 'Password is required'],
     minlength: [8, 'Password must be at least 8 characters long'],
   },
-  name: {
+  firstName: {
     type: String,
-    required: [true, 'Name is required'],
+    required: [true, 'First name is required'],
+    trim: true,
+  },
+  lastName: {
+    type: String,
+    required: [true, 'Last name is required'],
+    trim: true,
+  },
+  institution: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  department: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  fieldOfStudy: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  yearOfStudy: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  country: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  // Hackathon-specific information
+  techSkills: {
+    coding: { type: Boolean, default: false },
+    remoteSensing: { type: Boolean, default: false },
+    gis: { type: Boolean, default: false },
+    iot: { type: Boolean, default: false },
+    other: { type: String, trim: true },
+  },
+  previousHackathonExperience: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  githubUrl: {
+    type: String,
+    trim: true,
+  },
+  personalWebsite: {
+    type: String,
+    trim: true,
+  },
+  linkedinUrl: {
+    type: String,
     trim: true,
   },
   createdAt: {

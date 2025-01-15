@@ -14,7 +14,7 @@ export function Hero() {
                 <span className="block text-blue-600">GAIAthon-Hub</span>
               </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Your unified platform for Earth Observation resources, collaboration, and innovation. Access tools from WEkEO, Dunia, and more in one place.
+              The unified platform for the 2025 GAIA Incubation Challenge, bringing together university students across Africa to innovate and create impactful solutions.
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                 <div className="rounded-md shadow">

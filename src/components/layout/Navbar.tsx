@@ -1,16 +1,41 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signIn } from 'next-auth/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { useRouter } from 'next/navigation'
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const { data: session } = useSession()
+  const router = useRouter()
+  const closeTimeoutRef = useRef<NodeJS.Timeout>()
+
+  const handleMouseEnter = (name: string) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+    }
+    setOpenDropdown(name)
+  }
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpenDropdown(null)
+    }, 150)
+  }
+
+  const handleProtectedLink = (e: React.MouseEvent, href: string) => {
+    e.preventDefault()
+    if (!session) {
+      router.push('/register')
+    } else {
+      router.push(href)
+    }
+  }
 
   const navigation = {
     company: [
@@ -18,12 +43,12 @@ export function Navbar() {
       { name: 'About', href: '/company/about' },
       { name: 'Sponsors', href: '/company/sponsors' },
       { name: 'Events', href: '/company/events' },
-      { name: 'Gallery', href: '/company/gallery' },
+      { name: 'Gallery', href: '/gallery' },
     ],
     resources: [
-      { name: 'EO Tools', href: '/dashboard/tools' },
-      { name: 'AI Assistant', href: '/resources/ai-assistant' },
-      { name: 'Team Workspace', href: '/resources/team-workspace' },
+      { name: 'EO Tools', href: '/dashboard/tools', protected: true },
+      { name: 'AI Assistant', href: '/resources/ai-assistant', protected: true },
+      { name: 'Team Workspace', href: '/resources/team-workspace', protected: true },
       { name: 'Blog', href: '/resources/blog' },
       { name: 'FAQ', href: '/resources/faq' },
     ],
@@ -58,10 +83,11 @@ export function Navbar() {
               {/* Company Dropdown */}
               <div 
                 className="relative group"
+                onMouseEnter={() => handleMouseEnter('company')}
+                onMouseLeave={handleMouseLeave}
               >
                 <button
                   className="flex items-center text-base font-medium text-gray-300 hover:text-white"
-                  onMouseEnter={() => setOpenDropdown('company')}
                 >
                   Company
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
@@ -69,8 +95,6 @@ export function Navbar() {
                 {openDropdown === 'company' && (
                   <div 
                     className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                    onMouseEnter={() => setOpenDropdown('company')}
-                    onMouseLeave={() => setOpenDropdown(null)}
                   >
                     {navigation.company.map((item) => (
                       <Link
@@ -88,10 +112,11 @@ export function Navbar() {
               {/* Resources Dropdown */}
               <div 
                 className="relative group"
+                onMouseEnter={() => handleMouseEnter('resources')}
+                onMouseLeave={handleMouseLeave}
               >
                 <button
                   className="flex items-center text-base font-medium text-gray-300 hover:text-white"
-                  onMouseEnter={() => setOpenDropdown('resources')}
                 >
                   Resources
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
@@ -99,17 +124,25 @@ export function Navbar() {
                 {openDropdown === 'resources' && (
                   <div 
                     className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                    onMouseEnter={() => setOpenDropdown('resources')}
-                    onMouseLeave={() => setOpenDropdown(null)}
                   >
                     {navigation.resources.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                      >
-                        {item.name}
-                      </Link>
+                      item.protected ? (
+                        <button
+                          key={item.name}
+                          onClick={(e) => handleProtectedLink(e, item.href)}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                        >
+                          {item.name}
+                        </button>
+                      ) : (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                        >
+                          {item.name}
+                        </Link>
+                      )
                     ))}
                   </div>
                 )}
@@ -118,10 +151,11 @@ export function Navbar() {
               {/* Legal Dropdown */}
               <div 
                 className="relative group"
+                onMouseEnter={() => handleMouseEnter('legal')}
+                onMouseLeave={handleMouseLeave}
               >
                 <button
                   className="flex items-center text-base font-medium text-gray-300 hover:text-white"
-                  onMouseEnter={() => setOpenDropdown('legal')}
                 >
                   Legal
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
@@ -129,8 +163,6 @@ export function Navbar() {
                 {openDropdown === 'legal' && (
                   <div 
                     className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                    onMouseEnter={() => setOpenDropdown('legal')}
-                    onMouseLeave={() => setOpenDropdown(null)}
                   >
                     {navigation.legal.map((item) => (
                       <Link
@@ -230,13 +262,23 @@ export function Navbar() {
                 {openDropdown === 'resources-mobile' && (
                   <div className="pl-4">
                     {navigation.resources.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
-                      >
-                        {item.name}
-                      </Link>
+                      item.protected ? (
+                        <button
+                          key={item.name}
+                          onClick={(e) => handleProtectedLink(e, item.href)}
+                          className="block w-full text-left px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+                        >
+                          {item.name}
+                        </button>
+                      ) : (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+                        >
+                          {item.name}
+                        </Link>
+                      )
                     ))}
                   </div>
                 )}
@@ -265,10 +307,18 @@ export function Navbar() {
                   </div>
                 )}
               </div>
+
+              {/* Contact Link */}
+              <Link
+                href="/contact"
+                className="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+              >
+                Contact
+              </Link>
             </div>
           </div>
         )}
       </nav>
     </header>
-  )
+  );
 } 
