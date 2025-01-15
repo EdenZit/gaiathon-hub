@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
-import { connectDB } from '@/lib/db/mongodb';
+import { connectToDatabase } from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 
 // Validation schema
@@ -23,7 +23,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = await connectDB();
+    const db = await connectToDatabase();
     const user = await User.findOne({ email: session.user.email })
       .select('-password -__v')
       .lean();
@@ -55,7 +55,7 @@ export async function PUT(request: Request) {
     // Validate request body
     const validatedData = updateProfileSchema.parse(body);
 
-    const db = await connectDB();
+    const db = await connectToDatabase();
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
       { $set: validatedData },

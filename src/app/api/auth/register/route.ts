@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db/mongodb';
+import { connectToDatabase } from '@/lib/db/mongodb';
 import { User } from '@/lib/db/models/User';
 import { z } from 'zod';
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     console.log('Data validation successful');
 
     console.log('Connecting to MongoDB...');
-    await connectDB();
+    await connectToDatabase();
     console.log('MongoDB connection successful');
 
     // Check if user already exists
