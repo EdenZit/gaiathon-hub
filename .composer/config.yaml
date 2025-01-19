@@ -35,6 +35,15 @@ tasks:
         - "Type Safety"
         - "Component Organization"
 
+    - name: "Workspace Features"
+      files:
+        - src/app/resources/team-workspace/**/*.tsx
+        - src/components/team-workspace/**/*.tsx
+      rules:
+        - "Type Safety"
+        - "Component Organization"
+        - "Real-time Features"
+
 validation:
   typescript:
     config: tsconfig.json

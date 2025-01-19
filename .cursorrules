@@ -53,7 +53,7 @@
         "Maintain strict TypeScript typing",
         "Use NextAuth.js for authentication",
         "Keep API routes organized under src/app/api",
-        "Platform-specific tools should be organized under dashboard/tools",
+        "Platform-specific tools should be organized under resources/tools",
         "Team collaboration features should be organized under resources/team-workspace"
       ]
     }
