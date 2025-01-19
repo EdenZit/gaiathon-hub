@@ -1,162 +1,129 @@
-import type { Metadata } from 'next';
-import { 
-  DocumentIcon, 
-  ChatBubbleLeftRightIcon, 
-  CalendarIcon, 
-  ChartBarIcon,
-  CloudArrowUpIcon,
-  UserGroupIcon
-} from '@heroicons/react/24/outline';
-import Link from 'next/link';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Team Workspace | GAIAthon-Hub',
-  description: 'Access your team workspace, manage documents, and collaborate with team members on your GAIAthon project.',
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { DocumentManagement } from '@/components/team-workspace/DocumentManagement';
+import { TeamChat } from '@/components/team-workspace/TeamChat';
+import { ProjectTimeline } from '@/components/team-workspace/ProjectTimeline';
+import { ProgressTracking } from '@/components/team-workspace/ProgressTracking';
+import { TeamManagement } from '@/components/team-workspace/TeamManagement';
+import { ActivityFeed } from '@/components/team-workspace/ActivityFeed';
+import { DocumentIcon, ChatBubbleLeftIcon, CalendarIcon, ChartBarIcon, UserGroupIcon, BellIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+
+type Tab = {
+  name: string;
+  icon: any;
+  component: any;
 };
 
-const workspaceFeatures = [
-  {
-    name: 'Document Management',
-    description: 'Store and organize project documentation, code, and research papers.',
-    icon: DocumentIcon,
-    link: '/resources/team-workspace/documents'
-  },
-  {
-    name: 'Team Chat',
-    description: 'Real-time communication with your team members.',
-    icon: ChatBubbleLeftRightIcon,
-    link: '/resources/team-workspace/chat'
-  },
-  {
-    name: 'Project Timeline',
-    description: 'Track milestones, deadlines, and team meetings.',
-    icon: CalendarIcon,
-    link: '/resources/team-workspace/timeline'
-  },
-  {
-    name: 'Progress Tracking',
-    description: 'Monitor project progress and team performance.',
-    icon: ChartBarIcon,
-    link: '/resources/team-workspace/progress'
-  },
-  {
-    name: 'File Storage',
-    description: 'Upload and share project files, datasets, and resources.',
-    icon: CloudArrowUpIcon,
-    link: '/resources/team-workspace/files'
-  },
-  {
-    name: 'Team Management',
-    description: 'Manage team members, roles, and responsibilities.',
-    icon: UserGroupIcon,
-    link: '/resources/team-workspace/team'
-  }
-];
-
-const recentActivities = [
-  {
-    id: 1,
-    type: 'document',
-    title: 'Project Proposal',
-    action: 'updated',
-    user: 'Sarah Kumar',
-    time: '2 hours ago'
-  },
-  {
-    id: 2,
-    type: 'chat',
-    title: 'Team Discussion',
-    action: 'commented in',
-    user: 'John Doe',
-    time: '4 hours ago'
-  },
-  {
-    id: 3,
-    type: 'file',
-    title: 'Satellite Data',
-    action: 'uploaded',
-    user: 'Mike Ross',
-    time: '1 day ago'
-  }
+const tabs: Tab[] = [
+  { name: 'Documents', icon: DocumentIcon, component: DocumentManagement },
+  { name: 'Chat', icon: ChatBubbleLeftIcon, component: TeamChat },
+  { name: 'Timeline', icon: CalendarIcon, component: ProjectTimeline },
+  { name: 'Progress', icon: ChartBarIcon, component: ProgressTracking },
+  { name: 'Team', icon: UserGroupIcon, component: TeamManagement },
+  { name: 'Activity', icon: BellIcon, component: ActivityFeed },
 ];
 
 export default function TeamWorkspacePage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState(0);
+  const [teamId, setTeamId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isTeamLeader, setIsTeamLeader] = useState(false);
+
+  useEffect(() => {
+    if (!session?.user) {
+      router.push('/register');
+      return;
+    }
+
+    const fetchTeam = async () => {
+      try {
+        const response = await fetch('/api/team/current');
+        if (!response.ok) {
+          throw new Error('Failed to fetch team');
+        }
+        const data = await response.json();
+        setTeamId(data.teamId);
+        // Check if user is team leader
+        setIsTeamLeader(data.members?.some(
+          (member: { user: string; role: string }) => 
+            member.user === session.user?.email && member.role === 'leader'
+        ));
+      } catch (error) {
+        console.error('Error fetching team:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTeam();
+  }, [session, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-navy"></div>
+      </div>
+    );
+  }
+
+  if (!teamId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-lg text-gray-600">You are not part of any team.</p>
+        <button
+          onClick={() => router.push('/resources/team-workspace/create')}
+          className="px-4 py-2 bg-navy text-white rounded hover:bg-navy/90 transition-colors"
+        >
+          Create Team
+        </button>
+      </div>
+    );
+  }
+
+  const ActiveComponent = tabs[activeTab].component;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Team Workspace</h1>
-          <p className="mt-2 text-gray-600">
-            Access tools and resources for effective team collaboration
-          </p>
-        </div>
-
-        {/* Workspace Features Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-12">
-          {workspaceFeatures.map((feature) => (
-            <Link
-              key={feature.name}
-              href={feature.link}
-              className="group relative bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  <feature.icon className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {feature.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Recent Activity */}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-5 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0">
-                      {activity.type === 'document' ? (
-                        <DocumentIcon className="h-5 w-5 text-gray-400" />
-                      ) : activity.type === 'chat' ? (
-                        <ChatBubbleLeftRightIcon className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <CloudArrowUpIcon className="h-5 w-5 text-gray-400" />
-                      )}
+          <div className="border-b border-gray-200">
+            <div className="flex justify-between items-center px-4 py-4">
+              <nav className="flex -mb-px flex-1">
+                {tabs.map((tab, index) => (
+                  <button
+                    key={tab.name}
+                    onClick={() => setActiveTab(index)}
+                    className={`group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-sm font-medium text-center hover:bg-gray-50 focus:z-10 ${
+                      activeTab === index
+                        ? 'text-navy border-b-2 border-navy'
+                        : 'text-gray-500 border-b-2 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <tab.icon className="h-5 w-5" />
+                      {tab.name}
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {activity.user} {activity.action} {activity.title}
-                      </p>
-                      <p className="text-sm text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                  <button className="text-sm text-blue-600 hover:text-blue-800">
-                    View
                   </button>
-                </div>
-              </div>
-            ))}
+                ))}
+              </nav>
+              {isTeamLeader && (
+                <button
+                  onClick={() => router.push('/resources/team-workspace/invite')}
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-navy hover:bg-navy/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy"
+                >
+                  <UserPlusIcon className="h-5 w-5 mr-2" />
+                  Invite Members
+                </button>
+              )}
+            </div>
           </div>
-          <div className="px-6 py-4 bg-gray-50 rounded-b-lg">
-            <Link
-              href="/resources/team-workspace/activity"
-              className="text-sm font-medium text-blue-600 hover:text-blue-800"
-            >
-              View all activity →
-            </Link>
+          <div className="p-4">
+            <ActiveComponent teamId={teamId} />
           </div>
         </div>
       </div>
