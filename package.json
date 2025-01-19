@@ -24,7 +24,8 @@
     "agent:api": "ts-node scripts/composer/agent.ts api",
     "agent:pages": "ts-node scripts/composer/agent.ts pages",
     "agent:all": "ts-node scripts/composer/agent.ts all",
-    "db:clean": "ts-node --project scripts/tsconfig.json scripts/cleanDatabase.ts"
+    "db:clean": "ts-node --project scripts/tsconfig.json scripts/cleanDatabase.ts",
+    "project:reorganize": "ts-node --project scripts/tsconfig.json scripts/reorganizeProject.ts"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",

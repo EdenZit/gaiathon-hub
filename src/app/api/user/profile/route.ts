@@ -1,49 +1,58 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { User } from '@/models/User';
+import { connectDB } from '@/lib/mongodb';
 import { z } from 'zod';
-import { connectToDatabase } from '@/lib/db/mongodb';
-import { User } from '@/lib/db/models/User';
+import mongoose from 'mongoose';
 
-const updateProfileSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email address'),
+// Schema for profile update validation
+const profileSchema = z.object({
+  fullName: z.string().min(1, 'Full name is required'),
   institution: z.string().min(1, 'Institution is required'),
-  department: z.string().min(1, 'Department/Faculty is required'),
-  fieldOfStudy: z.string().min(1, 'Major/Field of Study is required'),
-  yearOfStudy: z.string().min(1, 'Year of Study is required'),
-  phoneNumber: z.string().min(1, 'Phone number is required'),
-  country: z.string().min(1, 'Country is required'),
-  techSkills: z.object({
-    coding: z.boolean(),
-    remoteSensing: z.boolean(),
-    gis: z.boolean(),
-    iot: z.boolean(),
-    other: z.string().optional(),
-  }),
-  previousHackathonExperience: z.string().min(1, 'Previous hackathon experience is required'),
-  githubUrl: z.string().url().optional().or(z.literal('')),
-  personalWebsite: z.string().url().optional().or(z.literal('')),
-  linkedinUrl: z.string().url().optional().or(z.literal('')),
+  department: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  gaiaClubName: z.string().min(1, 'GAIA Club name is required'),
+  gaiaClubRole: z.string().min(1, 'GAIA Club role is required'),
+  teamJoiningPreference: z.enum(['invite', 'request']),
+  contactInfo: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
 });
 
 export async function GET() {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    await connectToDatabase();
+    await connectDB();
+
     const user = await User.findOne({ email: session.user.email }).select('-password');
-
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      fullName: user.fullName || '',
+      institution: user.institution || '',
+      department: user.department || '',
+      location: user.location || '',
+      gaiaClubName: user.gaiaClubName || '',
+      gaiaClubRole: user.gaiaClubRole || '',
+      teamJoiningPreference: user.teamJoiningPreference || 'invite',
+      contactInfo: user.contactInfo || '',
+      bio: user.bio || '',
+      profileCompleted: user.profileCompleted,
+    });
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error('Error fetching profile:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -53,39 +62,66 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
+    await connectDB();
+
     const body = await request.json();
-    const validatedData = updateProfileSchema.parse(body);
+    console.log('Received profile update data:', body);
 
-    await connectToDatabase();
+    const validatedData = profileSchema.parse(body);
+    console.log('Validated data:', validatedData);
+
+    // First find the user
     const user = await User.findOne({ email: session.user.email });
-
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
     // Update user fields
-    Object.assign(user, validatedData);
+    user.fullName = validatedData.fullName;
+    user.institution = validatedData.institution;
+    user.department = validatedData.department || undefined;
+    user.location = validatedData.location || undefined;
+    user.gaiaClubName = validatedData.gaiaClubName;
+    user.gaiaClubRole = validatedData.gaiaClubRole;
+    user.teamJoiningPreference = validatedData.teamJoiningPreference;
+    user.contactInfo = validatedData.contactInfo || undefined;
+    user.bio = validatedData.bio || undefined;
+
+    // Save the user to trigger the pre-save hooks
     await user.save();
 
-    // Return updated user without password
-    const updatedUser = user.toObject();
-    delete updatedUser.password;
-
-    return NextResponse.json(updatedUser);
+    return NextResponse.json({
+      message: 'Profile updated successfully',
+      profileCompleted: user.profileCompleted,
+    });
   } catch (error) {
+    console.error('Error updating profile:', error);
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Invalid profile data', details: error.errors },
         { status: 400 }
       );
     }
 
-    console.error('Error updating user profile:', error);
+    if (error instanceof mongoose.Error) {
+      return NextResponse.json(
+        { error: 'Database error', details: error.message },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
