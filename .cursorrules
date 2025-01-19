@@ -7,6 +7,16 @@
 
   "development_rules": [
     {
+      "description": "Infrastructure Requirements (DO NOT REMOVE)",
+      "rules": [
+        "ALWAYS use Docker Compose for local development",
+        "MongoDB Atlas is used for database - DO NOT switch to local MongoDB",
+        "Redis is required and runs in Docker",
+        "All services must be configured to work with Docker networking",
+        "Environment variables must be compatible with both Docker and MongoDB Atlas"
+      ]
+    },
+    {
       "description": "Authentication Flow",
       "rules": [
         "All protected routes must redirect to /register for unauthenticated users",

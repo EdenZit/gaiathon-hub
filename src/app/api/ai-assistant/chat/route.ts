@@ -1,125 +1,165 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { chatMessageSchema } from '@/lib/validators/ai-assistant';
-import { checkRateLimit, MAX_REQUESTS } from '@/lib/rate-limiter';
-import { ZodError } from 'zod';
+import { z } from 'zod';
+import { 
+  messageSchema,
+  TopicCategory,
+  MessageAnalytics
+} from '@/types/ai-assistant';
+import {
+  callOpenAI,
+  parseStreamingResponse,
+  cleanResponse
+} from '@/lib/services/ai-assistant';
+import {
+  checkRateLimit,
+  getRateLimitInfo,
+  logAnalytics
+} from '@/lib/services/redis';
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    // 1. Get user session
+    // Check authentication
     const session = await getServerSession();
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // 2. Check rate limit
-    const rateLimitResult = await checkRateLimit(session.user.id);
-    if (!rateLimitResult.success) {
+    // Check rate limit
+    const userId = session.user.id as string;
+    const withinLimit = await checkRateLimit(userId);
+    
+    if (!withinLimit) {
+      const limitInfo = await getRateLimitInfo(userId);
       return NextResponse.json(
         {
           error: 'Rate limit exceeded',
-          reset: rateLimitResult.reset,
-          remaining: rateLimitResult.remaining,
+          details: limitInfo
         },
-        {
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': MAX_REQUESTS.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+        { status: 429 }
+      );
+    }
+
+    // Validate request body
+    const body = await request.json();
+    let validatedData;
+    try {
+      validatedData = messageSchema.parse(body);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          {
+            error: 'Invalid request format',
+            details: error.errors
           },
-        }
-      );
+          { status: 400 }
+        );
+      }
+      throw error;
     }
 
-    // 3. Validate request body
-    const body = await req.json();
-    const validatedData = await chatMessageSchema.parseAsync(body);
+    // Start analytics timing
+    const startTime = Date.now();
 
-    // 4. Check API key
-    if (!DEEPSEEK_API_KEY) {
-      return NextResponse.json(
-        { error: 'Deepseek API key not configured' },
-        { status: 500 }
-      );
-    }
+    // Determine message category
+    const category = validatedData.context?.category || TopicCategory.SATELLITE_DATA;
 
-    // 5. Prepare response stream
-    const encoder = new TextEncoder();
+    // Call OpenAI API
+    const response = await callOpenAI(
+      validatedData.content,
+      category,
+      validatedData.context
+    );
+
+    // Prepare streaming response
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
+    const encoder = new TextEncoder();
 
-    // Start streaming response
-    const streamResponse = async () => {
+    // Process the streaming response
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response stream available');
+    }
+
+    // Handle the stream
+    (async () => {
       try {
-        // TODO: Replace with actual Deepseek API call
-        const mockResponse = `This is a mock response to your message: "${validatedData.message}"${
-          validatedData.context ? ` regarding ${validatedData.context}` : ''
-        }. The actual Deepseek API integration will be implemented once the API key is provided.`;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            await writer.close();
+            break;
+          }
 
-        // Simulate streaming by sending chunks
-        const chunks = mockResponse.split(' ');
-        for (const chunk of chunks) {
-          await writer.write(
-            encoder.encode(`data: ${JSON.stringify({ content: chunk + ' ' })}\n\n`)
-          );
-          await new Promise(resolve => setTimeout(resolve, 100)); // Simulate delay
+          const chunk = new TextDecoder().decode(value);
+          const result = parseStreamingResponse(chunk);
+
+          if (result.error) {
+            const errorChunk = encoder.encode(
+              `data: ${JSON.stringify({ error: result.error })}\n\n`
+            );
+            await writer.write(errorChunk);
+            continue;
+          }
+
+          if (result.content) {
+            const cleaned = cleanResponse(result.content);
+            const dataChunk = encoder.encode(
+              `data: ${JSON.stringify({ content: cleaned })}\n\n`
+            );
+            await writer.write(dataChunk);
+          }
         }
 
-        // Send final message with topic
-        await writer.write(
-          encoder.encode(`data: ${JSON.stringify({
-            content: '',
-            topic: validatedData.context || 'General IoT',
-            done: true,
-          })}\n\n`)
-        );
+        // Log analytics after successful completion
+        await logAnalytics({
+          userId,
+          messageId: crypto.randomUUID(),
+          timestamp: new Date(),
+          category,
+          responseTime: Date.now() - startTime,
+          errorOccurred: false
+        });
       } catch (error) {
-        console.error('Streaming error:', error);
-        await writer.write(
-          encoder.encode(`data: ${JSON.stringify({
-            error: 'Error processing stream',
-            done: true,
-          })}\n\n`)
+        console.error('Error processing stream:', error);
+        const errorChunk = encoder.encode(
+          `data: ${JSON.stringify({ 
+            error: 'Error processing response stream' 
+          })}\n\n`
         );
-      } finally {
+        await writer.write(errorChunk);
         await writer.close();
+
+        // Log error analytics
+        await logAnalytics({
+          userId,
+          messageId: crypto.randomUUID(),
+          timestamp: new Date(),
+          category,
+          responseTime: Date.now() - startTime,
+          errorOccurred: true
+        });
       }
-    };
+    })();
 
-    // Start streaming in the background
-    streamResponse();
-
-    // Return the stream
-    return new Response(stream.readable, {
+    return new NextResponse(stream.readable, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
+        'Connection': 'keep-alive'
+      }
     });
-
   } catch (error) {
-    console.error('Error in AI chat endpoint:', error);
-
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation error',
-          details: error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
+    console.error('Error in chat route:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

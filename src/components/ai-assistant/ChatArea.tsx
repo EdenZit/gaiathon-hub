@@ -1,98 +1,80 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
-import { SendIcon } from 'lucide-react';
 import { ChatAreaProps } from '@/types/ai-assistant';
 import { MessageBubble } from './MessageBubble';
+import { SendIcon } from 'lucide-react';
 
 export function ChatArea({
   messages,
   inputValue,
-  setInputValue,
   isLoading,
+  onInputChange,
   onSendMessage,
+  endRef,
 }: ChatAreaProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoading && inputValue.trim()) {
+    if (inputValue.trim() && !isLoading) {
       onSendMessage(inputValue);
     }
   };
 
-  return (
-    <div className="flex-1 flex flex-col">
-      {/* Chat Header */}
-      <div className="bg-white p-4 shadow">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-navy-900">New Conversation</h2>
-        </div>
-      </div>
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
 
-      {/* Messages Area */}
+  return (
+    <div className="flex-1 flex flex-col bg-white">
+      {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">
-            <div className="text-center">
-              <p className="mb-2">Welcome to GAIAthon AI Assistant!</p>
-              <p className="text-sm">Ask me anything about Internet of Things or Earth observation.</p>
-            </div>
+            <p className="text-center">
+              Welcome to the AI Assistant! Ask me anything about Earth Observation and IoT.
+              <br />
+              I'm here to help you with satellite data, remote sensing, IoT sensors, and more.
+            </p>
           </div>
         ) : (
-          messages.map((msg, idx) => (
-            <MessageBubble key={idx} message={msg} />
+          messages.map(message => (
+            <MessageBubble
+              key={message.id}
+              message={message}
+            />
           ))
         )}
-        <div ref={messagesEndRef} />
+        <div ref={endRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="bg-white border-t p-4">
-        <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask about IoT or Earth observation..."
-            className={`
-              flex-1 p-2 border rounded-lg
-              focus:outline-none focus:ring-2 focus:ring-navy-500
-              disabled:opacity-50 disabled:cursor-not-allowed
-            `}
-            disabled={isLoading}
-          />
+      {/* Input area */}
+      <form onSubmit={handleSubmit} className="border-t p-4">
+        <div className="flex items-end space-x-2">
+          <div className="flex-1">
+            <textarea
+              value={inputValue}
+              onChange={(e) => onInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message..."
+              className="w-full resize-none rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+              rows={1}
+              style={{
+                minHeight: '2.5rem',
+                maxHeight: '10rem',
+              }}
+            />
+          </div>
           <button
             type="submit"
-            disabled={isLoading || !inputValue.trim()}
-            className={`
-              p-2 rounded-lg transition-colors
-              ${isLoading || !inputValue.trim()
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-navy-600 hover:bg-navy-700 text-white'
-              }
-            `}
+            disabled={!inputValue.trim() || isLoading}
+            className="flex items-center justify-center h-10 w-10 rounded-lg bg-navy-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-navy-700 transition-colors"
           >
             <SendIcon className="w-5 h-5" />
           </button>
-        </form>
-        
-        {isLoading && (
-          <div className="mt-2 text-sm text-navy-600 animate-pulse">
-            Processing your request...
-          </div>
-        )}
-      </div>
+        </div>
+      </form>
     </div>
   );
 } 

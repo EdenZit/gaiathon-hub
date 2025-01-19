@@ -19,6 +19,7 @@ export async function checkRateLimit(userId: string): Promise<{
   success: boolean;
   remaining: number;
   reset: number;
+  limit: number;
 }> {
   const redis = await getRedisClient();
   const key = `rate_limit:${userId}`;
@@ -39,6 +40,7 @@ export async function checkRateLimit(userId: string): Promise<{
       success: remaining > 0,
       remaining,
       reset,
+      limit: MAX_REQUESTS,
     };
   } catch (error) {
     console.error('Rate limiter error:', error);
@@ -47,6 +49,7 @@ export async function checkRateLimit(userId: string): Promise<{
       success: true,
       remaining: 1,
       reset: now + RATE_LIMIT_WINDOW,
+      limit: MAX_REQUESTS,
     };
   }
 } 
