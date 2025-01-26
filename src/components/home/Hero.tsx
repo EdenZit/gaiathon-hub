@@ -84,15 +84,12 @@ export function Hero() {
       <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
         <div className="relative h-56 w-full sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center p-8">
           <div className="relative w-full h-full max-w-lg">
-            <div className="absolute top-0 left-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
-            <div className="absolute top-0 right-0 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
-            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-navy-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000" />
             <div className="relative">
               <Image
                 src="/images/globe.gif"
                 alt="Rotating Earth Globe"
-                width={500}
-                height={500}
+                width={300}
+                height={300}
                 className="object-contain"
                 priority
               />
