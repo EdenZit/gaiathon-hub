@@ -1,5 +1,7 @@
 import { connectDB } from './db/connection';
 import { User } from './db/models/User';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export async function generateUniqueRegistrationNumber(): Promise<string> {
   const prefix = 'G25-';
@@ -29,4 +31,8 @@ export async function generateUniqueRegistrationNumber(): Promise<string> {
   }
   
   throw new Error('Failed to generate unique registration number after multiple attempts');
+}
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 } 
