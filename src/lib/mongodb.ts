@@ -6,13 +6,12 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-interface MongooseConnection {
-  conn: Connection | null;
-  promise: Promise<typeof mongoose> | null;
-}
-
 declare global {
-  var mongoose: MongooseConnection | undefined;
+  // eslint-disable-next-line no-var
+  var mongoose: {
+    conn: Connection | null;
+    promise: Promise<typeof mongoose> | null;
+  } | undefined;
 }
 
 if (!global.mongoose) {
