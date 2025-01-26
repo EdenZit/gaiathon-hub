@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { UserProfile } from '@/components/dashboard/profile/UserProfile';
+import UserProfile from '@/components/dashboard/profile/UserProfile';
 import { APIKeys } from '@/components/dashboard/profile/APIKeys';
 import { Preferences } from '@/components/dashboard/profile/Preferences';
 import { ActivityHistory } from '@/components/dashboard/profile/ActivityHistory';
@@ -62,7 +62,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-6">
-        {activeTab === 'profile' && <UserProfile user={session?.user} />}
+        {activeTab === 'profile' && <UserProfile />}
         {activeTab === 'preferences' && <Preferences />}
         {activeTab === 'api-keys' && <APIKeys />}
         {activeTab === 'activity' && <ActivityHistory />}

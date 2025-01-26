@@ -11,66 +11,86 @@ const registerSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    console.log('Starting registration process...');
+    // Parse and validate the request body
     const body = await req.json();
-    console.log('Received registration data:', { ...body, password: '[REDACTED]' });
-    
-    // Validate input
     const validatedData = registerSchema.parse(body);
-    console.log('Data validation successful');
 
-    console.log('Connecting to MongoDB...');
+    // Connect to database
     await connectToDatabase();
-    console.log('MongoDB connection successful');
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email: validatedData.email });
+    const existingUser = await User.findOne({ email: validatedData.email.toLowerCase() });
     if (existingUser) {
-      console.log('User already exists:', validatedData.email);
       return NextResponse.json(
         { message: 'User with this email already exists' },
         { status: 400 }
       );
     }
 
-    console.log('Creating new user...');
+    // Split full name into first and last name
+    const nameParts = validatedData.name.trim().split(/\s+/);
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
     // Create new user
     const user = await User.create({
-      name: validatedData.name,
-      email: validatedData.email,
-      password: validatedData.password,
+      email: validatedData.email.toLowerCase(),
+      password: validatedData.password, // Password will be hashed by the pre-save hook
+      firstName,
+      lastName,
     });
-    console.log('User created successfully');
 
     // Remove sensitive data from response
-    const userObject = user.toObject();
-    const { password: _password, ...userWithoutPassword } = userObject;
+    const { password: _, ...userWithoutPassword } = user.toObject();
 
     return NextResponse.json(
-      { message: 'User created successfully', user: userWithoutPassword },
+      { 
+        message: 'User created successfully', 
+        user: userWithoutPassword 
+      },
       { status: 201 }
     );
+
   } catch (error) {
+    console.error('Registration error:', error);
+
     if (error instanceof z.ZodError) {
-      console.error('Validation error:', error.errors);
       return NextResponse.json(
-        { message: 'Validation error', errors: error.errors },
+        { 
+          message: 'Validation error', 
+          errors: error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        },
         { status: 400 }
       );
     }
 
-    console.error('Registration error:', error);
-    // Log the full error details
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
+    // Handle Mongoose validation errors
+    if (error instanceof Error && error.name === 'ValidationError') {
+      return NextResponse.json(
+        { 
+          message: 'Validation error',
+          errors: Object.values(error).map(err => ({
+            field: err.path,
+            message: err.message
+          }))
+        },
+        { status: 400 }
+      );
+    }
+
+    // Handle MongoDB duplicate key errors
+    if (error instanceof Error && error.name === 'MongoServerError' && (error as any).code === 11000) {
+      return NextResponse.json(
+        { message: 'Email already exists' },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: 'Failed to create user' },
       { status: 500 }
     );
   }

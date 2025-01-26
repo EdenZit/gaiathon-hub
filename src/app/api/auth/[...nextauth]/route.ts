@@ -2,21 +2,6 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { connectDB } from '@/lib/db/connection';
 import { User } from '@/lib/db/models/User';
-import { JWT } from 'next-auth/jwt';
-import { Session } from 'next-auth';
-
-interface ExtendedToken extends JWT {
-  id: string;
-}
-
-interface ExtendedSession extends Session {
-  user: {
-    id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  };
-}
 
 const handler = NextAuth({
   providers: [
@@ -46,33 +31,32 @@ const handler = NextAuth({
         return {
           id: user._id.toString(),
           email: user.email,
-          name: user.name,
+          firstName: user.firstName,
+          name: `${user.firstName} ${user.lastName}`,
         };
-      }
-    })
+      },
+    }),
   ],
-  session: {
-    strategy: 'jwt',
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.firstName = user.firstName;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.firstName = token.firstName;
+      return session;
+    },
   },
   pages: {
     signIn: '/login',
+    error: '/login',
   },
-  callbacks: {
-    async jwt({ token, user }): Promise<ExtendedToken> {
-      if (user) {
-        token.id = user.id;
-      }
-      return token as ExtendedToken;
-    },
-    async session({ session, token }): Promise<ExtendedSession> {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: (token as ExtendedToken).id
-        }
-      };
-    },
+  session: {
+    strategy: 'jwt',
   },
 });
 

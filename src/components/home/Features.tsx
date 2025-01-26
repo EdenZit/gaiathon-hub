@@ -1,63 +1,108 @@
-import { BeakerIcon, ChatBubbleLeftRightIcon, UserGroupIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+'use client';
 
-const features = [
-  {
-    name: 'EO Tools',
-    description: 'Access tools and datasets from WEkEO, Dunia, and more through a single unified platform.',
-    icon: BeakerIcon,
-    href: '/dashboard/tools'
-  },
-  {
-    name: 'AI Assistant',
-    description: 'Get help with your Earth Observation projects through our intelligent chatbot assistant.',
-    icon: ChatBubbleLeftRightIcon,
-    href: '/ai-assistant'
-  },
-  {
-    name: 'Team Workspace',
-    description: 'Collaborate with your team in real-time, share resources, and track progress together.',
-    icon: UserGroupIcon,
-    href: '/team-workspace'
-  },
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+const winners = [
+  { id: 1, name: 'Team EcoWatch', project: 'Coastal Monitoring System', image: '/images/winners/team1.jpg' },
+  { id: 2, name: 'AquaGuard', project: 'Water Quality Analysis', image: '/images/winners/team2.jpg' },
+  { id: 3, name: 'GreenSense', project: 'Forest Cover Tracking', image: '/images/winners/team3.jpg' },
+  { id: 4, name: 'AgriTech', project: 'Crop Yield Prediction', image: '/images/winners/team4.jpg' },
+  { id: 5, name: 'UrbanPulse', project: 'Urban Heat Mapping', image: '/images/winners/team5.jpg' },
+  { id: 6, name: 'ClimateAI', project: 'Climate Change Analysis', image: '/images/winners/team6.jpg' },
+  { id: 7, name: 'EarthSense', project: 'Soil Health Monitoring', image: '/images/winners/team7.jpg' },
 ];
 
 export function Features() {
+  const [currentWinner, setCurrentWinner] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentWinner((prev) => (prev + 1) % winners.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div id="features" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="lg:text-center">
+        {/* Overview Section */}
+        <div className="lg:text-center mb-20">
           <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Features</h2>
           <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            Everything you need for your Earth Observation projects
+            GAIAthon 2025 Overview
           </p>
-          <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-            Access powerful tools, collaborate with teams, and develop innovative solutions all in one place.
+          <p className="mt-4 max-w-4xl text-xl text-gray-500 lg:mx-auto">
+            Edenway Foundation proudly presents GAIAthon '25, the second edition of its transformative innovation challenge, running from January to August 2025. Building on the success of GAIAthon '24, this incubation challenge invites universities across Africa to develop compelling solutions to address environmental challenges on the continent. In partnership with the GMES & Africa programme under the African Union Commission and supported by the European Commission, GAIAthon '25 leverages cutting-edge technologies, including Artificial Intelligence (AI), Internet of Things (IoT), and Earth Observation (EO), to foster innovation and collaboration for sustainable development.
           </p>
         </div>
 
-        <div className="mt-20">
-          <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <Link 
-                key={feature.name} 
-                href={feature.href}
-                className="relative group hover:shadow-lg rounded-lg p-6 transition-all duration-200"
-                target="_blank"
-              >
-                <div>
-                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white group-hover:bg-blue-600 transition-colors duration-200">
-                    <feature.icon className="h-6 w-6" aria-hidden="true" />
-                  </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
-                    {feature.name}
-                  </p>
+        {/* Winners Showcase */}
+        <div className="mb-20">
+          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">GAIAthon'24 Winners</h3>
+          <div className="relative h-96 bg-gray-100 rounded-xl overflow-hidden shadow-lg">
+            <div className="absolute inset-0 transition-opacity duration-1000">
+              <div className="relative h-full">
+                <Image
+                  src={winners[currentWinner].image}
+                  alt={winners[currentWinner].name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+                  <h4 className="text-white text-xl font-bold">{winners[currentWinner].name}</h4>
+                  <p className="text-gray-200">{winners[currentWinner].project}</p>
                 </div>
-                <div className="mt-2 ml-16 text-base text-gray-500">
-                  {feature.description}
-                </div>
-              </Link>
-            ))}
+              </div>
+            </div>
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {winners.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentWinner ? 'bg-white' : 'bg-white/50'
+                  }`}
+                  onClick={() => setCurrentWinner(index)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Prizes Section */}
+        <div>
+          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">GAIAthon'25 Prizes</h3>
+          <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-8 shadow-lg">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-4">Grand Prizes</h4>
+                <ul className="space-y-4 text-gray-600">
+                  <li className="flex items-center">
+                    <span className="text-2xl font-bold text-blue-600 mr-2">1st</span>
+                    <span>$10,000 + Incubation Support</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-2xl font-bold text-blue-600 mr-2">2nd</span>
+                    <span>$7,000 + Technical Mentorship</span>
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-2xl font-bold text-blue-600 mr-2">3rd</span>
+                    <span>$5,000 + Development Resources</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-4">Additional Benefits</h4>
+                <ul className="space-y-3 text-gray-600">
+                  <li>• Access to High-Performance Computing Resources</li>
+                  <li>• Professional Networking Opportunities</li>
+                  <li>• Industry Expert Mentorship</li>
+                  <li>• Publication Opportunities</li>
+                  <li>• International Conference Participation</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>

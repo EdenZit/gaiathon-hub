@@ -4,18 +4,12 @@ import { FaArrowRight } from 'react-icons/fa6';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Our Sponsors - GAIAthon-Hub',
-  description: 'Meet the organizations that support the GAIA Initiative by Edenway Foundation.',
+  title: 'Our Partners - GAIAthon-Hub',
+  description: 'Meet the organizations that support and collaborate with the GAIA Initiative.',
 };
 
-export default function SponsorsPage() {
-  const sponsors = [
-    {
-      name: 'Edenway Foundation',
-      logo: '/images/sponsors/eden.png',
-      hasArrow: true,
-      website: 'https://edenwayfoundation.com/',
-    },
+export default function PartnersPage() {
+  const partners = [
     {
       name: 'GMES and Africa',
       logo: '/images/sponsors/gmes.png',
@@ -41,6 +35,30 @@ export default function SponsorsPage() {
       hasArrow: true,
       website: 'https://gmes.rmc.africa/',
     },
+    {
+      name: 'European Space Agency (ESA)',
+      logo: '/images/partners/esa.png',
+      hasArrow: true,
+      website: 'https://www.esa.int/',
+    },
+    {
+      name: 'EUMETSAT',
+      logo: '/images/partners/eumetsat.png',
+      hasArrow: true,
+      website: 'https://www.eumetsat.int/',
+    },
+    {
+      name: 'Joint Research Centre (JRC)',
+      logo: '/images/partners/jrc.png',
+      hasArrow: true,
+      website: 'https://commission.europa.eu/index_en',
+    },
+    {
+      name: 'Mercator Ocean International',
+      logo: '/images/partners/mercator.png',
+      hasArrow: true,
+      website: 'https://www.mercator-ocean.eu',
+    },
   ];
 
   return (
@@ -49,24 +67,23 @@ export default function SponsorsPage() {
       <div className="bg-gradient-to-r from-green-600 to-green-800 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl text-center">
-            Our Sponsors
+            Our Partners
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-100 text-center">
-            The realization of the GAIA Initiative, developed by Edenway Foundation, has been made possible 
-            through the invaluable support of our dedicated sponsors who wholeheartedly embraced and believed 
-            in our vision.
+            The success of the GAIA Initiative is built on strong partnerships with leading organizations 
+            in Earth Observation, environmental monitoring, and technological innovation.
           </p>
         </div>
       </div>
 
-      {/* Sponsors Grid */}
+      {/* Partners Grid */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-12">
-            {sponsors.map((sponsor) => (
+            {partners.map((partner) => (
               <Link
-                key={sponsor.name}
-                href={sponsor.website}
+                key={partner.name}
+                href={partner.website}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block transition-transform duration-300 hover:-translate-y-1"
@@ -76,22 +93,22 @@ export default function SponsorsPage() {
                     <div className="flex items-center justify-between">
                       <div className="relative h-24 w-48">
                         <Image
-                          src={sponsor.logo}
-                          alt={`${sponsor.name} logo`}
+                          src={partner.logo}
+                          alt={`${partner.name} logo`}
                           fill
                           className="object-contain"
                         />
                       </div>
-                      {sponsor.hasArrow && (
+                      {partner.hasArrow && (
                         <FaArrowRight className="h-6 w-6 text-green-600" aria-hidden="true" />
                       )}
                     </div>
                     <h3 className="mt-6 text-xl font-semibold text-gray-900">
-                      {sponsor.name}
+                      {partner.name}
                     </h3>
-                    {sponsor.description && (
+                    {partner.description && (
                       <p className="mt-2 text-base text-gray-500">
-                        {sponsor.description}
+                        {partner.description}
                       </p>
                     )}
                   </div>
@@ -107,10 +124,10 @@ export default function SponsorsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900">
-              Interested in Supporting GAIA?
+              Interested in Partnering with GAIA?
             </h2>
             <p className="mt-4 text-lg text-gray-500">
-              Join our mission to empower communities through Earth Observation technology.
+              Join our mission to empower African communities through Earth Observation technology.
             </p>
             <div className="mt-8">
               <a

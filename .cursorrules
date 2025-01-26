@@ -1,156 +1,108 @@
 {
   "project_context": {
     "name": "GAIAthon-Hub",
-    "description": "A unified platform for Earth Observation resources, collaboration, and innovation. The platform integrates tools from WEkEO, Dunia, and other Earth Observation services into a single, user-friendly interface.",
+    "description": "A unified platform for Earth Observation resources, collaboration, and innovation.",
     "goal": "To create a collaborative environment where users can access Earth Observation tools, share resources, and work together on projects with AI assistance."
   },
 
-  "current_implementation": {
-    "completed_features": [
-      "Project initialization with Next.js 14",
-      "Docker containerization setup",
-      "MongoDB Atlas integration",
-      "Redis caching implementation",
-      "User authentication system with NextAuth.js",
-      "Landing page with responsive design",
-      "Basic component structure",
-      "Legal pages (Terms of Service, Privacy Policy, Cookie Policy)",
-      "Enhanced About page with centered icons and navy theme",
-      "Sponsors page with organization showcase",
-      "Updated navigation with proper routing",
-      "Footer with social media links and sections",
-      "Reorganized component structure with common directory"
-    ],
-    "tech_stack": {
-      "frontend": ["Next.js 14", "React 18.2.0", "Tailwind CSS"],
-      "backend": ["Next.js API Routes", "MongoDB Atlas", "Redis"],
-      "authentication": ["NextAuth.js", "bcrypt"],
-      "infrastructure": ["Docker", "Docker Compose"],
-      "database": {
-        "type": "MongoDB Atlas",
-        "connection": "MONGODB_URI"
-      }
-    },
-    "current_structure": {
-      "src/": {
-        "app/": {
-          "description": "Next.js app router structure",
-          "components": [
-            "page.tsx - Landing page",
-            "layout.tsx - Root layout with AuthProvider",
-            "company/ - Company pages (About, Sponsors)",
-            "legal/ - Legal pages and policies",
-            "dashboard/ - User dashboard and profile",
-            "api/ - Backend API routes",
-            "tools/ - Tools integration pages",
-            "team-workspace/ - Collaboration workspace",
-            "ai-assistant/ - AI chat interface",
-            "contact/ - Contact form page"
-          ]
-        },
-        "components/": {
-          "common/": "Shared components (Navbar, Footer)",
-          "auth/": "Authentication components",
-          "home/": "Landing page components",
-          "dashboard/": "Dashboard components",
-          "providers/": "Context providers"
-        },
-        "lib/": {
-          "db/": "Database connections and models",
-          "utils.ts": "Utility functions"
-        },
-        "types/": "TypeScript type definitions"
-      }
-    }
-  },
-
-  "next_session_focus": {
-    "priority_features": [
-      {
-        "feature": "API Routes Organization",
-        "components": [
-          {
-            "name": "Route Structure",
-            "elements": [
-              "Review API route organization",
-              "Ensure consistent naming with frontend",
-              "Implement proper error handling"
-            ]
-          }
-        ]
-      },
-      {
-        "feature": "Type Definitions",
-        "components": [
-          {
-            "name": "Component Types",
-            "elements": [
-              "Create proper type definitions",
-              "Ensure consistent type usage",
-              "Document type interfaces"
-            ]
-          }
-        ]
-      }
-    ],
-    "technical_requirements": [
-      "Review and organize API routes",
-      "Implement comprehensive type system",
-      "Enhance error handling",
-      "Improve code documentation"
-    ]
-  },
-
-  "development_environment": {
-    "requirements": [
-      "Docker and Docker Compose installed",
-      "Node.js 18 or later",
-      "MongoDB Atlas account",
-      "Environment variables configured",
-      "Redis for caching"
-    ],
-    "environment_variables": {
-      "required": [
-        "MONGODB_URI",
-        "NEXTAUTH_SECRET",
-        "NEXTAUTH_URL",
-        "REDIS_URL"
-      ],
-      "optional": [
-        "WEKEO_API_KEY",
-        "DUNIA_API_KEY"
+  "development_rules": [
+    {
+      "description": "Infrastructure Requirements (DO NOT REMOVE)",
+      "rules": [
+        "ALWAYS use Docker Compose for local development",
+        "MongoDB Atlas is used for database - DO NOT switch to local MongoDB",
+        "Redis is required and runs in Docker",
+        "All services must be configured to work with Docker networking",
+        "Environment variables must be compatible with both Docker and MongoDB Atlas"
       ]
-    }
-  },
-
-  "rules": [
-    {
-      "description": "React Version Compatibility",
-      "pattern": "Ensure all components and libraries are compatible with React 18.2.0"
-    },
-    {
-      "description": "Follow Docker-first development approach",
-      "pattern": "All development should be done within the Docker environment to ensure consistency"
-    },
-    {
-      "description": "Component Organization",
-      "pattern": "Place new components in appropriate directories under src/components based on their functionality"
-    },
-    {
-      "description": "Type Safety",
-      "pattern": "Maintain strict TypeScript typing for all new features and components"
     },
     {
       "description": "Authentication Flow",
-      "pattern": "Ensure all protected routes and API endpoints use NextAuth.js authentication"
+      "rules": [
+        "All protected routes must redirect to /register for unauthenticated users",
+        "User registration requires only email, password, and full name initially",
+        "Profile completion with additional details can be done after registration",
+        "Password hashing is handled by User model pre-save hook",
+        "Session must include firstName for personalized welcome messages"
+      ]
     },
     {
-      "description": "API Integration",
-      "pattern": "Implement proper error handling, rate limiting, and caching for all external API integrations"
+      "description": "Navigation & UI",
+      "rules": [
+        "Dropdowns should close when cursor leaves the dropdown area (150ms delay)",
+        "Protected links in navbar and footer must use handleProtectedLink",
+        "All links should open in the same window unless explicitly required otherwise",
+        "Maintain consistent navy theme across UI elements",
+        "Tools and features should only be accessible through Navbar and Footer when authenticated",
+        "Team workspace features should be organized under /resources/team-workspace"
+      ]
     },
     {
-      "description": "Styling Guidelines",
-      "pattern": "Use Tailwind CSS for styling, maintaining the navy blue theme for key UI elements"
+      "description": "Error Handling",
+      "rules": [
+        "Provide specific error messages for validation failures",
+        "Handle MongoDB duplicate key errors gracefully",
+        "Format validation errors with field names and messages",
+        "Log errors with appropriate detail level"
+      ]
+    },
+    {
+      "description": "Code Organization",
+      "rules": [
+        "Place new components in appropriate directories under src/components",
+        "Maintain strict TypeScript typing",
+        "Use NextAuth.js for authentication",
+        "Keep API routes organized under src/app/api",
+        "Platform-specific tools should be organized under resources/tools",
+        "Team collaboration features should be organized under resources/team-workspace"
+      ]
     }
-  ]
+  ],
+
+  "project_status": {
+    "completed_features": [
+      "User authentication and registration",
+      "Profile management with extended fields",
+      "Team creation and management",
+      "Team member invitation system",
+      "Basic team workspace structure",
+      "Database cleaning utility script"
+    ],
+    "in_progress_features": [
+      "Real-time team chat using Socket.IO",
+      "Document management with collaborative editing",
+      "Project timeline with calendar integration",
+      "Progress tracking system",
+      "Team activity feed"
+    ],
+    "pending_features": [
+      "Google Drive integration for documents",
+      "Real-time cursor position tracking",
+      "Message threading in team chat",
+      "Event export/import functionality",
+      "Performance analytics dashboard",
+      "Team milestone management"
+    ]
+  },
+
+  "commit_guidelines": {
+    "format": "<type>(<scope>): <description>",
+    "types": [
+      "feat: New feature",
+      "fix: Bug fix",
+      "refactor: Code change that neither fixes a bug nor adds a feature",
+      "style: Changes that do not affect the meaning of the code",
+      "docs: Documentation only changes"
+    ],
+    "scopes": [
+      "auth",
+      "ui",
+      "api",
+      "db",
+      "nav",
+      "gallery",
+      "tools",
+      "workspace"
+    ]
+  }
 }

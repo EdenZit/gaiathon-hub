@@ -1,37 +1,56 @@
-import mongoose from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { IUser } from '../../../types/models';
 
-export interface IUser extends mongoose.Document {
-  email: string;
-  password: string;
-  name: string;
-  createdAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
-
-const userSchema = new mongoose.Schema<IUser>({
-  email: {
-    type: String,
-    required: [true, 'Email is required'],
-    unique: true,
-    lowercase: true,
-    trim: true,
+const userSchema = new Schema<IUser>(
+  {
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [8, 'Password must be at least 8 characters long'],
+    },
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      trim: true,
+    },
+    firstName: {
+      type: String,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
+    teams: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Team',
+    }],
+    profile: {
+      avatar: String,
+      bio: String,
+      organization: String,
+      position: String,
+      skills: [String],
+    },
   },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [8, 'Password must be at least 8 characters long'],
-  },
-  name: {
-    type: String,
-    required: [true, 'Name is required'],
-    trim: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
@@ -39,20 +58,24 @@ userSchema.pre('save', async function (next) {
   
   try {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    const hashedPassword = await bcrypt.hash(this.password as string, salt);
+    this.password = hashedPassword;
     next();
   } catch (error) {
-    if (error instanceof Error) {
-      next(error);
-    } else {
-      next(new Error('An error occurred while hashing the password'));
-    }
+    next(error as Error);
   }
 });
 
-// Method to compare password
-userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
+// Add any instance methods here
+userSchema.methods.toJSON = function() {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
 };
 
-export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema); 
+// Add any static methods here
+userSchema.statics.findByEmail = function(email: string) {
+  return this.findOne({ email: email.toLowerCase() });
+};
+
+export const User = models.User || model<IUser>('User', userSchema); 

@@ -21,12 +21,12 @@ export default function ContactPage() {
                 <dt><span className="sr-only">Email</span></dt>
                 <dd className="flex">
                   <EnvelopeIcon className="h-6 w-6 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                  <span className="ml-3 text-gray-900">contact@gaiathon.org</span>
+                  <span className="ml-3 text-gray-900">info@edenwayfoundation.com</span>
                 </dd>
                 <dt><span className="sr-only">Phone number</span></dt>
                 <dd className="flex">
                   <PhoneIcon className="h-6 w-6 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                  <span className="ml-3 text-gray-900">+233 (0) 302 123 456</span>
+                  <span className="ml-3 text-gray-900">+233 (0) 550 22 44 22</span>
                 </dd>
               </dl>
             </div>
