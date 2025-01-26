@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
-import { Team } from '@/lib/db/models/Team';
-import { User } from '@/lib/db/models/User';
-import { connectDB } from '@/lib/mongodb';
-import { ITeam, ITeamMember } from '@/types/models';
+import { Team } from '../db/models/Team';
+import { User } from '../db/models/User';
+import { connectDB } from '../mongodb';
+import { ITeam, ITeamMember } from '../../types/models';
 
 export class TeamService {
   static async createTeam(

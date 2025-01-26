@@ -1,5 +1,14 @@
-import { Schema, model, models } from 'mongoose';
-import { ITeam } from '@/types/models';
+import { Schema, model, Types, Document, Model } from 'mongoose';
+import { ITeam, ITeamMember } from '../../../types/models';
+
+interface ITeamDocument extends ITeam, Document {
+  isMember: (userId: string) => boolean;
+  isLeader: (userId: string) => boolean;
+}
+
+interface ITeamModel extends Model<ITeamDocument> {
+  findByMember: (userId: string) => Promise<ITeamDocument[]>;
+}
 
 const teamMemberSchema = new Schema({
   user: {
@@ -127,7 +136,7 @@ const documentSchema = new Schema({
   }],
 });
 
-const teamSchema = new Schema<ITeam>(
+const teamSchema = new Schema<ITeamDocument>(
   {
     name: {
       type: String,
@@ -149,7 +158,7 @@ const teamSchema = new Schema<ITeam>(
     activity: [{
       type: {
         type: String,
-        enum: ['member', 'project', 'document', 'progress'],
+        enum: ['progress', 'member', 'project', 'document', 'message'],
         required: true,
       },
       action: {
@@ -291,17 +300,24 @@ teamSchema.index({ 'members.user': 1 });
 teamSchema.index({ leader: 1 });
 
 // Add instance methods
-teamSchema.methods.isMember = function(userId: string) {
-  return this.members.some((member: any) => member.user.toString() === userId);
+teamSchema.methods.isMember = function(userId: string): boolean {
+  return this.members.some((member: ITeamMember) => 
+    member.user.toString() === userId || this.leader.toString() === userId
+  );
 };
 
-teamSchema.methods.isLeader = function(userId: string) {
+teamSchema.methods.isLeader = function(userId: string): boolean {
   return this.leader.toString() === userId;
 };
 
 // Add static methods
-teamSchema.statics.findByMember = function(userId: string) {
-  return this.find({ 'members.user': userId });
+teamSchema.statics.findByMember = function(userId: string): Promise<ITeamDocument[]> {
+  return this.find({ 
+    $or: [
+      { 'members.user': new Types.ObjectId(userId) },
+      { leader: new Types.ObjectId(userId) }
+    ]
+  });
 };
 
-export const Team = models.Team || model<ITeam>('Team', teamSchema); 
+export const Team = model<ITeamDocument, ITeamModel>('Team', teamSchema); 

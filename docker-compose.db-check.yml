@@ -1,0 +1,24 @@
+services:
+  db-check:
+    build:
+      context: .
+      target: deps
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - MONGODB_URI=${MONGODB_URI}
+      - TS_NODE_PROJECT=scripts/tests/tsconfig.json
+    command: >
+      sh -c "
+        echo 'Waiting for 5 seconds before checking database...' &&
+        sleep 5 &&
+        npm run check:db
+      "
+    networks:
+      - gaiathon-network
+
+networks:
+  gaiathon-network:
+    driver: bridge 

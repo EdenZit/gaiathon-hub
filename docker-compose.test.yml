@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  test:
+    build:
+      context: .
+      target: deps
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - MONGODB_URI=${MONGODB_URI}
+      - NEXTAUTH_SECRET=test_secret
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    command: >
+      sh -c "
+        echo 'Waiting for Redis...' &&
+        sleep 5 &&
+        npm run test:data
+      "
+    networks:
+      - gaiathon-network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - gaiathon-network
+
+volumes:
+  redis_data:
+
+networks:
+  gaiathon-network:
+    driver: bridge 

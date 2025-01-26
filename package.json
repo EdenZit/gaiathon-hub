@@ -25,7 +25,9 @@
     "agent:pages": "ts-node scripts/composer/agent.ts pages",
     "agent:all": "ts-node scripts/composer/agent.ts all",
     "db:clean": "ts-node --project scripts/tsconfig.json scripts/cleanDatabase.ts",
-    "project:reorganize": "ts-node --project scripts/tsconfig.json scripts/reorganizeProject.ts"
+    "project:reorganize": "ts-node --project scripts/tsconfig.json scripts/reorganizeProject.ts",
+    "test:data": "TS_NODE_PROJECT=scripts/tests/tsconfig.json ts-node scripts/tests/testDataLayer.ts",
+    "check:db": "TS_NODE_PROJECT=scripts/tests/tsconfig.json ts-node scripts/tests/checkMongoConnection.ts"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
@@ -34,7 +36,9 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
+    "emoji-picker-react": "^4.12.0",
     "ioredis": "^5.4.2",
     "jose": "^5.2.0",
     "lucide-react": "^0.471.2",
@@ -51,6 +55,7 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
     "tailwind-merge": "^2.6.0",
+    "tsconfig-paths": "^4.2.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

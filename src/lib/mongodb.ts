@@ -1,25 +1,25 @@
-import mongoose from 'mongoose';
+import mongoose, { Connection } from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-interface MongooseCache {
-  conn: typeof mongoose | null;
+interface MongooseConnection {
+  conn: Connection | null;
   promise: Promise<typeof mongoose> | null;
 }
 
 declare global {
-  var mongoose: MongooseCache | undefined;
+  var mongoose: MongooseConnection | undefined;
 }
-
-let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
-  global.mongoose = cached;
+  global.mongoose = { conn: null, promise: null };
 }
+
+const cached = global.mongoose!;
 
 export async function connectDB() {
   if (cached.conn) {
@@ -28,10 +28,15 @@ export async function connectDB() {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
+      bufferCommands: true,
+      maxPoolSize: 10,
+      minPoolSize: 5,
+      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 5000,
+      family: 4, // Use IPv4, skip trying IPv6
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
     });
   }
@@ -47,9 +52,25 @@ export async function connectDB() {
 }
 
 export async function disconnectDB() {
-  if (cached.conn) {
+  try {
     await mongoose.disconnect();
     cached.conn = null;
     cached.promise = null;
+  } catch (e) {
+    console.error('Error disconnecting from MongoDB:', e);
+    throw e;
   }
-} 
+}
+
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received. Closing MongoDB connection...');
+  await disconnectDB();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received. Closing MongoDB connection...');
+  await disconnectDB();
+  process.exit(0);
+}); 

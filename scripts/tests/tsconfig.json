@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": false,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "../../dist/scripts/tests",
+    "baseUrl": ".",
+    "typeRoots": [
+      "../../node_modules/@types"
+    ],
+    "types": ["node", "mongoose", "jest"]
+  },
+  "include": [
+    "./**/*.ts",
+    "../../src/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+} 

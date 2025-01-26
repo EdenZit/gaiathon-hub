@@ -1,6 +1,6 @@
 import { Schema, model, models } from 'mongoose';
-import { hash } from 'bcryptjs';
-import { IUser } from '@/types/models';
+import bcrypt from 'bcryptjs';
+import { IUser } from '../../../types/models';
 
 const userSchema = new Schema<IUser>(
   {
@@ -57,7 +57,9 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   
   try {
-    this.password = await hash(this.password, 12);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(this.password as string, salt);
+    this.password = hashedPassword;
     next();
   } catch (error) {
     next(error as Error);
