@@ -1,4 +1,4 @@
-import { RegisterForm } from '@/components/auth/RegisterForm';
+import { RegisterForm } from '@/components/features/auth/RegisterForm';
 
 export default function RegisterPage() {
   return (
@@ -9,9 +9,9 @@ export default function RegisterPage() {
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Already have an account?{' '}
+            Or{' '}
             <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-              Sign in
+              sign in to existing account
             </a>
           </p>
         </div>

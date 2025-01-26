@@ -12,12 +12,12 @@ import {
   BellIcon,
   UserPlusIcon
 } from '@heroicons/react/24/outline';
-import DocumentManagement from '@/components/team-workspace/features/DocumentManagement';
-import TeamChat from '@/components/team-workspace/features/TeamChat';
-import ProjectTimeline from '@/components/team-workspace/features/ProjectTimeline';
-import ProgressTracking from '@/components/team-workspace/features/ProgressTracking';
-import TeamManagement from '@/components/team-workspace/features/TeamManagement';
-import ActivityFeed from '@/components/team-workspace/features/ActivityFeed';
+import DocumentManagement from '@/components/features/teams/features/DocumentManagement';
+import TeamChat from '@/components/features/teams/features/TeamChat';
+import ProjectTimeline from '@/components/features/teams/features/ProjectTimeline';
+import ProgressTracking from '@/components/features/teams/features/ProgressTracking';
+import TeamManagement from '@/components/features/teams/features/TeamManagement';
+import ActivityFeed from '@/components/features/teams/features/ActivityFeed';
 
 interface Tab {
   name: string;
@@ -50,7 +50,7 @@ export default function TeamWorkspacePage() {
 
     const fetchTeam = async () => {
       try {
-        const response = await fetch('/api/team/current');
+        const response = await fetch('/api/teams/current');
         if (response.ok) {
           const data = await response.json();
           setTeamId(data.team._id);
