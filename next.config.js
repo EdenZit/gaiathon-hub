@@ -2,15 +2,18 @@
 const nextConfig = {
   output: 'standalone',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-        pathname: '/**',
-      },
-    ],
+    domains: ['localhost'],
     unoptimized: process.env.NODE_ENV === 'development',
+  },
+  webpack: (config) => {
+    config.watchOptions = {
+      poll: 1000,
+      aggregateTimeout: 300,
+    };
+    return config;
+  },
+  experimental: {
+    optimizeCss: true,
   },
 }
 
