@@ -8,6 +8,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        primary: {
+          DEFAULT: '#0F172A', // Navy
+          foreground: '#FFFFFF',
+        },
+        secondary: {
+          DEFAULT: '#64748B', // Slate
+          foreground: '#FFFFFF',
+        },
+        accent: {
+          DEFAULT: '#F1F5F9', // Light gray
+          foreground: '#0F172A',
+        },
+        background: '#FFFFFF',
+        input: '#E2E8F0',
         navy: {
           50: '#f0f3f8',
           100: '#d9e1ed',
