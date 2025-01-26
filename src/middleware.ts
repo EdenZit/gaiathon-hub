@@ -16,7 +16,14 @@ export default withAuth(
   }
 );
 
-// Protect all routes under /dashboard and /api/user
+// Protect routes
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/user/:path*'],
+  matcher: [
+    '/dashboard/:path*',
+    '/api/user/:path*',
+    '/api/users/:path*',
+    '/api/teams/:path*',
+    '/api/integrations/:path*',
+    '/resources/team-workspace/:path*'
+  ],
 }; 
