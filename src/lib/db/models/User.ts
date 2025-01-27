@@ -73,6 +73,16 @@ userSchema.methods.toJSON = function() {
   return obj;
 };
 
+// Add comparePassword method
+userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
+};
+
 // Add any static methods here
 userSchema.statics.findByEmail = function(email: string) {
   return this.findOne({ email: email.toLowerCase() });

@@ -17,16 +17,28 @@ interface UserProfileData {
   lastName: string;
   email: string;
   institution: string;
-  department: string;
+  department: string | null;
+  location: string | null;
+  gaiaClubName: string;
+  gaiaClubRole: string;
+  teamJoiningPreference: 'invite' | 'request';
+  contactInfo: string | null;
+  bio: string | null;
+  phoneNumber: string | null;
+  techSkills: TechSkills;
   fieldOfStudy: string;
   yearOfStudy: string;
-  phoneNumber: string;
   country: string;
-  techSkills: TechSkills;
   previousHackathonExperience: string;
   githubUrl?: string;
   personalWebsite?: string;
   linkedinUrl?: string;
+}
+
+interface PasswordFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 const initialFormData: UserProfileData = {
@@ -34,11 +46,14 @@ const initialFormData: UserProfileData = {
   lastName: '',
   email: '',
   institution: '',
-  department: '',
-  fieldOfStudy: '',
-  yearOfStudy: '',
-  phoneNumber: '',
-  country: '',
+  department: null,
+  location: null,
+  gaiaClubName: '',
+  gaiaClubRole: '',
+  teamJoiningPreference: 'invite',
+  contactInfo: null,
+  bio: null,
+  phoneNumber: null,
   techSkills: {
     coding: false,
     remoteSensing: false,
@@ -46,6 +61,9 @@ const initialFormData: UserProfileData = {
     iot: false,
     other: '',
   },
+  fieldOfStudy: '',
+  yearOfStudy: '',
+  country: '',
   previousHackathonExperience: '',
   githubUrl: '',
   personalWebsite: '',
@@ -53,38 +71,90 @@ const initialFormData: UserProfileData = {
 };
 
 export default function UserProfile() {
-  const { data: session, update } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState<UserProfileData>(initialFormData);
+  const { data: session, update } = useSession();
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState<PasswordFormData>({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch('/api/user/profile');
-        if (!response.ok) throw new Error('Failed to fetch profile');
-        const userData = await response.json();
-        setFormData(prev => ({
-          ...initialFormData,
-          ...userData,
-          techSkills: {
-            ...initialFormData.techSkills,
-            ...(userData.techSkills || {}),
-          },
-        }));
-      } catch (error) {
-        console.error('Error loading profile:', error);
-        toast.error('Failed to load profile');
+  const fetchProfile = async () => {
+    if (!session?.user?.email) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/users/profile', {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile');
       }
-    };
+      
+      const userData = await response.json();
+      console.log('Fetched user data:', userData);
+      
+      if (!userData) {
+        throw new Error('No user data received');
+      }
 
-    if (session?.user?.email) {
-      fetchProfile();
+      // Update form data with fetched user data
+      setFormData({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        institution: userData.institution || '',
+        department: userData.department,
+        location: userData.location,
+        gaiaClubName: userData.gaiaClubName || '',
+        gaiaClubRole: userData.gaiaClubRole || '',
+        teamJoiningPreference: userData.teamJoiningPreference || 'invite',
+        contactInfo: userData.contactInfo,
+        bio: userData.bio,
+        phoneNumber: userData.phoneNumber,
+        techSkills: {
+          coding: userData.techSkills?.coding || false,
+          remoteSensing: userData.techSkills?.remoteSensing || false,
+          gis: userData.techSkills?.gis || false,
+          iot: userData.techSkills?.iot || false,
+          other: userData.techSkills?.other || '',
+        },
+        fieldOfStudy: userData.fieldOfStudy || '',
+        yearOfStudy: userData.yearOfStudy || '',
+        country: userData.country || '',
+        previousHackathonExperience: userData.previousHackathonExperience || '',
+        githubUrl: userData.githubUrl || '',
+        personalWebsite: userData.personalWebsite || '',
+        linkedinUrl: userData.linkedinUrl || '',
+      });
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      toast.error('Failed to load profile');
+    } finally {
+      setIsLoading(false);
     }
-  }, [session]);
+  };
+
+  // Fetch profile data when component mounts or session changes
+  useEffect(() => {
+    console.log('UserProfile: Fetching profile data...');
+    fetchProfile();
+  }, [session?.user?.email]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
+    if (!isEditMode) return;
     const { name, value, type } = e.target as HTMLInputElement;
     
     if (name.startsWith('techSkills.')) {
@@ -103,303 +173,558 @@ export default function UserProfile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isEditMode) {
+      setIsEditMode(true);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/user/profile', {
+      const apiData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        institution: formData.institution.trim(),
+        department: formData.department?.trim() || null,
+        location: formData.location?.trim() || null,
+        gaiaClubName: formData.gaiaClubName.trim(),
+        gaiaClubRole: formData.gaiaClubRole.trim(),
+        teamJoiningPreference: formData.teamJoiningPreference,
+        contactInfo: formData.contactInfo?.trim() || null,
+        bio: formData.bio?.trim() || null,
+        phoneNumber: formData.phoneNumber?.trim() || null,
+        fieldOfStudy: formData.fieldOfStudy.trim(),
+        yearOfStudy: formData.yearOfStudy,
+        country: formData.country.trim(),
+        previousHackathonExperience: formData.previousHackathonExperience.trim(),
+        githubUrl: formData.githubUrl?.trim() || '',
+        personalWebsite: formData.personalWebsite?.trim() || '',
+        linkedinUrl: formData.linkedinUrl?.trim() || '',
+        techSkills: formData.techSkills
+      };
+
+      console.log('Sending profile update data:', apiData);
+
+      const response = await fetch('/api/users/profile', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+        credentials: 'include',
+        body: JSON.stringify(apiData),
       });
 
-      if (!response.ok) throw new Error('Failed to update profile');
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.details) {
+          const errorMessages = errorData.details
+            .map((err: { field: string; message: string }) => `${err.field}: ${err.message}`)
+            .join(', ');
+          throw new Error(errorMessages);
+        }
+        throw new Error(errorData.error || 'Failed to update profile');
+      }
+
+      const result = await response.json();
+      console.log('Profile update response:', result);
+
+      if (result.user) {
+        setFormData(prevData => ({
+          ...prevData,
+          ...result.user,
+          techSkills: {
+            ...prevData.techSkills,
+            ...(result.user.techSkills || {}),
+          },
+        }));
+      }
 
       await update();
+      await fetchProfile();
+      setIsEditMode(false);
       toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters long');
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const response = await fetch('/api/users/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to change password');
+      }
+
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+
+      toast.success('Password changed successfully');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const getInputProps = (name: keyof UserProfileData, required: boolean = false) => {
+    const value = formData[name];
+    return {
+      name,
+      value: typeof value === 'string' ? value : '',
+      onChange: handleInputChange,
+      required,
+      disabled: !isEditMode,
+      className: `mt-1 block w-full rounded-md border ${
+        isEditMode ? 'border-gray-300' : 'border-transparent bg-gray-50'
+      } px-3 py-2`
+    };
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
-      
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Personal Information</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium">First Name</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium">Last Name</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="institution" className="block text-sm font-medium">Institution</label>
-          <input
-            type="text"
-            id="institution"
-            name="institution"
-            value={formData.institution}
-            onChange={handleInputChange}
-            required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="department" className="block text-sm font-medium">Department/Faculty</label>
-            <input
-              type="text"
-              id="department"
-              name="department"
-              value={formData.department}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="fieldOfStudy" className="block text-sm font-medium">Major/Field of Study</label>
-            <input
-              type="text"
-              id="fieldOfStudy"
-              name="fieldOfStudy"
-              value={formData.fieldOfStudy}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="yearOfStudy" className="block text-sm font-medium">Year of Study</label>
-            <select
-              id="yearOfStudy"
-              name="yearOfStudy"
-              value={formData.yearOfStudy}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            >
-              <option value="">Select Year</option>
-              <option value="1">1st Year</option>
-              <option value="2">2nd Year</option>
-              <option value="3">3rd Year</option>
-              <option value="4">4th Year</option>
-              <option value="5">5th Year</option>
-              <option value="graduate">Graduate Student</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium">Phone Number</label>
-            <input
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="country" className="block text-sm font-medium">Country</label>
-          <input
-            type="text"
-            id="country"
-            name="country"
-            value={formData.country}
-            onChange={handleInputChange}
-            required
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Technical Skills</h3>
-        
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="coding"
-              name="techSkills.coding"
-              checked={formData.techSkills.coding}
-              onChange={handleInputChange}
-              className="rounded border-gray-300"
-            />
-            <label htmlFor="coding">Coding</label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="remoteSensing"
-              name="techSkills.remoteSensing"
-              checked={formData.techSkills.remoteSensing}
-              onChange={handleInputChange}
-              className="rounded border-gray-300"
-            />
-            <label htmlFor="remoteSensing">Remote Sensing</label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="gis"
-              name="techSkills.gis"
-              checked={formData.techSkills.gis}
-              onChange={handleInputChange}
-              className="rounded border-gray-300"
-            />
-            <label htmlFor="gis">GIS</label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="iot"
-              name="techSkills.iot"
-              checked={formData.techSkills.iot}
-              onChange={handleInputChange}
-              className="rounded border-gray-300"
-            />
-            <label htmlFor="iot">IoT</label>
-          </div>
-          
-          <div>
-            <label htmlFor="otherSkills" className="block text-sm font-medium">Other Skills</label>
-            <input
-              type="text"
-              id="otherSkills"
-              name="techSkills.other"
-              value={formData.techSkills.other || ''}
-              onChange={handleInputChange}
-              placeholder="Enter other technical skills"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Experience & Links</h3>
-        
-        <div>
-          <label htmlFor="previousHackathonExperience" className="block text-sm font-medium">
-            Previous Hackathon Experience
-          </label>
-          <textarea
-            id="previousHackathonExperience"
-            name="previousHackathonExperience"
-            value={formData.previousHackathonExperience}
-            onChange={handleInputChange}
-            rows={3}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-          />
+    <div className="space-y-8 max-w-2xl mx-auto p-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Profile Information</h2>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`px-4 py-2 rounded-md text-white font-medium
+              ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+            `}
+          >
+            {isLoading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Edit Profile'}
+          </button>
         </div>
 
         <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Personal Information</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                {...getInputProps('firstName', true)}
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                {...getInputProps('lastName', true)}
+              />
+            </div>
+          </div>
+
           <div>
-            <label htmlFor="githubUrl" className="block text-sm font-medium">GitHub Profile URL</label>
+            <label htmlFor="email" className="block text-sm font-medium">Email</label>
             <input
-              type="url"
-              id="githubUrl"
-              name="githubUrl"
-              value={formData.githubUrl || ''}
-              onChange={handleInputChange}
-              placeholder="https://github.com/username"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              type="email"
+              id="email"
+              value={formData.email}
+              readOnly
+              className="mt-1 block w-full rounded-md border-transparent bg-gray-50 px-3 py-2"
             />
           </div>
 
           <div>
-            <label htmlFor="personalWebsite" className="block text-sm font-medium">Personal Website</label>
+            <label htmlFor="institution" className="block text-sm font-medium">Institution</label>
             <input
-              type="url"
-              id="personalWebsite"
-              name="personalWebsite"
-              value={formData.personalWebsite || ''}
-              onChange={handleInputChange}
-              placeholder="https://example.com"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              type="text"
+              id="institution"
+              {...getInputProps('institution', true)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="department" className="block text-sm font-medium">Department/Faculty</label>
+              <input
+                type="text"
+                id="department"
+                {...getInputProps('department')}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fieldOfStudy" className="block text-sm font-medium">Major/Field of Study</label>
+              <input
+                type="text"
+                id="fieldOfStudy"
+                {...getInputProps('fieldOfStudy', true)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="yearOfStudy" className="block text-sm font-medium">Year of Study</label>
+              <select
+                id="yearOfStudy"
+                {...getInputProps('yearOfStudy', true)}
+              >
+                <option value="">Select Year</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+                <option value="5">5th Year</option>
+                <option value="graduate">Graduate Student</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium">Phone Number (Optional)</label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                {...getInputProps('phoneNumber')}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">GAIA Club Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="gaiaClubName" className="block text-sm font-medium">GAIA Club Name</label>
+              <input
+                type="text"
+                id="gaiaClubName"
+                {...getInputProps('gaiaClubName', true)}
+                placeholder="Enter your GAIA Club name"
+              />
+            </div>
+            <div>
+              <label htmlFor="gaiaClubRole" className="block text-sm font-medium">Your Role in GAIA Club</label>
+              <input
+                type="text"
+                id="gaiaClubRole"
+                {...getInputProps('gaiaClubRole', true)}
+                placeholder="e.g., Member, Leader, Secretary"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Team Preferences</h3>
+          <div>
+            <label className="block text-sm font-medium mb-2">How would you like to join teams?</label>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="invite"
+                  name="teamJoiningPreference"
+                  value="invite"
+                  checked={formData.teamJoiningPreference === 'invite'}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="invite" className="ml-2 block text-sm text-gray-700">
+                  Wait for team leader invitations
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="request"
+                  name="teamJoiningPreference"
+                  value="request"
+                  checked={formData.teamJoiningPreference === 'request'}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="request" className="ml-2 block text-sm text-gray-700">
+                  Request to join teams
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Location Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="country" className="block text-sm font-medium">Country</label>
+              <input
+                type="text"
+                id="country"
+                {...getInputProps('country', true)}
+                placeholder="Enter your country"
+              />
+            </div>
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium">City/Region (Optional)</label>
+              <input
+                type="text"
+                id="location"
+                {...getInputProps('location')}
+                placeholder="Enter your city or region"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Technical Skills</h3>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="coding"
+                name="techSkills.coding"
+                checked={formData.techSkills.coding}
+                onChange={handleInputChange}
+                disabled={!isEditMode}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="coding">Coding</label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="remoteSensing"
+                name="techSkills.remoteSensing"
+                checked={formData.techSkills.remoteSensing}
+                onChange={handleInputChange}
+                disabled={!isEditMode}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="remoteSensing">Remote Sensing</label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="gis"
+                name="techSkills.gis"
+                checked={formData.techSkills.gis}
+                onChange={handleInputChange}
+                disabled={!isEditMode}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="gis">GIS</label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="iot"
+                name="techSkills.iot"
+                checked={formData.techSkills.iot}
+                onChange={handleInputChange}
+                disabled={!isEditMode}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="iot">IoT</label>
+            </div>
+            
+            <div>
+              <label htmlFor="otherSkills" className="block text-sm font-medium">Other Skills</label>
+              <input
+                type="text"
+                id="otherSkills"
+                name="techSkills.other"
+                value={formData.techSkills.other || ''}
+                onChange={handleInputChange}
+                disabled={!isEditMode}
+                placeholder="Enter other technical skills"
+                className={`mt-1 block w-full rounded-md border ${
+                  isEditMode ? 'border-gray-300' : 'border-transparent bg-gray-50'
+                } px-3 py-2`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Experience & Links</h3>
+          
+          <div>
+            <label htmlFor="previousHackathonExperience" className="block text-sm font-medium">
+              Previous Hackathon Experience (Optional)
+            </label>
+            <textarea
+              id="previousHackathonExperience"
+              {...getInputProps('previousHackathonExperience')}
+              rows={3}
+              placeholder="Share your previous hackathon experiences..."
+            />
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="githubUrl" className="block text-sm font-medium">GitHub Profile URL (Optional)</label>
+              <input
+                type="url"
+                id="githubUrl"
+                {...getInputProps('githubUrl')}
+                placeholder="https://github.com/username"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="personalWebsite" className="block text-sm font-medium">Personal Website (Optional)</label>
+              <input
+                type="url"
+                id="personalWebsite"
+                {...getInputProps('personalWebsite')}
+                placeholder="https://example.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="linkedinUrl" className="block text-sm font-medium">LinkedIn Profile URL (Optional)</label>
+              <input
+                type="url"
+                id="linkedinUrl"
+                {...getInputProps('linkedinUrl')}
+                placeholder="https://linkedin.com/in/username"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Additional Information</h3>
+          <div>
+            <label htmlFor="bio" className="block text-sm font-medium">Bio</label>
+            <textarea
+              id="bio"
+              {...getInputProps('bio')}
+              rows={3}
+              placeholder="Tell us about yourself..."
             />
           </div>
 
           <div>
-            <label htmlFor="linkedinUrl" className="block text-sm font-medium">LinkedIn Profile URL</label>
-            <input
-              type="url"
-              id="linkedinUrl"
-              name="linkedinUrl"
-              value={formData.linkedinUrl || ''}
-              onChange={handleInputChange}
-              placeholder="https://linkedin.com/in/username"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+            <label htmlFor="contactInfo" className="block text-sm font-medium">Additional Contact Information</label>
+            <textarea
+              id="contactInfo"
+              {...getInputProps('contactInfo')}
+              rows={2}
+              placeholder="Any additional contact information..."
             />
           </div>
         </div>
-      </div>
+      </form>
 
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className={`px-4 py-2 rounded-md text-white font-medium
-            ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-          `}
-        >
-          {isLoading ? 'Saving...' : 'Save Changes'}
-        </button>
+      <div className="mt-10 pt-10 border-t border-gray-200">
+        <form onSubmit={handlePasswordChange} className="space-y-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Change Password</h2>
+            <button
+              type="submit"
+              disabled={isChangingPassword}
+              className={`px-4 py-2 rounded-md text-white font-medium
+                ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+              `}
+            >
+              {isChangingPassword ? 'Changing...' : 'Change Password'}
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="currentPassword" className="block text-sm font-medium">
+                Current Password
+              </label>
+              <input
+                type="password"
+                id="currentPassword"
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm(prev => ({
+                  ...prev,
+                  currentPassword: e.target.value
+                }))}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium">
+                New Password
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm(prev => ({
+                  ...prev,
+                  newPassword: e.target.value
+                }))}
+                required
+                minLength={8}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm(prev => ({
+                  ...prev,
+                  confirmPassword: e.target.value
+                }))}
+                required
+                minLength={8}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+              />
+            </div>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   );
 } 

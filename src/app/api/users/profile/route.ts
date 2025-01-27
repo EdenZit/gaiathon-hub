@@ -8,15 +8,32 @@ import mongoose from 'mongoose';
 
 // Schema for profile update validation
 const profileSchema = z.object({
-  fullName: z.string().min(1, 'Full name is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email(),
   institution: z.string().min(1, 'Institution is required'),
-  department: z.string().optional().nullable(),
-  location: z.string().optional().nullable(),
+  department: z.string().nullable(),
+  location: z.string().nullable(),
   gaiaClubName: z.string().min(1, 'GAIA Club name is required'),
   gaiaClubRole: z.string().min(1, 'GAIA Club role is required'),
   teamJoiningPreference: z.enum(['invite', 'request']),
-  contactInfo: z.string().optional().nullable(),
-  bio: z.string().optional().nullable(),
+  contactInfo: z.string().nullable(),
+  bio: z.string().nullable(),
+  phoneNumber: z.string().nullable(),
+  fieldOfStudy: z.string().min(1, 'Field of study is required'),
+  yearOfStudy: z.string().min(1, 'Year of study is required'),
+  country: z.string().min(1, 'Country is required'),
+  previousHackathonExperience: z.string(),
+  githubUrl: z.string().optional(),
+  personalWebsite: z.string().optional(),
+  linkedinUrl: z.string().optional(),
+  techSkills: z.object({
+    coding: z.boolean(),
+    remoteSensing: z.boolean(),
+    gis: z.boolean(),
+    iot: z.boolean(),
+    other: z.string().optional()
+  }).optional()
 });
 
 export async function GET() {
@@ -39,16 +56,34 @@ export async function GET() {
       );
     }
 
+    // Return all user fields
     return NextResponse.json({
-      fullName: user.fullName || '',
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email,
       institution: user.institution || '',
-      department: user.department || '',
-      location: user.location || '',
+      department: user.department || null,
+      location: user.location || null,
       gaiaClubName: user.gaiaClubName || '',
       gaiaClubRole: user.gaiaClubRole || '',
       teamJoiningPreference: user.teamJoiningPreference || 'invite',
-      contactInfo: user.contactInfo || '',
-      bio: user.bio || '',
+      contactInfo: user.contactInfo || null,
+      bio: user.bio || null,
+      phoneNumber: user.phoneNumber || null,
+      fieldOfStudy: user.fieldOfStudy || '',
+      yearOfStudy: user.yearOfStudy || '',
+      country: user.country || '',
+      previousHackathonExperience: user.previousHackathonExperience || '',
+      githubUrl: user.githubUrl || '',
+      personalWebsite: user.personalWebsite || '',
+      linkedinUrl: user.linkedinUrl || '',
+      techSkills: user.techSkills || {
+        coding: false,
+        remoteSensing: false,
+        gis: false,
+        iot: false,
+        other: '',
+      },
       profileCompleted: user.profileCompleted,
     });
   } catch (error) {
@@ -75,45 +110,99 @@ export async function PUT(request: Request) {
     const body = await request.json();
     console.log('Received profile update data:', body);
 
-    const validatedData = profileSchema.parse(body);
-    console.log('Validated data:', validatedData);
+    try {
+      const validatedData = profileSchema.parse(body);
+      console.log('Validated data:', validatedData);
 
-    // First find the user
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+      // Update the user with findOneAndUpdate
+      const updatedUser = await User.findOneAndUpdate(
+        { email: session.user.email },
+        {
+          $set: {
+            firstName: validatedData.firstName,
+            lastName: validatedData.lastName,
+            fullName: `${validatedData.firstName} ${validatedData.lastName}`,
+            institution: validatedData.institution,
+            department: validatedData.department,
+            location: validatedData.location,
+            gaiaClubName: validatedData.gaiaClubName,
+            gaiaClubRole: validatedData.gaiaClubRole,
+            teamJoiningPreference: validatedData.teamJoiningPreference,
+            contactInfo: validatedData.contactInfo,
+            bio: validatedData.bio,
+            phoneNumber: validatedData.phoneNumber,
+            fieldOfStudy: validatedData.fieldOfStudy,
+            yearOfStudy: validatedData.yearOfStudy,
+            country: validatedData.country,
+            previousHackathonExperience: validatedData.previousHackathonExperience,
+            githubUrl: validatedData.githubUrl,
+            personalWebsite: validatedData.personalWebsite,
+            linkedinUrl: validatedData.linkedinUrl,
+            techSkills: validatedData.techSkills || {
+              coding: false,
+              remoteSensing: false,
+              gis: false,
+              iot: false,
+              other: '',
+            },
+          }
+        },
+        {
+          new: true, // Return the updated document
+          runValidators: true, // Run schema validators
+          upsert: false, // Don't create if not exists
+        }
       );
+
+      if (!updatedUser) {
+        return NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        message: 'Profile updated successfully',
+        profileCompleted: updatedUser.profileCompleted,
+        user: {
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          email: updatedUser.email,
+          institution: updatedUser.institution,
+          department: updatedUser.department,
+          location: updatedUser.location,
+          gaiaClubName: updatedUser.gaiaClubName,
+          gaiaClubRole: updatedUser.gaiaClubRole,
+          teamJoiningPreference: updatedUser.teamJoiningPreference,
+          contactInfo: updatedUser.contactInfo,
+          bio: updatedUser.bio,
+          phoneNumber: updatedUser.phoneNumber,
+          fieldOfStudy: updatedUser.fieldOfStudy,
+          yearOfStudy: updatedUser.yearOfStudy,
+          country: updatedUser.country,
+          previousHackathonExperience: updatedUser.previousHackathonExperience,
+          githubUrl: updatedUser.githubUrl,
+          personalWebsite: updatedUser.personalWebsite,
+          linkedinUrl: updatedUser.linkedinUrl,
+          techSkills: updatedUser.techSkills,
+          profileCompleted: updatedUser.profileCompleted,
+        }
+      });
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const errors = validationError.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }));
+        return NextResponse.json(
+          { error: 'Validation failed', details: errors },
+          { status: 400 }
+        );
+      }
+      throw validationError;
     }
-
-    // Update user fields
-    user.fullName = validatedData.fullName;
-    user.institution = validatedData.institution;
-    user.department = validatedData.department || undefined;
-    user.location = validatedData.location || undefined;
-    user.gaiaClubName = validatedData.gaiaClubName;
-    user.gaiaClubRole = validatedData.gaiaClubRole;
-    user.teamJoiningPreference = validatedData.teamJoiningPreference;
-    user.contactInfo = validatedData.contactInfo || undefined;
-    user.bio = validatedData.bio || undefined;
-
-    // Save the user to trigger the pre-save hooks
-    await user.save();
-
-    return NextResponse.json({
-      message: 'Profile updated successfully',
-      profileCompleted: user.profileCompleted,
-    });
   } catch (error) {
     console.error('Error updating profile:', error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid profile data', details: error.errors },
-        { status: 400 }
-      );
-    }
 
     if (error instanceof mongoose.Error) {
       return NextResponse.json(

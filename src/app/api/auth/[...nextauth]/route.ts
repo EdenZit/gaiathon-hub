@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { connectDB } from '@/lib/db/connection';
+import { connectDB } from '@/lib/mongodb';
 import { User } from '@/lib/db/models/User';
 
 const handler = NextAuth({
@@ -16,24 +16,31 @@ const handler = NextAuth({
           throw new Error('Please enter an email and password');
         }
 
-        await connectDB();
+        try {
+          await connectDB();
 
-        const user = await User.findOne({ email: credentials.email });
-        if (!user) {
-          throw new Error('No user found with this email');
+          const user = await User.findOne({ email: credentials.email.toLowerCase() });
+          if (!user) {
+            throw new Error('Invalid email or password');
+          }
+
+          const isValid = await user.comparePassword(credentials.password);
+          if (!isValid) {
+            throw new Error('Invalid email or password');
+          }
+
+          const userObject = user.toObject();
+          return {
+            id: userObject._id.toString(),
+            email: userObject.email,
+            name: userObject.name,
+            firstName: userObject.firstName,
+            lastName: userObject.lastName,
+          };
+        } catch (error) {
+          console.error('Authentication error:', error);
+          throw error;
         }
-
-        const isValid = await user.comparePassword(credentials.password);
-        if (!isValid) {
-          throw new Error('Invalid password');
-        }
-
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          firstName: user.firstName,
-          name: `${user.firstName} ${user.lastName}`,
-        };
       },
     }),
   ],
@@ -41,13 +48,19 @@ const handler = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
         token.firstName = user.firstName;
+        token.lastName = user.lastName;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.firstName = token.firstName;
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.firstName = token.firstName;
+        session.user.lastName = token.lastName;
+      }
       return session;
     },
   },
@@ -57,7 +70,9 @@ const handler = NextAuth({
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  debug: process.env.NODE_ENV === 'development',
 });
 
 export { handler as GET, handler as POST }; 

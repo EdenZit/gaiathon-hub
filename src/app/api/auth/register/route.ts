@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { User } from '@/lib/db/models/User';
 import { z } from 'zod';
 
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const validatedData = registerSchema.parse(body);
 
     // Connect to database
-    await connectToDatabase();
+    await connectDB();
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: validatedData.email.toLowerCase() });
@@ -35,7 +35,8 @@ export async function POST(req: Request) {
     // Create new user
     const user = await User.create({
       email: validatedData.email.toLowerCase(),
-      password: validatedData.password, // Password will be hashed by the pre-save hook
+      password: validatedData.password,
+      name: validatedData.name,
       firstName,
       lastName,
     });
