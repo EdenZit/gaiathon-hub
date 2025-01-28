@@ -30,6 +30,7 @@ interface UserProfileData {
   githubUrl?: string;
   personalWebsite?: string;
   linkedinUrl?: string;
+  teamRole: 'leader' | 'member';
 }
 
 interface PasswordFormData {
@@ -62,6 +63,7 @@ const initialFormData: UserProfileData = {
   githubUrl: '',
   personalWebsite: '',
   linkedinUrl: '',
+  teamRole: 'member',
 };
 
 export default function UserProfile() {
@@ -127,6 +129,7 @@ export default function UserProfile() {
         githubUrl: userData.githubUrl || '',
         personalWebsite: userData.personalWebsite || '',
         linkedinUrl: userData.linkedinUrl || '',
+        teamRole: userData.teamRole || 'member',
       });
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -189,7 +192,8 @@ export default function UserProfile() {
         githubUrl: formData.githubUrl?.trim() || '',
         personalWebsite: formData.personalWebsite?.trim() || '',
         linkedinUrl: formData.linkedinUrl?.trim() || '',
-        techSkills: formData.techSkills
+        techSkills: formData.techSkills,
+        teamRole: formData.teamRole,
       };
 
       console.log('Sending profile update data:', apiData);
@@ -503,6 +507,45 @@ export default function UserProfile() {
                   isEditMode ? 'border-gray-300' : 'border-transparent bg-gray-50'
                 } px-3 py-2`}
               />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Team Role Preference</h3>
+          <div>
+            <label className="block text-sm font-medium mb-2">How would you like to participate in teams?</label>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="member"
+                  name="teamRole"
+                  value="member"
+                  checked={formData.teamRole === 'member'}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="member" className="ml-2 block text-sm text-gray-700">
+                  Join existing teams as a member
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="leader"
+                  name="teamRole"
+                  value="leader"
+                  checked={formData.teamRole === 'leader'}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="leader" className="ml-2 block text-sm text-gray-700">
+                  Create and lead teams
+                </label>
+              </div>
             </div>
           </div>
         </div>

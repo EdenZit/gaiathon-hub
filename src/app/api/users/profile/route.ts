@@ -24,6 +24,7 @@ const profileSchema = z.object({
   githubUrl: z.string().optional(),
   personalWebsite: z.string().optional(),
   linkedinUrl: z.string().optional(),
+  teamRole: z.enum(['leader', 'member']).default('member'),
   techSkills: z.object({
     coding: z.boolean(),
     remoteSensing: z.boolean(),
@@ -71,6 +72,7 @@ export async function GET() {
       githubUrl: user.githubUrl || '',
       personalWebsite: user.personalWebsite || '',
       linkedinUrl: user.linkedinUrl || '',
+      teamRole: user.teamRole || 'member',
       techSkills: user.techSkills || {
         coding: false,
         remoteSensing: false,
@@ -129,6 +131,7 @@ export async function PUT(request: Request) {
             githubUrl: validatedData.githubUrl,
             personalWebsite: validatedData.personalWebsite,
             linkedinUrl: validatedData.linkedinUrl,
+            teamRole: validatedData.teamRole,
             techSkills: validatedData.techSkills || {
               coding: false,
               remoteSensing: false,
@@ -172,6 +175,7 @@ export async function PUT(request: Request) {
           githubUrl: updatedUser.githubUrl,
           personalWebsite: updatedUser.personalWebsite,
           linkedinUrl: updatedUser.linkedinUrl,
+          teamRole: updatedUser.teamRole,
           techSkills: updatedUser.techSkills,
           profileCompleted: updatedUser.profileCompleted,
         }
