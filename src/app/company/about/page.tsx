@@ -55,9 +55,11 @@ export default function AboutPage() {
         <div className="relative px-4 sm:px-6 lg:px-8">
           <div className="text-lg max-w-prose mx-auto">
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">Our Mission</h2>
-            <p className="mt-8 text-xl text-gray-500 leading-8">
-              Edenway Foundation is a visionary organization committed to youth empowerment through the GEO-Africa Incubator/Accelerator (GAIA) initiative. Operating from Edenkro, a dynamic innovation hub in Ghana, the Foundation equips young minds with the skills and mindset needed to thrive in the ever-evolving world of technology. Through initiatives like GAIAthon, Edenway is transforming lives and shaping Africa's future—one innovation at a time.
-            </p>
+            <div className="mt-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-8 shadow-lg">
+              <p className="text-gray-600 leading-relaxed">
+                Edenway Foundation is a visionary organization committed to youth empowerment through the GEO-Africa Incubator/Accelerator (GAIA) initiative. Operating from Edenkro, a dynamic innovation hub in Ghana, the Foundation equips young minds with the skills and mindset needed to thrive in the ever-evolving world of technology. Through initiatives like GAIAthon, Edenway is transforming lives and shaping Africa's future—one innovation at a time.
+              </p>
+            </div>
           </div>
         </div>
       </div>

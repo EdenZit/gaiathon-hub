@@ -32,9 +32,22 @@ export function Features() {
           <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
             GAIAthon 2025 Overview
           </p>
-          <p className="mt-4 max-w-4xl text-xl text-gray-500 lg:mx-auto">
-            Edenway Foundation proudly presents GAIAthon '25, the second edition of its transformative innovation challenge, running from January to August 2025. Building on the success of GAIAthon '24, this incubation challenge invites universities across Africa to develop compelling solutions to address environmental challenges on the continent. In partnership with the GMES & Africa programme under the African Union Commission and supported by the European Commission, GAIAthon '25 leverages cutting-edge technologies, including Artificial Intelligence (AI), Internet of Things (IoT), and Earth Observation (EO), to foster innovation and collaboration for sustainable development.
-          </p>
+          <div className="mt-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-8 shadow-lg">
+            <div className="grid gap-8">
+              <div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-4">About the Challenge</h4>
+                <p className="text-gray-600 leading-relaxed">
+                  Edenway Foundation proudly presents GAIAthon '25, the second edition of its transformative innovation challenge, running from January to August 2025. Building on the success of GAIAthon '24, this incubation challenge invites universities across Africa to develop compelling solutions to address environmental challenges on the continent.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-4">Technology & Partnerships</h4>
+                <p className="text-gray-600 leading-relaxed">
+                  In partnership with the GMES & Africa programme under the African Union Commission and supported by the European Commission, GAIAthon '25 leverages cutting-edge technologies, including Artificial Intelligence (AI), Internet of Things (IoT), and Earth Observation (EO), to foster innovation and collaboration for sustainable development.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Winners Showcase */}
