@@ -76,16 +76,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  gaiaClubName: {
-    type: String,
-    required: [true, 'GAIA Club Name is required'],
-    trim: true,
-  },
-  gaiaClubRole: {
-    type: String,
-    required: [true, 'GAIA Club Role is required'],
-    trim: true,
-  },
   teamJoiningPreference: {
     type: String,
     enum: ['invite', 'request'],

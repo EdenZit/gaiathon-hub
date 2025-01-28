@@ -19,8 +19,6 @@ interface UserProfileData {
   institution: string;
   department: string | null;
   location: string | null;
-  gaiaClubName: string;
-  gaiaClubRole: string;
   teamJoiningPreference: 'invite' | 'request';
   contactInfo: string | null;
   bio: string | null;
@@ -48,8 +46,6 @@ const initialFormData: UserProfileData = {
   institution: '',
   department: null,
   location: null,
-  gaiaClubName: '',
-  gaiaClubRole: '',
   teamJoiningPreference: 'invite',
   contactInfo: null,
   bio: null,
@@ -116,8 +112,6 @@ export default function UserProfile() {
         institution: userData.institution || '',
         department: userData.department,
         location: userData.location,
-        gaiaClubName: userData.gaiaClubName || '',
-        gaiaClubRole: userData.gaiaClubRole || '',
         teamJoiningPreference: userData.teamJoiningPreference || 'invite',
         contactInfo: userData.contactInfo,
         bio: userData.bio,
@@ -188,8 +182,6 @@ export default function UserProfile() {
         institution: formData.institution.trim(),
         department: formData.department?.trim() || null,
         location: formData.location?.trim() || null,
-        gaiaClubName: formData.gaiaClubName.trim(),
-        gaiaClubRole: formData.gaiaClubRole.trim(),
         teamJoiningPreference: formData.teamJoiningPreference,
         contactInfo: formData.contactInfo?.trim() || null,
         bio: formData.bio?.trim() || null,
@@ -417,30 +409,6 @@ export default function UserProfile() {
                 type="tel"
                 id="phoneNumber"
                 {...getInputProps('phoneNumber')}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">GAIA Club Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="gaiaClubName" className="block text-sm font-medium">GAIA Club Name</label>
-              <input
-                type="text"
-                id="gaiaClubName"
-                {...getInputProps('gaiaClubName', true)}
-                placeholder="Enter your GAIA Club name"
-              />
-            </div>
-            <div>
-              <label htmlFor="gaiaClubRole" className="block text-sm font-medium">Your Role in GAIA Club</label>
-              <input
-                type="text"
-                id="gaiaClubRole"
-                {...getInputProps('gaiaClubRole', true)}
-                placeholder="e.g., Member, Leader, Secretary"
               />
             </div>
           </div>
