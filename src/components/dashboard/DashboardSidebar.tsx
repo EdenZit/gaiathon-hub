@@ -17,11 +17,6 @@ const navigation = [
     icon: UserCircleIcon,
   },
   {
-    name: 'Projects',
-    href: '/dashboard/projects',
-    icon: FolderIcon,
-  },
-  {
     name: 'Tools',
     href: '/dashboard/tools',
     icon: WrenchScrewdriverIcon,
