@@ -27,6 +27,8 @@ export interface IUser extends mongoose.Document {
     iot: boolean;
     other?: string;
   };
+  teamRole?: 'leader' | 'member';
+  teams?: mongoose.Types.ObjectId[];
   profileCompleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
   checkProfileCompletion(): boolean;
@@ -142,6 +144,15 @@ const userSchema = new mongoose.Schema({
       trim: true,
     },
   },
+  teamRole: {
+    type: String,
+    enum: ['leader', 'member'],
+    default: 'member',
+  },
+  teams: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+  }],
   profileCompleted: {
     type: Boolean,
     default: false,

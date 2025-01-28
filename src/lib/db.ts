@@ -6,16 +6,21 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-export async function connectToDatabase() {
-  try {
-    const opts = {
-      bufferCommands: false,
-    };
+let isConnected = false;
 
-    await mongoose.connect(MONGODB_URI!, opts);
-    return mongoose;
+export async function connectDB() {
+  if (isConnected) {
+    return;
+  }
+
+  try {
+    await mongoose.connect(MONGODB_URI!, {
+      bufferCommands: false,
+    });
+    isConnected = true;
+    console.log('Connected to MongoDB');
   } catch (error) {
-    console.error('Error connecting to database:', error);
+    console.error('Error connecting to MongoDB:', error);
     throw error;
   }
 } 

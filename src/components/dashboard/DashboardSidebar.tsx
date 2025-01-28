@@ -22,8 +22,8 @@ const navigation = [
     icon: WrenchScrewdriverIcon,
   },
   {
-    name: 'Collaboration',
-    href: '/dashboard/collaboration',
+    name: 'Team Workspace',
+    href: '/resources/team-workspace',
     icon: UserGroupIcon,
   },
 ];
