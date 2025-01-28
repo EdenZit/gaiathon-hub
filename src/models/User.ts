@@ -10,9 +10,6 @@ export interface IUser extends mongoose.Document {
   institution: string;
   department?: string;
   location?: string;
-  gaiaClubName: string;
-  gaiaClubRole: string;
-  teamJoiningPreference: 'invite' | 'request';
   contactInfo?: string;
   bio?: string;
   phoneNumber?: string;
@@ -30,6 +27,8 @@ export interface IUser extends mongoose.Document {
     iot: boolean;
     other?: string;
   };
+  teamRole?: 'leader' | 'member';
+  teams?: mongoose.Types.ObjectId[];
   profileCompleted: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
   checkProfileCompletion(): boolean;
@@ -75,21 +74,6 @@ const userSchema = new mongoose.Schema({
   location: {
     type: String,
     trim: true,
-  },
-  gaiaClubName: {
-    type: String,
-    required: [true, 'GAIA Club Name is required'],
-    trim: true,
-  },
-  gaiaClubRole: {
-    type: String,
-    required: [true, 'GAIA Club Role is required'],
-    trim: true,
-  },
-  teamJoiningPreference: {
-    type: String,
-    enum: ['invite', 'request'],
-    default: 'invite',
   },
   contactInfo: {
     type: String,
@@ -160,6 +144,15 @@ const userSchema = new mongoose.Schema({
       trim: true,
     },
   },
+  teamRole: {
+    type: String,
+    enum: ['leader', 'member'],
+    default: 'member',
+  },
+  teams: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+  }],
   profileCompleted: {
     type: Boolean,
     default: false,
@@ -207,8 +200,6 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
 userSchema.methods.checkProfileCompletion = function(): boolean {
   const requiredProfileFields = [
     'institution',
-    'gaiaClubName',
-    'gaiaClubRole',
     'fieldOfStudy',
     'yearOfStudy',
     'country'
@@ -234,8 +225,6 @@ userSchema.pre('findOneAndUpdate', function(next) {
     const doc = update.$set;
     const requiredProfileFields = [
       'institution',
-      'gaiaClubName',
-      'gaiaClubRole',
       'fieldOfStudy',
       'yearOfStudy',
       'country'

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { Types } from 'mongoose';
-import { Message } from '@/lib/db/models/Message';
-import { Team } from '@/lib/db/models/Team';
-import { connectDB } from '@/lib/mongodb';
 import { authOptions } from '@/lib/auth';
+import { connectDB } from '@/lib/db';
+import { Team } from '@/models/Team';
+import { Message } from '@/models/Message';
+import { z } from 'zod';
 
+// GET /api/teams/[teamId]/messages
 export async function GET(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: { teamId: string } }
 ) {
   try {
@@ -18,35 +19,49 @@ export async function GET(
 
     await connectDB();
 
-    // Verify team membership
     const team = await Team.findById(params.teamId);
     if (!team) {
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
 
-    if (!team.isMember(session.user.id)) {
-      return NextResponse.json({ error: 'Not a team member' }, { status: 403 });
+    // Check if user is a member of the team
+    if (!team.members.includes(session.user.id) && team.leaderId !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get messages with pagination
-    const page = parseInt(request.nextUrl.searchParams.get('page') || '1');
-    const limit = 50;
-    const skip = (page - 1) * limit;
+    // Get query parameters
+    const url = new URL(req.url);
+    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const before = url.searchParams.get('before');
 
-    const messages = await Message.find({ team: new Types.ObjectId(params.teamId) })
-      .sort({ timestamp: -1 })
-      .skip(skip)
+    // Build query
+    const query: any = { teamId: params.teamId };
+    if (before) {
+      query.createdAt = { $lt: new Date(before) };
+    }
+
+    // Fetch messages with sender information
+    const messages = await Message.find(query)
+      .sort({ createdAt: -1 })
       .limit(limit)
-      .populate('sender', 'name email')
+      .populate('senderId', 'firstName lastName')
       .lean();
 
     return NextResponse.json({
-      messages: messages.reverse(),
-      page,
-      hasMore: messages.length === limit,
+      messages: messages.map(message => ({
+        id: message._id,
+        content: message.content,
+        sender: {
+          id: message.senderId._id,
+          firstName: message.senderId.firstName,
+          lastName: message.senderId.lastName,
+        },
+        teamId: message.teamId,
+        createdAt: message.createdAt,
+      })),
     });
   } catch (error) {
-    console.error('Failed to get messages:', error);
+    console.error('Error fetching messages:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -54,8 +69,9 @@ export async function GET(
   }
 }
 
+// POST /api/teams/[teamId]/messages
 export async function POST(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: { teamId: string } }
 ) {
   try {
@@ -66,56 +82,56 @@ export async function POST(
 
     await connectDB();
 
-    // Verify team membership
     const team = await Team.findById(params.teamId);
     if (!team) {
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
 
-    if (!team.isMember(session.user.id)) {
-      return NextResponse.json({ error: 'Not a team member' }, { status: 403 });
+    // Check if user is a member of the team
+    if (!team.members.includes(session.user.id) && team.leaderId !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { content, type = 'text', metadata = {} } = body;
+    const schema = z.object({
+      content: z.string().min(1).max(1000),
+    });
 
-    if (!content) {
+    const body = await req.json();
+    const { content } = schema.parse(body);
+
+    // Create message
+    const message = await Message.create({
+      content,
+      teamId: params.teamId,
+      senderId: session.user.id,
+    });
+
+    // Populate sender information
+    await message.populate('senderId', 'firstName lastName');
+
+    // Format response
+    const response = {
+      id: message._id,
+      content: message.content,
+      sender: {
+        id: message.senderId._id,
+        firstName: message.senderId.firstName,
+        lastName: message.senderId.lastName,
+      },
+      teamId: message.teamId,
+      createdAt: message.createdAt,
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Message content is required' },
+        { error: 'Invalid request data', details: error.errors },
         { status: 400 }
       );
     }
 
-    const message = new Message({
-      content,
-      sender: new Types.ObjectId(session.user.id),
-      team: new Types.ObjectId(params.teamId),
-      type,
-      metadata,
-    });
-
-    await message.save();
-
-    // Add to team's activity
-    team.activity.push({
-      type: 'message',
-      action: 'Message sent',
-      user: new Types.ObjectId(session.user.id),
-      timestamp: new Date(),
-      details: {
-        messageType: type,
-      },
-    });
-
-    await team.save();
-
-    const populatedMessage = await Message.findById(message._id)
-      .populate('sender', 'name email')
-      .lean();
-
-    return NextResponse.json(populatedMessage);
-  } catch (error) {
-    console.error('Failed to create message:', error);
+    console.error('Error creating message:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

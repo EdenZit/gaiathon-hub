@@ -1,4 +1,6 @@
 import NextAuth from 'next-auth';
+import { DefaultSession } from 'next-auth';
+import { ObjectId } from 'mongoose';
 
 declare module 'next-auth' {
   interface Session {
@@ -9,7 +11,9 @@ declare module 'next-auth' {
       image?: string | null;
       firstName?: string;
       lastName?: string;
-    };
+      teamRole?: 'leader' | 'member';
+      teams?: string[];
+    } & DefaultSession['user'];
   }
 
   interface User {
@@ -18,6 +22,8 @@ declare module 'next-auth' {
     email?: string;
     firstName?: string;
     lastName?: string;
+    teamRole?: 'leader' | 'member';
+    teams?: string[];
   }
 }
 

@@ -14,13 +14,6 @@ export default function DashboardPage() {
 
   const quickActions = [
     {
-      name: 'Create New Project',
-      href: '/dashboard/projects/new',
-      icon: FolderIcon,
-      description: 'Start a new Earth Observation project',
-      color: 'bg-blue-500',
-    },
-    {
       name: 'Access Tools',
       href: '/dashboard/tools',
       icon: WrenchScrewdriverIcon,
@@ -37,13 +30,6 @@ export default function DashboardPage() {
   ];
 
   const stats = [
-    {
-      name: 'Active Projects',
-      value: '0',
-      icon: FolderIcon,
-      change: 'Get Started',
-      href: '/dashboard/projects',
-    },
     {
       name: 'Team Members',
       value: '1',

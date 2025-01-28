@@ -19,9 +19,6 @@ interface UserProfileData {
   institution: string;
   department: string | null;
   location: string | null;
-  gaiaClubName: string;
-  gaiaClubRole: string;
-  teamJoiningPreference: 'invite' | 'request';
   contactInfo: string | null;
   bio: string | null;
   phoneNumber: string | null;
@@ -33,6 +30,7 @@ interface UserProfileData {
   githubUrl?: string;
   personalWebsite?: string;
   linkedinUrl?: string;
+  teamRole: 'leader' | 'member';
 }
 
 interface PasswordFormData {
@@ -48,9 +46,6 @@ const initialFormData: UserProfileData = {
   institution: '',
   department: null,
   location: null,
-  gaiaClubName: '',
-  gaiaClubRole: '',
-  teamJoiningPreference: 'invite',
   contactInfo: null,
   bio: null,
   phoneNumber: null,
@@ -68,6 +63,7 @@ const initialFormData: UserProfileData = {
   githubUrl: '',
   personalWebsite: '',
   linkedinUrl: '',
+  teamRole: 'member',
 };
 
 export default function UserProfile() {
@@ -116,9 +112,6 @@ export default function UserProfile() {
         institution: userData.institution || '',
         department: userData.department,
         location: userData.location,
-        gaiaClubName: userData.gaiaClubName || '',
-        gaiaClubRole: userData.gaiaClubRole || '',
-        teamJoiningPreference: userData.teamJoiningPreference || 'invite',
         contactInfo: userData.contactInfo,
         bio: userData.bio,
         phoneNumber: userData.phoneNumber,
@@ -136,6 +129,7 @@ export default function UserProfile() {
         githubUrl: userData.githubUrl || '',
         personalWebsite: userData.personalWebsite || '',
         linkedinUrl: userData.linkedinUrl || '',
+        teamRole: userData.teamRole || 'member',
       });
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -188,9 +182,6 @@ export default function UserProfile() {
         institution: formData.institution.trim(),
         department: formData.department?.trim() || null,
         location: formData.location?.trim() || null,
-        gaiaClubName: formData.gaiaClubName.trim(),
-        gaiaClubRole: formData.gaiaClubRole.trim(),
-        teamJoiningPreference: formData.teamJoiningPreference,
         contactInfo: formData.contactInfo?.trim() || null,
         bio: formData.bio?.trim() || null,
         phoneNumber: formData.phoneNumber?.trim() || null,
@@ -201,7 +192,8 @@ export default function UserProfile() {
         githubUrl: formData.githubUrl?.trim() || '',
         personalWebsite: formData.personalWebsite?.trim() || '',
         linkedinUrl: formData.linkedinUrl?.trim() || '',
-        techSkills: formData.techSkills
+        techSkills: formData.techSkills,
+        teamRole: formData.teamRole,
       };
 
       console.log('Sending profile update data:', apiData);
@@ -423,69 +415,6 @@ export default function UserProfile() {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">GAIA Club Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="gaiaClubName" className="block text-sm font-medium">GAIA Club Name</label>
-              <input
-                type="text"
-                id="gaiaClubName"
-                {...getInputProps('gaiaClubName', true)}
-                placeholder="Enter your GAIA Club name"
-              />
-            </div>
-            <div>
-              <label htmlFor="gaiaClubRole" className="block text-sm font-medium">Your Role in GAIA Club</label>
-              <input
-                type="text"
-                id="gaiaClubRole"
-                {...getInputProps('gaiaClubRole', true)}
-                placeholder="e.g., Member, Leader, Secretary"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Team Preferences</h3>
-          <div>
-            <label className="block text-sm font-medium mb-2">How would you like to join teams?</label>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  id="invite"
-                  name="teamJoiningPreference"
-                  value="invite"
-                  checked={formData.teamJoiningPreference === 'invite'}
-                  onChange={handleInputChange}
-                  disabled={!isEditMode}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="invite" className="ml-2 block text-sm text-gray-700">
-                  Wait for team leader invitations
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  id="request"
-                  name="teamJoiningPreference"
-                  value="request"
-                  checked={formData.teamJoiningPreference === 'request'}
-                  onChange={handleInputChange}
-                  disabled={!isEditMode}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="request" className="ml-2 block text-sm text-gray-700">
-                  Request to join teams
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
           <h3 className="text-lg font-semibold">Location Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -578,6 +507,45 @@ export default function UserProfile() {
                   isEditMode ? 'border-gray-300' : 'border-transparent bg-gray-50'
                 } px-3 py-2`}
               />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Team Role Preference</h3>
+          <div>
+            <label className="block text-sm font-medium mb-2">How would you like to participate in teams?</label>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="member"
+                  name="teamRole"
+                  value="member"
+                  checked={formData.teamRole === 'member'}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="member" className="ml-2 block text-sm text-gray-700">
+                  Join existing teams as a member
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="leader"
+                  name="teamRole"
+                  value="leader"
+                  checked={formData.teamRole === 'leader'}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="leader" className="ml-2 block text-sm text-gray-700">
+                  Create and lead teams
+                </label>
+              </div>
             </div>
           </div>
         </div>

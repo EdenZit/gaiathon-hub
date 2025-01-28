@@ -17,18 +17,13 @@ const navigation = [
     icon: UserCircleIcon,
   },
   {
-    name: 'Projects',
-    href: '/dashboard/projects',
-    icon: FolderIcon,
-  },
-  {
     name: 'Tools',
     href: '/dashboard/tools',
     icon: WrenchScrewdriverIcon,
   },
   {
-    name: 'Collaboration',
-    href: '/dashboard/collaboration',
+    name: 'Team Workspace',
+    href: '/resources/team-workspace',
     icon: UserGroupIcon,
   },
 ];

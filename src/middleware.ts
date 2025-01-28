@@ -22,8 +22,6 @@ export const config = {
     '/dashboard/:path*',
     '/api/user/:path*',
     '/api/users/:path*',
-    '/api/teams/:path*',
     '/api/integrations/:path*',
-    '/resources/team-workspace/:path*'
   ],
 }; 

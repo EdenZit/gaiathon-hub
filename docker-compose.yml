@@ -2,7 +2,7 @@ services:
   web:
     build:
       context: .
-      target: deps
+      target: dev
     ports:
       - "3000:3000"
     volumes:
@@ -17,15 +17,13 @@ services:
       - HOST=0.0.0.0
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=http://localhost:3000
-    command: >
-      sh -c "npm install && npm run dev"
     depends_on:
       - redis
 
   task-runner:
     build:
       context: .
-      target: deps
+      target: dev
     volumes:
       - .:/app
       - /app/node_modules
