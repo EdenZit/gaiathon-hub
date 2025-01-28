@@ -19,7 +19,6 @@ interface UserProfileData {
   institution: string;
   department: string | null;
   location: string | null;
-  teamJoiningPreference: 'invite' | 'request';
   contactInfo: string | null;
   bio: string | null;
   phoneNumber: string | null;
@@ -46,7 +45,6 @@ const initialFormData: UserProfileData = {
   institution: '',
   department: null,
   location: null,
-  teamJoiningPreference: 'invite',
   contactInfo: null,
   bio: null,
   phoneNumber: null,
@@ -112,7 +110,6 @@ export default function UserProfile() {
         institution: userData.institution || '',
         department: userData.department,
         location: userData.location,
-        teamJoiningPreference: userData.teamJoiningPreference || 'invite',
         contactInfo: userData.contactInfo,
         bio: userData.bio,
         phoneNumber: userData.phoneNumber,
@@ -182,7 +179,6 @@ export default function UserProfile() {
         institution: formData.institution.trim(),
         department: formData.department?.trim() || null,
         location: formData.location?.trim() || null,
-        teamJoiningPreference: formData.teamJoiningPreference,
         contactInfo: formData.contactInfo?.trim() || null,
         bio: formData.bio?.trim() || null,
         phoneNumber: formData.phoneNumber?.trim() || null,
@@ -410,45 +406,6 @@ export default function UserProfile() {
                 id="phoneNumber"
                 {...getInputProps('phoneNumber')}
               />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Team Preferences</h3>
-          <div>
-            <label className="block text-sm font-medium mb-2">How would you like to join teams?</label>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  id="invite"
-                  name="teamJoiningPreference"
-                  value="invite"
-                  checked={formData.teamJoiningPreference === 'invite'}
-                  onChange={handleInputChange}
-                  disabled={!isEditMode}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="invite" className="ml-2 block text-sm text-gray-700">
-                  Wait for team leader invitations
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  id="request"
-                  name="teamJoiningPreference"
-                  value="request"
-                  checked={formData.teamJoiningPreference === 'request'}
-                  onChange={handleInputChange}
-                  disabled={!isEditMode}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                />
-                <label htmlFor="request" className="ml-2 block text-sm text-gray-700">
-                  Request to join teams
-                </label>
-              </div>
             </div>
           </div>
         </div>

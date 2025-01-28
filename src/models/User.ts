@@ -10,9 +10,6 @@ export interface IUser extends mongoose.Document {
   institution: string;
   department?: string;
   location?: string;
-  gaiaClubName: string;
-  gaiaClubRole: string;
-  teamJoiningPreference: 'invite' | 'request';
   contactInfo?: string;
   bio?: string;
   phoneNumber?: string;
@@ -75,11 +72,6 @@ const userSchema = new mongoose.Schema({
   location: {
     type: String,
     trim: true,
-  },
-  teamJoiningPreference: {
-    type: String,
-    enum: ['invite', 'request'],
-    default: 'invite',
   },
   contactInfo: {
     type: String,
@@ -197,8 +189,6 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
 userSchema.methods.checkProfileCompletion = function(): boolean {
   const requiredProfileFields = [
     'institution',
-    'gaiaClubName',
-    'gaiaClubRole',
     'fieldOfStudy',
     'yearOfStudy',
     'country'
@@ -224,8 +214,6 @@ userSchema.pre('findOneAndUpdate', function(next) {
     const doc = update.$set;
     const requiredProfileFields = [
       'institution',
-      'gaiaClubName',
-      'gaiaClubRole',
       'fieldOfStudy',
       'yearOfStudy',
       'country'
