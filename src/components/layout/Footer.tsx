@@ -25,6 +25,16 @@ export function Footer() {
     }
   };
 
+  const navigation = {
+    main: [
+      { name: 'Home', href: '/' },
+      { name: 'About', href: '/company/about' },
+      { name: 'Dashboard', href: '/dashboard', protected: true },
+      { name: 'Tools', href: '/resources/tools', protected: true },
+    ],
+    // ... rest of the navigation
+  };
+
   const companyLinks = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/company/about' },
@@ -36,7 +46,6 @@ export function Footer() {
   const resourceLinks = [
     { name: 'EO Tools', href: '/dashboard/tools', protected: true },
     { name: 'AI Assistant', href: '/resources/ai-assistant', protected: true },
-    { name: 'Team Workspace', href: '/resources/team-workspace', protected: true },
     { name: 'Blog', href: '/resources/blog' },
     { name: 'FAQ', href: '/resources/faq' },
   ];
