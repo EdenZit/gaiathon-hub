@@ -1,0 +1,61 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { connectDB } from '@/lib/mongodb';
+import { Team } from '@/lib/db/models/Team';
+import { User } from '@/lib/db/models/User';
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const session = await getServerSession();
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectDB();
+
+    const team = await Team.findById(params.id);
+    if (!team) {
+      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const { name, description } = body;
+
+    if (name) team.name = name;
+    if (description) team.description = description;
+
+    await team.save();
+    await team.populate('leader members.user', 'name email');
+
+    return NextResponse.json({ message: 'Team updated successfully', team });
+  } catch (error: any) {
+    console.error('Error updating team:', error);
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Team name already exists' }, { status: 400 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const session = await getServerSession();
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectDB();
+
+    const team = await Team.findById(params.id);
+    if (!team) {
+      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+    }
+
+    await team.deleteOne();
+
+    return NextResponse.json({ message: 'Team deleted successfully' });
+  } catch (error: any) {
+    console.error('Error deleting team:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+} 

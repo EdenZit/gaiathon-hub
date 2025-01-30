@@ -1,10 +1,13 @@
 import mongoose, { Connection, ConnectOptions } from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
+  throw new Error('Please define the MONGODB_URI environment variable');
 }
+
+// After the check above, we know MONGODB_URI is defined
+const MONGODB_URI_SAFE = MONGODB_URI as string;
 
 interface GlobalMongoose {
   conn: Connection | null;
@@ -28,6 +31,8 @@ export async function connectDB(): Promise<Connection> {
   }
 
   if (!cached.promise) {
+    const isTest = process.env.NODE_ENV === 'test';
+
     const opts: ConnectOptions = {
       bufferCommands: true,
       maxPoolSize: 10,
@@ -38,12 +43,16 @@ export async function connectDB(): Promise<Connection> {
       retryWrites: true,
       w: 'majority',
       authSource: 'admin',
-      directConnection: false,
       ssl: true,
-      tls: true,
+      tls: true
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts);
+    // Use MONGODB_URI_SAFE which we know is defined
+    const uri = isTest
+      ? MONGODB_URI_SAFE.replace(/\/[^/?]+\?/, '/gaiathon_test?')
+      : MONGODB_URI_SAFE;
+
+    cached.promise = mongoose.connect(uri, opts);
   }
 
   try {
@@ -53,7 +62,7 @@ export async function connectDB(): Promise<Connection> {
     return cached.conn;
   } catch (e) {
     cached.promise = null;
-    console.error('MongoDB connection error:', e);
+    console.error('MongoDB Atlas connection error:', e);
     throw e;
   }
 }
@@ -65,20 +74,20 @@ export async function disconnectDB() {
     cached.promise = null;
     console.log('Disconnected from MongoDB Atlas');
   } catch (e) {
-    console.error('Error disconnecting from MongoDB:', e);
+    console.error('Error disconnecting from MongoDB Atlas:', e);
     throw e;
   }
 }
 
 // Handle graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received. Closing MongoDB connection...');
+  console.log('SIGTERM received. Closing MongoDB Atlas connection...');
   await disconnectDB();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('SIGINT received. Closing MongoDB connection...');
+  console.log('SIGINT received. Closing MongoDB Atlas connection...');
   await disconnectDB();
   process.exit(0);
 }); 
