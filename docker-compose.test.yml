@@ -4,38 +4,28 @@ services:
   test:
     build:
       context: .
-      target: deps
-    volumes:
-      - .:/app
-      - /app/node_modules
+      target: test
+    command: tail -f /dev/null  # Keep container running
     environment:
       - NODE_ENV=test
       - MONGODB_URI=${MONGODB_URI}
-      - NEXTAUTH_SECRET=test_secret
       - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=test_secret_key_123
+    volumes:
+      - .:/app
+      - /app/node_modules
     depends_on:
       - redis
-    command: >
-      sh -c "
-        echo 'Waiting for Redis...' &&
-        sleep 5 &&
-        npm run test:data
-      "
-    networks:
-      - gaiathon-network
+    tty: true
+    stdin_open: true
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
-    networks:
-      - gaiathon-network
+      - redis_test_data:/data
 
 volumes:
-  redis_data:
-
-networks:
-  gaiathon-network:
-    driver: bridge 
+  redis_test_data: 

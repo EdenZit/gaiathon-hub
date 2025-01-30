@@ -1,47 +1,85 @@
-import mongoose from 'mongoose';
+import { Schema, model, models, Types } from 'mongoose';
 
-const documentSchema = new mongoose.Schema(
+export interface IDocument {
+  title: string;
+  description: string;
+  type: 'text' | 'code' | 'markdown';
+  visibility: 'private' | 'team' | 'public';
+  content: string;
+  owner: Types.ObjectId;
+  team?: Types.ObjectId;
+  collaborators: Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const documentSchema = new Schema<IDocument>(
   {
-    name: {
+    title: {
       type: String,
-      required: true,
+      required: [true, 'Title is required'],
+      trim: true,
+      minlength: [3, 'Title must be at least 3 characters long'],
+      maxlength: [100, 'Title cannot exceed 100 characters']
+    },
+    description: {
+      type: String,
+      required: [true, 'Description is required'],
+      trim: true,
+      maxlength: [500, 'Description cannot exceed 500 characters']
     },
     type: {
       type: String,
-      required: true,
+      required: [true, 'Document type is required'],
+      enum: {
+        values: ['text', 'code', 'markdown'],
+        message: 'Invalid document type'
+      }
     },
-    size: {
-      type: Number,
-      required: true,
+    visibility: {
+      type: String,
+      required: [true, 'Visibility setting is required'],
+      enum: {
+        values: ['private', 'team', 'public'],
+        message: 'Invalid visibility setting'
+      }
     },
-    teamId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Team',
-      required: true,
+    content: {
+      type: String,
+      default: ''
     },
-    uploadedBy: {
-      type: mongoose.Schema.Types.ObjectId,
+    owner: {
+      type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: [true, 'Document owner is required']
     },
-    url: {
-      type: String,
-      required: false,
+    team: {
+      type: Schema.Types.ObjectId,
+      ref: 'Team',
+      required: [
+        function(this: IDocument) {
+          return this.visibility === 'team';
+        },
+        'Team is required for team visibility'
+      ]
     },
-    status: {
-      type: String,
-      enum: ['processing', 'ready', 'error'],
-      default: 'processing',
-    },
+    collaborators: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }]
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-// Create indexes
-documentSchema.index({ teamId: 1 });
-documentSchema.index({ uploadedBy: 1 });
-documentSchema.index({ createdAt: -1 });
+// Add compound index for efficient searching
+documentSchema.index({ title: 'text', description: 'text' });
 
-export const Document = mongoose.models.Document || mongoose.model('Document', documentSchema); 
+// Add index for team-based queries
+documentSchema.index({ team: 1, visibility: 1 });
+
+// Add index for owner-based queries
+documentSchema.index({ owner: 1 });
+
+export const Document = models.Document || model<IDocument>('Document', documentSchema); 
