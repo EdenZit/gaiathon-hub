@@ -1,4 +1,8 @@
+import { config } from 'dotenv';
 import mongoose, { Connection, ConnectOptions } from 'mongoose';
+
+// Load environment variables
+config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -31,28 +35,18 @@ export async function connectDB(): Promise<Connection> {
   }
 
   if (!cached.promise) {
-    const isTest = process.env.NODE_ENV === 'test';
-
     const opts: ConnectOptions = {
       bufferCommands: true,
       maxPoolSize: 10,
-      minPoolSize: 5,
-      socketTimeoutMS: 45000,
+      socketTimeoutMS: 30000,
       serverSelectionTimeoutMS: 5000,
-      family: 4, // Use IPv4, skip trying IPv6
-      retryWrites: true,
-      w: 'majority',
-      authSource: 'admin',
-      ssl: true,
-      tls: true
+      family: 4
     };
 
-    // Use MONGODB_URI_SAFE which we know is defined
-    const uri = isTest
-      ? MONGODB_URI_SAFE.replace(/\/[^/?]+\?/, '/gaiathon_test?')
-      : MONGODB_URI_SAFE;
-
-    cached.promise = mongoose.connect(uri, opts);
+    cached.promise = mongoose.connect(MONGODB_URI_SAFE, opts).catch((error) => {
+      console.error('MongoDB Atlas connection error:', error);
+      throw error;
+    });
   }
 
   try {

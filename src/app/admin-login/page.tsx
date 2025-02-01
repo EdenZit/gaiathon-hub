@@ -4,33 +4,17 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-interface DebugInfo {
-  error?: string | null;
-  ok?: boolean;
-  status?: number;
-  url?: string | null;
-  session?: {
-    user?: {
-      email?: string;
-      role?: string;
-      status?: string;
-    };
-  } | null;
-}
-
 export default function AdminLoginTest() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setDebugInfo(null);
 
     try {
       const result = await signIn('credentials', {
@@ -38,8 +22,6 @@ export default function AdminLoginTest() {
         password,
         redirect: false,
       });
-
-      setDebugInfo(result || null);
 
       if (result?.error) {
         setError(result.error);
@@ -53,8 +35,6 @@ export default function AdminLoginTest() {
         // Fetch user data to verify admin role
         const userResponse = await fetch('/api/auth/session');
         const session = await userResponse.json();
-        
-        setDebugInfo(prev => ({ ...prev, session }));
 
         if (!session?.user) {
           setError('Failed to fetch user session');
@@ -66,19 +46,13 @@ export default function AdminLoginTest() {
           return;
         }
 
-        // Don't check status here since it's already checked in auth.ts
-        // Redirect immediately after verifying admin role
+        // Redirect to admin dashboard
         router.push('/dashboard/admin');
         router.refresh();
       }
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred during login');
-      setDebugInfo({
-        error: err instanceof Error ? err.message : 'Unknown error',
-        ok: false,
-        status: 500
-      });
     } finally {
       setLoading(false);
     }
@@ -88,7 +62,7 @@ export default function AdminLoginTest() {
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Login Test
+          Admin Login
         </h2>
       </div>
 
@@ -157,15 +131,6 @@ export default function AdminLoginTest() {
                   <div className="mt-2 text-sm text-red-700">{error}</div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {debugInfo && (
-            <div className="mt-4 bg-gray-50 border border-gray-200 rounded-md p-4">
-              <h4 className="text-sm font-medium text-gray-800">Debug Information</h4>
-              <pre className="mt-2 text-xs text-gray-600 overflow-auto">
-                {JSON.stringify(debugInfo, null, 2)}
-              </pre>
             </div>
           )}
         </div>
