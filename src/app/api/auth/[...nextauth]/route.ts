@@ -36,6 +36,7 @@ const handler = NextAuth({
             name: userObject.name,
             firstName: userObject.firstName,
             lastName: userObject.lastName,
+            role: userObject.role,
           };
         } catch (error) {
           console.error('Authentication error:', error);
@@ -51,6 +52,7 @@ const handler = NextAuth({
         token.name = user.name;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        token.role = user.role;
       }
       return token;
     },
@@ -60,6 +62,7 @@ const handler = NextAuth({
         session.user.name = token.name;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
+        session.user.role = token.role;
       }
       return session;
     },

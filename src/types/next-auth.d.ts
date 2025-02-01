@@ -12,6 +12,7 @@ declare module 'next-auth' {
       firstName?: string;
       lastName?: string;
       teamRole?: 'leader' | 'member';
+      role?: 'user' | 'admin';
       teams?: string[];
     } & DefaultSession['user'];
   }
@@ -23,6 +24,7 @@ declare module 'next-auth' {
     firstName?: string;
     lastName?: string;
     teamRole?: 'leader' | 'member';
+    role?: 'user' | 'admin';
     teams?: string[];
   }
 }
@@ -33,5 +35,6 @@ declare module 'next-auth/jwt' {
     name?: string;
     firstName?: string;
     lastName?: string;
+    role?: 'user' | 'admin';
   }
 } 

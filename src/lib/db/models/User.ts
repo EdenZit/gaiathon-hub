@@ -1,8 +1,16 @@
-import { Schema, model, models } from 'mongoose';
+import { Schema, model, models, Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { IUser } from '../../../types/models';
 
-const userSchema = new Schema<IUser>(
+interface IUserDocument extends IUser, Document {
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+interface IUserModel extends Model<IUserDocument> {
+  findByEmail(email: string): Promise<IUserDocument | null>;
+}
+
+const userSchema = new Schema<IUserDocument>(
   {
     email: {
       type: String,
@@ -46,6 +54,11 @@ const userSchema = new Schema<IUser>(
       position: String,
       skills: [String],
     },
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active'
+    },
   },
   {
     timestamps: true,
@@ -53,12 +66,12 @@ const userSchema = new Schema<IUser>(
 );
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function(this: IUserDocument, next) {
   if (!this.isModified('password')) return next();
   
   try {
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(this.password as string, salt);
+    const hashedPassword = await bcrypt.hash(this.password, salt);
     this.password = hashedPassword;
     next();
   } catch (error) {
@@ -67,16 +80,27 @@ userSchema.pre('save', async function (next) {
 });
 
 // Add any instance methods here
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function(this: IUserDocument) {
   const obj = this.toObject();
   delete obj.password;
   return obj;
 };
 
 // Add comparePassword method
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function(this: IUserDocument, candidatePassword: string): Promise<boolean> {
   try {
-    return await bcrypt.compare(candidatePassword, this.password);
+    if (!this.password || !candidatePassword) {
+      console.error('DEBUG: Missing password for comparison');
+      return false;
+    }
+    
+    console.error('DEBUG: Comparing passwords');
+    console.error('DEBUG: Candidate password length:', candidatePassword.length);
+    console.error('DEBUG: Stored password hash length:', this.password.length);
+    
+    const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    console.error('DEBUG: Password comparison result:', isMatch);
+    return isMatch;
   } catch (error) {
     console.error('Password comparison error:', error);
     return false;
@@ -88,4 +112,4 @@ userSchema.statics.findByEmail = function(email: string) {
   return this.findOne({ email: email.toLowerCase() });
 };
 
-export const User = models.User || model<IUser>('User', userSchema); 
+export const User = (models.User || model<IUserDocument, IUserModel>('User', userSchema)) as IUserModel; 

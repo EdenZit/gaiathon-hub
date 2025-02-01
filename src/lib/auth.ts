@@ -2,7 +2,56 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import { connectDB } from '@/lib/mongodb';
-import { User } from '@/models/User';
+import { User } from '@/lib/db/models/User';
+import { Document } from 'mongoose';
+
+declare module 'next-auth' {
+  interface User {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    name: string;
+    role: 'user' | 'admin';
+    status: 'active' | 'inactive';
+  }
+
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      name: string;
+      role: 'user' | 'admin';
+      status: 'active' | 'inactive';
+    };
+    expires: string;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    name: string;
+    role: 'user' | 'admin';
+    status: 'active' | 'inactive';
+  }
+}
+
+interface UserDocument extends Document {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  name?: string;
+  role: 'user' | 'admin';
+  status: 'active' | 'inactive';
+  comparePassword(password: string): Promise<boolean>;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,59 +62,102 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.error('DEBUG: Missing credentials');
+            throw new Error('Invalid credentials');
+          }
+
+          await connectDB();
+          console.error('DEBUG: Looking for user with email:', credentials.email.toLowerCase());
+          
+          const user = await User.findOne({ email: credentials.email.toLowerCase() }) as UserDocument;
+          
+          if (!user) {
+            console.error('DEBUG: User not found');
+            throw new Error('Invalid email or password');
+          }
+
+          console.error('DEBUG: Found user:', {
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            name: user.name
+          });
+
+          const isValidPassword = await user.comparePassword(credentials.password);
+          console.error('DEBUG: Password validation result:', isValidPassword);
+
+          if (!isValidPassword) {
+            console.error('DEBUG: Invalid password');
+            throw new Error('Invalid email or password');
+          }
+
+          // Check if user is active
+          if (user.status !== 'active') {
+            console.error('DEBUG: User is inactive');
+            throw new Error('Account is inactive');
+          }
+
+          const userData = {
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            name: user.name || `${user.firstName} ${user.lastName}`,
+            role: user.role as 'user' | 'admin',
+            status: user.status as 'active' | 'inactive'
+          };
+
+          console.error('DEBUG: Login successful, returning user data:', userData);
+          return userData;
+        } catch (error) {
+          console.error('DEBUG: Auth error:', error);
+          throw error;
         }
-
-        await connectDB();
-        const user = await User.findOne({ email: credentials.email.toLowerCase() });
-
-        if (!user || !(await user.comparePassword(credentials.password))) {
-          throw new Error('Invalid email or password');
-        }
-
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          name: `${user.firstName} ${user.lastName}`,
-          profileCompleted: user.profileCompleted,
-        };
       }
     })
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        console.error('DEBUG: JWT callback - user data:', user);
         token.id = user.id;
         token.email = user.email;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.name = user.name;
-        token.profileCompleted = user.profileCompleted;
+        token.role = user.role;
+        token.status = user.status;
+        console.error('DEBUG: JWT token after update:', token);
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.email = token.email as string;
-        session.user.firstName = token.firstName as string;
-        session.user.lastName = token.lastName as string;
-        session.user.name = token.name as string;
-        session.user.profileCompleted = token.profileCompleted as boolean;
+      if (session.user && token) {
+        console.error('DEBUG: Session callback - token data:', token);
+        session.user = {
+          id: token.id,
+          email: token.email,
+          firstName: token.firstName,
+          lastName: token.lastName,
+          name: token.name,
+          role: token.role,
+          status: token.status
+        };
+        console.error('DEBUG: Session after update:', session);
       }
       return session;
     }
   },
   pages: {
     signIn: '/login',
+    error: '/auth/error'
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
 }; 
