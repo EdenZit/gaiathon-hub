@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { Team } from '@/lib/db/models/Team';
+import { AdminTeamQuery, ApiError, PaginatedResponse } from '@/types/admin';
+import { ITeam } from '@/types/models';
 
-export async function GET(request: NextRequest) {
+const ITEMS_PER_PAGE = 10;
+
+export async function GET(request: Request) {
   try {
     const session = await getServerSession();
     if (!session?.user || session.user.role !== 'admin') {
@@ -12,44 +16,62 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const searchParams = request.nextUrl.searchParams;
-    const leaderId = searchParams.get('leaderId');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const skip = (page - 1) * limit;
+    const { searchParams } = new URL(request.url);
+    const query: AdminTeamQuery = {
+      page: parseInt(searchParams.get('page') || '1'),
+      limit: parseInt(searchParams.get('limit') || String(ITEMS_PER_PAGE)),
+      search: searchParams.get('search') || undefined,
+      leader: searchParams.get('leader') || undefined,
+      status: (searchParams.get('status') as AdminTeamQuery['status']) || 'active'
+    };
 
-    const query = leaderId ? { leader: leaderId } : {};
-    const teams = await Team.find(query)
-      .populate('leader', 'name email')
-      .populate('members.user', 'name email')
+    // Build MongoDB query
+    const mongoQuery: Record<string, unknown> = {};
+    
+    if (query.leader) {
+      mongoQuery.leader = query.leader;
+    }
+    
+    if (query.status) {
+      mongoQuery.status = query.status;
+    }
+    
+    if (query.search) {
+      mongoQuery.$or = [
+        { name: { $regex: query.search, $options: 'i' } },
+        { description: { $regex: query.search, $options: 'i' } }
+      ];
+    }
+
+    // Execute query with pagination
+    const total = await Team.countDocuments(mongoQuery);
+    const pages = Math.ceil(total / query.limit!);
+    const skip = (query.page! - 1) * query.limit!;
+
+    const teams = await Team.find(mongoQuery)
+      .populate('leader members', 'firstName lastName email')
       .skip(skip)
-      .limit(limit)
-      .lean();
+      .limit(query.limit!)
+      .sort({ createdAt: -1 });
 
-    // Transform response to match expected format
-    const transformedTeams = teams.map(team => ({
-      ...team,
-      leaderId: team.leader._id || team.leader,
-      members: team.members.map(member => ({
-        ...member,
-        userId: member.user._id || member.user
-      }))
-    }));
-
-    const total = await Team.countDocuments(query);
-
-    return NextResponse.json({
-      teams: transformedTeams,
+    const response: PaginatedResponse<ITeam> = {
+      data: teams,
       pagination: {
+        page: query.page!,
+        limit: query.limit!,
         total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit)
+        pages
       }
-    });
-  } catch (error: any) {
-    console.error('Error fetching teams:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    const apiError = error as ApiError;
+    console.error('Error fetching teams:', apiError);
+    return NextResponse.json(
+      { error: apiError.message || 'Failed to fetch teams' },
+      { status: apiError.status || 500 }
+    );
   }
 }
 

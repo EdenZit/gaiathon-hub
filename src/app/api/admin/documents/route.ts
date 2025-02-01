@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { Document } from '@/lib/db/models/Document';
-import { User } from '@/lib/db/models/User';
+import { AdminDocumentQuery, ApiError, PaginatedResponse } from '@/types/admin';
+import { IDocument } from '@/types/models';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -16,62 +17,70 @@ export async function GET(request: Request) {
     await connectDB();
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const search = searchParams.get('search') || '';
-    const type = searchParams.get('type');
-    const visibility = searchParams.get('visibility');
-    const teamId = searchParams.get('teamId');
-    const ownerId = searchParams.get('ownerId');
-    const limit = searchParams.get('limit');
+    const query: AdminDocumentQuery = {
+      page: parseInt(searchParams.get('page') || '1'),
+      limit: parseInt(searchParams.get('limit') || String(ITEMS_PER_PAGE)),
+      search: searchParams.get('search') || undefined,
+      type: (searchParams.get('type') as AdminDocumentQuery['type']) || 'all',
+      visibility: (searchParams.get('visibility') as AdminDocumentQuery['visibility']) || 'all',
+      team: searchParams.get('team') || undefined,
+      owner: searchParams.get('owner') || undefined
+    };
 
-    // Build query
-    const query: any = {};
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+    // Build MongoDB query
+    const mongoQuery: Record<string, unknown> = {};
+    
+    if (query.type && query.type !== 'all') {
+      mongoQuery.type = query.type;
+    }
+    
+    if (query.visibility && query.visibility !== 'all') {
+      mongoQuery.visibility = query.visibility;
+    }
+    
+    if (query.team) {
+      mongoQuery.team = query.team;
+    }
+    
+    if (query.owner) {
+      mongoQuery.owner = query.owner;
+    }
+    
+    if (query.search) {
+      mongoQuery.$or = [
+        { title: { $regex: query.search, $options: 'i' } },
+        { description: { $regex: query.search, $options: 'i' } }
       ];
     }
-    if (type && type !== 'all') query.type = type;
-    if (visibility && visibility !== 'all') query.visibility = visibility;
-    if (teamId) query.team = teamId;
-    if (ownerId) query.owner = ownerId;
 
-    // If limit=all, return all documents without pagination
-    if (limit === 'all') {
-      const documents = await Document
-        .find(query)
-        .sort({ updatedAt: -1 })
-        .populate('owner', 'firstName lastName email')
-        .populate('team', 'name')
-        .populate('collaborators', 'firstName lastName email');
+    // Execute query with pagination
+    const total = await Document.countDocuments(mongoQuery);
+    const pages = Math.ceil(total / query.limit!);
+    const skip = (query.page! - 1) * query.limit!;
 
-      return NextResponse.json({ documents });
-    }
+    const documents = await Document.find(mongoQuery)
+      .populate('owner team collaborators', 'firstName lastName email name')
+      .skip(skip)
+      .limit(query.limit!)
+      .sort({ updatedAt: -1 });
 
-    const totalDocuments = await Document.countDocuments(query);
-    const totalPages = Math.ceil(totalDocuments / ITEMS_PER_PAGE);
+    const response: PaginatedResponse<IDocument> = {
+      data: documents,
+      pagination: {
+        page: query.page!,
+        limit: query.limit!,
+        total,
+        pages
+      }
+    };
 
-    const documents = await Document
-      .find(query)
-      .sort({ updatedAt: -1 })
-      .skip((page - 1) * ITEMS_PER_PAGE)
-      .limit(ITEMS_PER_PAGE)
-      .populate('owner', 'firstName lastName email')
-      .populate('team', 'name')
-      .populate('collaborators', 'firstName lastName email');
-
-    return NextResponse.json({
-      documents,
-      page,
-      totalPages,
-      totalDocuments
-    });
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching documents:', error);
+    const apiError = error as ApiError;
+    console.error('Error fetching documents:', apiError);
     return NextResponse.json(
-      { error: 'Failed to fetch documents' },
-      { status: 500 }
+      { error: apiError.message || 'Failed to fetch documents' },
+      { status: apiError.status || 500 }
     );
   }
 }
