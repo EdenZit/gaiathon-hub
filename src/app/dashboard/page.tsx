@@ -19,14 +19,7 @@ export default function DashboardPage() {
       icon: WrenchScrewdriverIcon,
       description: 'Use WEkEO and Dunia platform tools',
       color: 'bg-green-500',
-    },
-    {
-      name: 'Team Collaboration',
-      href: '/dashboard/collaboration',
-      icon: UserGroupIcon,
-      description: 'Work with your team in real-time',
-      color: 'bg-purple-500',
-    },
+    }
   ];
 
   const stats = [
@@ -55,19 +48,30 @@ export default function DashboardPage() {
               <Link
                 key={action.name}
                 href={action.href}
-                className="relative group bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                className="relative group bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
               >
                 <div>
-                  <span className={`inline-flex p-3 rounded-lg ${action.color} text-white`}>
-                    <action.icon className="h-6 w-6" aria-hidden="true" />
+                  <span
+                    className={`inline-flex p-3 rounded-lg ${action.color} bg-opacity-10`}
+                  >
+                    <action.icon
+                      className={`h-6 w-6 ${action.color} text-opacity-80`}
+                      aria-hidden="true"
+                    />
                   </span>
                 </div>
                 <div className="mt-4">
-                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-gray-600 transition-colors duration-200">
+                  <h3 className="text-lg font-medium text-gray-900">
                     {action.name}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-500">{action.description}</p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    {action.description}
+                  </p>
                 </div>
+                <span
+                  className="absolute inset-0 rounded-lg ring-2 ring-offset-2 ring-opacity-0 group-hover:ring-opacity-50"
+                  aria-hidden="true"
+                />
               </Link>
             ))}
           </div>
@@ -76,24 +80,39 @@ export default function DashboardPage() {
         {/* Stats */}
         <div className="mt-8">
           <h2 className="text-lg font-medium text-gray-900">Overview</h2>
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {stats.map((stat) => (
               <Link
                 key={stat.name}
                 href={stat.href}
-                className="relative group bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow"
               >
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <stat.icon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <stat.icon
+                        className="h-6 w-6 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">
+                          {stat.name}
+                        </dt>
+                        <dd>
+                          <div className="text-lg font-medium text-gray-900">
+                            {stat.value}
+                          </div>
+                        </dd>
+                      </dl>
+                    </div>
                   </div>
-                  <div className="ml-4 flex-1">
-                    <h3 className="text-lg font-medium text-gray-900 group-hover:text-gray-600 transition-colors duration-200">
-                      {stat.name}
-                    </h3>
-                    <div className="flex items-baseline">
-                      <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
-                      <p className="ml-2 text-sm text-blue-500 hover:text-blue-600">{stat.change}</p>
+                </div>
+                <div className="bg-gray-50 px-5 py-3">
+                  <div className="text-sm">
+                    <div className="font-medium text-blue-700 hover:text-blue-900">
+                      {stat.change}
                     </div>
                   </div>
                 </div>

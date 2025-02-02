@@ -5,14 +5,19 @@ import { useSession } from 'next-auth/react';
 import { Tab } from '@headlessui/react';
 import TeamSelector from './TeamSelector';
 import TeamDirectory from './TeamDirectory';
-import TeamCreation from './TeamCreation';
 import TeamMembers from './TeamMembers';
+import TeamCreation from './TeamCreation';
 
 interface TeamComponentProps {
   selectedTeam: string | null;
 }
 
 type TeamComponent = React.ComponentType<TeamComponentProps>;
+
+interface TeamTab {
+  name: string;
+  component: TeamComponent;
+}
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -22,10 +27,11 @@ export default function TeamWorkspaceLayout() {
   const { data: session } = useSession();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 
-  const tabs: { name: string; component: TeamComponent }[] = [
+  const tabs: TeamTab[] = [
     { name: 'Team Directory', component: TeamDirectory },
-    ...(session?.user?.role === 'admin' ? [{ name: 'Create Team', component: TeamCreation }] : []),
     { name: 'Members', component: TeamMembers },
+    // Only show team creation for admins
+    ...(session?.user?.role === 'admin' ? [{ name: 'Create Team', component: TeamCreation }] : []),
   ];
 
   return (

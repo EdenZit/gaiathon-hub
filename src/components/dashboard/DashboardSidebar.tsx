@@ -5,9 +5,7 @@ import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 import {
   UserCircleIcon,
-  FolderIcon,
   WrenchScrewdriverIcon,
-  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -20,11 +18,6 @@ const navigation = [
     name: 'Tools',
     href: '/dashboard/tools',
     icon: WrenchScrewdriverIcon,
-  },
-  {
-    name: 'Team Workspace',
-    href: '/resources/team-workspace',
-    icon: UserGroupIcon,
   },
 ];
 

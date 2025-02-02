@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { 
   UsersIcon, 
   UserGroupIcon, 
-  DocumentTextIcon,
   ChartBarIcon,
   Cog6ToothIcon 
 } from '@heroicons/react/24/outline';
@@ -14,7 +13,6 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: ChartBarIcon },
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Teams', href: '/admin/teams', icon: UserGroupIcon },
-  { name: 'Documents', href: '/admin/documents', icon: DocumentTextIcon },
   { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon },
 ];
 
