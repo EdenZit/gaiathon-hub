@@ -1,16 +1,19 @@
 'use server';
 
-import { Redis } from 'ioredis';
-import { MessageAnalytics } from '@/types/ai-assistant';
+import { createClient } from 'redis';
+import type { RedisClientType } from 'redis';
 
 const RATE_LIMIT_WINDOW = 60 * 60; // 1 hour
 const MAX_REQUESTS_PER_HOUR = 50;
 
-let redisClient: Redis | null = null;
+let redisClient: RedisClientType | null = null;
 
 export async function getRedisClient() {
   if (!redisClient) {
-    redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+    redisClient = createClient({
+      url: process.env.REDIS_URL || 'redis://localhost:6379'
+    });
+    await redisClient.connect();
   }
   return redisClient;
 }

@@ -46,7 +46,6 @@ export function Footer() {
   const resourceLinks = [
     { name: 'EO Tools', href: '/dashboard/tools', protected: true },
     { name: 'Team Workspace', href: '/resources/team-workspace', protected: true },
-    { name: 'AI Assistant', href: '/resources/ai-assistant', protected: true },
     { name: 'Blog', href: '/resources/blog' },
     { name: 'FAQ', href: '/resources/faq' },
   ];
