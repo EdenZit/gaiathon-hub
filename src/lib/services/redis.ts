@@ -44,9 +44,4 @@ export async function getRateLimitInfo(userId: string) {
     reset: Date.now() + (ttl * 1000),
     limit: MAX_REQUESTS_PER_HOUR
   };
-}
-
-export async function logAnalytics(analytics: MessageAnalytics) {
-  const redis = await getRedisClient();
-  await redis.lpush('analytics', JSON.stringify(analytics));
 } 
