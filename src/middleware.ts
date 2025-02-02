@@ -19,6 +19,11 @@ export default withAuth(
       // If trying to access admin UI routes, redirect to dashboard
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
+
+    // For protected routes, redirect unauthenticated users to register
+    if (!token) {
+      return NextResponse.redirect(new URL('/register', req.url));
+    }
   },
   {
     callbacks: {
