@@ -64,7 +64,7 @@ export default function PartnersPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-600 to-green-800 py-16">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl text-center">
             Our Partners
@@ -132,7 +132,7 @@ export default function PartnersPage() {
             <div className="mt-8">
               <a
                 href="/contact"
-                className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 Contact Us
               </a>
