@@ -6,8 +6,6 @@ import { Tab } from '@headlessui/react';
 import TeamSelector from './TeamSelector';
 import TeamDirectory from './TeamDirectory';
 import TeamCreation from './TeamCreation';
-import TeamChat from './TeamChat';
-import TeamDocuments from './TeamDocuments';
 import TeamMembers from './TeamMembers';
 
 interface TeamComponentProps {
@@ -26,9 +24,7 @@ export default function TeamWorkspaceLayout() {
 
   const tabs: { name: string; component: TeamComponent }[] = [
     { name: 'Team Directory', component: TeamDirectory },
-    ...(session?.user?.teamRole === 'leader' ? [{ name: 'Create Team', component: TeamCreation }] : []),
-    { name: 'Team Chat', component: TeamChat },
-    { name: 'Documents', component: TeamDocuments },
+    ...(session?.user?.role === 'admin' ? [{ name: 'Create Team', component: TeamCreation }] : []),
     { name: 'Members', component: TeamMembers },
   ];
 

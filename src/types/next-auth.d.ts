@@ -11,7 +11,6 @@ declare module 'next-auth' {
       image?: string | null;
       firstName?: string;
       lastName?: string;
-      teamRole?: 'leader' | 'member';
       role?: 'user' | 'admin';
       teams?: string[];
     } & DefaultSession['user'];
@@ -23,7 +22,6 @@ declare module 'next-auth' {
     email?: string;
     firstName?: string;
     lastName?: string;
-    teamRole?: 'leader' | 'member';
     role?: 'user' | 'admin';
     teams?: string[];
   }
