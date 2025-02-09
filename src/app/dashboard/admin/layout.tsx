@@ -1,4 +1,9 @@
+'use client';
+
 import { AdminGuard } from "@/components/auth/AdminGuard";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { clsx } from "clsx";
 import { 
   UsersIcon, 
   Cog6ToothIcon, 
@@ -8,6 +13,12 @@ import {
 } from "@heroicons/react/24/outline";
 
 const adminNavItems = [
+  {
+    name: "Dashboard",
+    href: "/dashboard/admin",
+    icon: ChartBarIcon,
+    description: "Admin dashboard overview"
+  },
   {
     name: "User Management",
     href: "/dashboard/admin/users",
@@ -45,6 +56,8 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   return (
     <AdminGuard>
       <div className="flex min-h-screen">
@@ -54,16 +67,27 @@ export default function AdminLayout({
             <h2 className="text-xl font-semibold">Admin Dashboard</h2>
           </div>
           <nav className="mt-4">
-            {adminNavItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-              >
-                <item.icon className="h-5 w-5 mr-3" />
-                <span>{item.name}</span>
-              </a>
-            ))}
+            {adminNavItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={clsx(
+                    "flex items-center px-4 py-3 transition-colors",
+                    isActive
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  )}
+                >
+                  <item.icon className={clsx(
+                    "h-5 w-5 mr-3",
+                    isActive ? "text-white" : "text-gray-400"
+                  )} />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
           </nav>
         </aside>
 

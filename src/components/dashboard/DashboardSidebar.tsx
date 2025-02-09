@@ -2,13 +2,31 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { clsx } from 'clsx';
 import {
   UserCircleIcon,
   WrenchScrewdriverIcon,
+  Squares2X2Icon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import type { ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react';
 
-const navigation = [
+interface NavItem {
+  name: string;
+  href: string;
+  icon: ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref"> & { title?: string | undefined; titleId?: string | undefined; } & RefAttributes<SVGSVGElement>>;
+  adminHref?: string;
+  requireAdmin?: boolean;
+}
+
+const navigation: NavItem[] = [
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    icon: Squares2X2Icon,
+    adminHref: '/dashboard/admin',
+  },
   {
     name: 'Profile',
     href: '/dashboard/profile',
@@ -21,19 +39,47 @@ const navigation = [
   },
 ];
 
+const adminNavigation: NavItem[] = [
+  {
+    name: 'Admin Panel',
+    href: '/dashboard/admin',
+    icon: ShieldCheckIcon,
+    requireAdmin: true,
+  },
+];
+
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'admin';
+
+  const getHref = (item: NavItem) => {
+    if (isAdmin && item.adminHref && pathname.startsWith('/dashboard/admin')) {
+      return item.adminHref;
+    }
+    return item.href;
+  };
+
+  const allNavItems = [
+    ...navigation,
+    ...(isAdmin ? adminNavigation : []),
+  ];
 
   return (
     <div className="flex w-64 flex-col bg-white shadow">
       <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
         <nav className="mt-5 flex-1 space-y-1 px-2">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
+          {allNavItems.map((item) => {
+            const href = getHref(item);
+            const isActive = pathname === href || 
+              (item.adminHref && pathname.startsWith('/dashboard/admin'));
+            
+            if (item.requireAdmin && !isAdmin) return null;
+
             return (
               <Link
                 key={item.name}
-                href={item.href}
+                href={href}
                 className={clsx(
                   'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
                   isActive
