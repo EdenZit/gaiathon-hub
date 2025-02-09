@@ -5,79 +5,33 @@ import { connectDB } from '@/lib/mongodb';
 import { User } from '@/lib/db/models/User';
 import { AdminUserQuery, ApiError, PaginatedResponse } from '@/types/admin';
 import { IUser } from '@/types/models';
+import { adminMiddleware } from '@/middleware/adminMiddleware';
 
 const ITEMS_PER_PAGE = 10;
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const session = await getServerSession();
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const db = await connectDB();
+    const users = await db.collection('users')
+      .find({})
+      .project({
+        password: 0, // Exclude password field
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    await connectDB();
+    // Convert _id to string for JSON serialization
+    const serializedUsers = users.map(user => ({
+      ...user,
+      _id: user._id.toString(),
+    }));
 
-    const { searchParams } = new URL(request.url);
-    const query: AdminUserQuery = {
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || String(ITEMS_PER_PAGE)),
-      search: searchParams.get('search') || undefined,
-      role: (searchParams.get('role') as AdminUserQuery['role']) || 'all',
-      status: (searchParams.get('status') as AdminUserQuery['status']) || 'all',
-      team: searchParams.get('team') || undefined
-    };
-
-    // Build MongoDB query
-    const mongoQuery: Record<string, unknown> = {};
-    
-    if (query.role && query.role !== 'all') {
-      mongoQuery.role = query.role;
-    }
-    
-    if (query.status && query.status !== 'all') {
-      mongoQuery.status = query.status;
-    }
-    
-    if (query.team) {
-      mongoQuery.teams = query.team;
-    }
-    
-    if (query.search) {
-      mongoQuery.$or = [
-        { email: { $regex: query.search, $options: 'i' } },
-        { firstName: { $regex: query.search, $options: 'i' } },
-        { lastName: { $regex: query.search, $options: 'i' } }
-      ];
-    }
-
-    // Execute query with pagination
-    const total = await User.countDocuments(mongoQuery);
-    const pages = Math.ceil(total / query.limit!);
-    const skip = (query.page! - 1) * query.limit!;
-
-    const users = await User.find(mongoQuery)
-      .select('-password')
-      .skip(skip)
-      .limit(query.limit!)
-      .sort({ createdAt: -1 });
-
-    const response: PaginatedResponse<IUser> = {
-      data: users,
-      pagination: {
-        page: query.page!,
-        limit: query.limit!,
-        total,
-        pages
-      }
-    };
-
-    return NextResponse.json(response);
+    return NextResponse.json({ users: serializedUsers });
   } catch (error) {
-    const apiError = error as ApiError;
-    console.error('Error fetching users:', apiError);
+    console.error('Error fetching users:', error);
     return NextResponse.json(
-      { error: apiError.message || 'Failed to fetch users' },
-      { status: apiError.status || 500 }
+      { error: 'Failed to fetch users' },
+      { status: 500 }
     );
   }
 }
@@ -139,4 +93,7 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
+
+// Apply admin middleware to all routes
+export { adminMiddleware as middleware }; 

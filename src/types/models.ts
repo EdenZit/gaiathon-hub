@@ -14,6 +14,7 @@ export interface IUser extends BaseDocument {
   firstName?: string;
   lastName?: string;
   role: 'user' | 'admin';
+  status: 'active' | 'inactive';
   teams: Types.ObjectId[];
   profile: {
     avatar?: string;

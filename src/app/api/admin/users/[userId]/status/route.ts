@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/lib/db/models/User';
+import { adminMiddleware } from '@/middleware/adminMiddleware';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { userId: string } }
 ) {
   try {
     const session = await getServerSession();
@@ -13,7 +14,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { userId } = params;
     const { status } = await request.json();
 
     if (!status || !['active', 'inactive'].includes(status)) {
@@ -25,7 +26,7 @@ export async function PATCH(
 
     await connectDB();
 
-    const user = await User.findById(id);
+    const user = await User.findById(userId);
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -64,4 +65,7 @@ export async function PATCH(
       { status: 500 }
     );
   }
-} 
+}
+
+// Apply admin middleware to all routes
+export { adminMiddleware as middleware }; 
