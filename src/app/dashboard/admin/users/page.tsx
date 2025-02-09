@@ -12,6 +12,7 @@ interface User {
   email: string;
   name: string;
   role: 'user' | 'admin';
+  teamRole: 'leader' | 'member';
   emailVerified?: boolean;
   lastActive?: string;
   createdAt: string;
@@ -24,6 +25,7 @@ function UserManagementPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
+  const [teamRoleFilter, setTeamRoleFilter] = useState<'all' | 'leader' | 'member'>('all');
 
   useEffect(() => {
     fetchUsers();
@@ -64,15 +66,36 @@ function UserManagementPage() {
     }
   };
 
+  const updateTeamRole = async (userId: string, newTeamRole: 'leader' | 'member') => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/team-role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamRole: newTeamRole }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update team role');
+      }
+      
+      toast.success('Team role updated successfully. User must log out and back in for changes to take effect.');
+      fetchUsers(); // Refresh the user list
+    } catch (error) {
+      console.error('Error updating team role:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update team role');
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = 
-      roleFilter === 'all' || user.role === roleFilter;
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesTeamRole = teamRoleFilter === 'all' || user.teamRole === teamRoleFilter;
 
-    return matchesSearch && matchesRole;
+    return matchesSearch && matchesRole && matchesTeamRole;
   });
 
   if (loading) {
@@ -109,9 +132,18 @@ function UserManagementPage() {
             onChange={(e) => setRoleFilter(e.target.value as 'all' | 'user' | 'admin')}
             className="px-4 py-2 border rounded-lg focus:ring-navy-500 focus:border-navy-500"
           >
-            <option value="all">All Roles</option>
+            <option value="all">All System Roles</option>
             <option value="user">Users</option>
             <option value="admin">Admins</option>
+          </select>
+          <select
+            value={teamRoleFilter}
+            onChange={(e) => setTeamRoleFilter(e.target.value as 'all' | 'leader' | 'member')}
+            className="px-4 py-2 border rounded-lg focus:ring-navy-500 focus:border-navy-500"
+          >
+            <option value="all">All Team Roles</option>
+            <option value="leader">Leaders</option>
+            <option value="member">Members</option>
           </select>
         </div>
       </div>
@@ -128,7 +160,10 @@ function UserManagementPage() {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
+                  System Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Team Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -159,6 +194,16 @@ function UserManagementPage() {
                     >
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
+                    </select>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <select
+                      value={user.teamRole}
+                      onChange={(e) => updateTeamRole(user._id, e.target.value as 'leader' | 'member')}
+                      className="text-sm text-gray-500 border rounded px-2 py-1"
+                    >
+                      <option value="member">Member</option>
+                      <option value="leader">Leader</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

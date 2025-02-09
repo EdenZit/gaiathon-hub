@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { connectDB } from '@/lib/mongodb';
-import { User } from '@/lib/db/models/User';
+import { User } from '@/models/User';
 
 const handler = NextAuth({
   providers: [
@@ -37,6 +37,9 @@ const handler = NextAuth({
             firstName: userObject.firstName,
             lastName: userObject.lastName,
             role: userObject.role,
+            status: userObject.status,
+            teamRole: userObject.teamRole,
+            teams: userObject.teams,
           };
         } catch (error) {
           console.error('Authentication error:', error);
@@ -53,6 +56,9 @@ const handler = NextAuth({
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.role = user.role;
+        token.status = user.status;
+        token.teamRole = user.teamRole;
+        token.teams = user.teams;
       }
       return token;
     },
@@ -63,6 +69,9 @@ const handler = NextAuth({
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
         session.user.role = token.role;
+        session.user.status = token.status;
+        session.user.teamRole = token.teamRole;
+        session.user.teams = token.teams;
       }
       return session;
     },

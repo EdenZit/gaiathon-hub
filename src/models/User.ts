@@ -4,32 +4,17 @@ import bcrypt from 'bcryptjs';
 export interface IUser extends mongoose.Document {
   email: string;
   password: string;
-  fullName: string;
-  firstName: string;
-  lastName: string;
-  institution: string;
-  department?: string;
-  location?: string;
-  contactInfo?: string;
-  bio?: string;
-  phoneNumber?: string;
-  fieldOfStudy: string;
-  yearOfStudy: string;
-  country: string;
-  previousHackathonExperience?: string;
-  githubUrl?: string;
-  personalWebsite?: string;
-  linkedinUrl?: string;
-  techSkills?: {
-    coding: boolean;
-    remoteSensing: boolean;
-    gis: boolean;
-    iot: boolean;
-    other?: string;
-  };
-  teamRole?: 'leader' | 'member';
+  name: string;
+  firstName?: string;
+  lastName?: string;
+  role: 'user' | 'admin';
+  teamRole: 'leader' | 'member';
   teams?: mongoose.Types.ObjectId[];
   profileCompleted: boolean;
+  institution?: string;
+  fieldOfStudy?: string;
+  yearOfStudy?: string;
+  country?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
   checkProfileCompletion(): boolean;
 }
@@ -45,109 +30,25 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [8, 'Password must be at least 8 characters long'],
+    minlength: [8, 'Password must be at least 8 characters'],
   },
-  fullName: {
+  name: {
     type: String,
-    required: [true, 'Full name is required'],
+    required: [true, 'Name is required'],
     trim: true,
   },
-  firstName: {
+  firstName: String,
+  lastName: String,
+  role: {
     type: String,
-    required: true,
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  institution: {
-    type: String,
-    required: [true, 'Institution is required'],
-    trim: true,
-  },
-  department: {
-    type: String,
-    trim: true,
-  },
-  location: {
-    type: String,
-    trim: true,
-  },
-  contactInfo: {
-    type: String,
-    trim: true,
-  },
-  bio: {
-    type: String,
-    trim: true,
-  },
-  phoneNumber: {
-    type: String,
-    trim: true,
-  },
-  fieldOfStudy: {
-    type: String,
-    required: [true, 'Field of study is required'],
-    trim: true,
-  },
-  yearOfStudy: {
-    type: String,
-    required: [true, 'Year of study is required'],
-    trim: true,
-  },
-  country: {
-    type: String,
-    required: [true, 'Country is required'],
-    trim: true,
-  },
-  previousHackathonExperience: {
-    type: String,
-    trim: true,
-    required: false
-  },
-  githubUrl: {
-    type: String,
-    trim: true,
-    required: false
-  },
-  personalWebsite: {
-    type: String,
-    trim: true,
-    required: false
-  },
-  linkedinUrl: {
-    type: String,
-    trim: true,
-    required: false
-  },
-  techSkills: {
-    coding: {
-      type: Boolean,
-      default: false,
-    },
-    remoteSensing: {
-      type: Boolean,
-      default: false,
-    },
-    gis: {
-      type: Boolean,
-      default: false,
-    },
-    iot: {
-      type: Boolean,
-      default: false,
-    },
-    other: {
-      type: String,
-      trim: true,
-    },
+    enum: ['user', 'admin'],
+    default: 'user',
   },
   teamRole: {
     type: String,
     enum: ['leader', 'member'],
     default: 'member',
+    required: true,
   },
   teams: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -157,14 +58,18 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  institution: String,
+  fieldOfStudy: String,
+  yearOfStudy: String,
+  country: String,
 }, {
   timestamps: true,
 });
 
 // Split fullName into firstName and lastName before saving
 userSchema.pre('save', function(next) {
-  if (this.isModified('fullName')) {
-    const nameParts = this.fullName.trim().split(/\s+/);
+  if (this.isModified('name')) {
+    const nameParts = this.name.trim().split(/\s+/);
     this.firstName = nameParts[0];
     this.lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
   }
@@ -212,9 +117,7 @@ userSchema.methods.checkProfileCompletion = function(): boolean {
 
 // Update profileCompleted status before saving
 userSchema.pre('save', function(next) {
-  if (typeof this.checkProfileCompletion === 'function') {
-    this.profileCompleted = this.checkProfileCompletion();
-  }
+  this.profileCompleted = this.checkProfileCompletion();
   next();
 });
 

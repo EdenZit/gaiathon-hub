@@ -5,57 +5,47 @@ import { connectDB } from '@/lib/mongodb';
 import { Team } from '@/models/Team';
 import { User } from '@/models/User';
 import { z } from 'zod';
+import { Types } from 'mongoose';
 
-// Schema for team creation validation
-const teamSchema = z.object({
-  name: z.string().min(1, 'Team name is required'),
-  description: z.string().optional(),
+const createTeamSchema = z.object({
+  name: z.string().min(3, 'Team name must be at least 3 characters'),
+  description: z.string(),
   memberEmails: z.array(z.string().email('Invalid email address')),
 });
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectDB();
+    
+    // Find teams where user is either the leader or a member
+    const teams = await Team.find({
+      $or: [
+        { leaderId: session.user.id },
+        { members: session.user.id }
+      ]
+    }).populate('leaderId', 'firstName lastName email');
 
-    const teams = await Team.aggregate([
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'leaderId',
-          foreignField: '_id',
-          as: 'leader'
-        }
-      },
-      {
-        $unwind: '$leader'
-      },
-      {
-        $project: {
-          name: 1,
-          description: 1,
-          leader: {
-            firstName: 1,
-            lastName: 1,
-            email: 1
-          },
-          memberCount: { $size: '$members' }
-        }
-      }
-    ]);
+    // Format the response
+    const formattedTeams = teams.map(team => ({
+      _id: team._id.toString(),
+      name: team.name,
+      description: team.description,
+      leader: team.leaderId,
+      members: team.members,
+      createdAt: team.createdAt,
+      updatedAt: team.updatedAt
+    }));
 
-    return NextResponse.json({ teams });
+    return NextResponse.json(formattedTeams);
   } catch (error) {
     console.error('Error fetching teams:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch teams' },
       { status: 500 }
     );
   }
@@ -64,18 +54,29 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (!session?.user) {
+      console.error('POST /api/teams - No session found');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Double check user's teamRole from the database
     await connectDB();
+    console.log('POST /api/teams - Connected to database');
+    
+    const user = await User.findById(session.user.id);
+    console.log('POST /api/teams - User found:', { 
+      userId: session.user.id,
+      teamRole: user?.teamRole 
+    });
 
-    // Verify user is a leader
-    const user = await User.findOne({ email: session.user.email });
-    if (!user || user.teamRole !== 'leader') {
+    if (!user) {
+      console.error('POST /api/teams - User not found in database');
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if user is a team leader
+    if (user.teamRole !== 'leader') {
+      console.error('POST /api/teams - User is not a team leader:', user.teamRole);
       return NextResponse.json(
         { error: 'Only team leaders can create teams' },
         { status: 403 }
@@ -83,45 +84,107 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const validatedData = teamSchema.parse(body);
+    console.log('POST /api/teams - Request body:', body);
+    
+    const validatedData = createTeamSchema.parse(body);
+    console.log('POST /api/teams - Validated data:', validatedData);
 
-    // Create team
-    const team = await Team.create({
+    // Check if team name already exists
+    const existingTeam = await Team.findOne({ 
+      name: { $regex: new RegExp(`^${validatedData.name}$`, 'i') } 
+    });
+    
+    if (existingTeam) {
+      console.log('POST /api/teams - Team name already exists:', {
+        attemptedName: validatedData.name,
+        existingTeamId: existingTeam._id
+      });
+      return NextResponse.json(
+        { 
+          error: 'Team name already exists',
+          message: `A team with the name "${validatedData.name}" already exists. Please choose a different name.`
+        },
+        { status: 400 }
+      );
+    }
+
+    // Create the team document
+    const team = new Team({
       name: validatedData.name,
       description: validatedData.description,
-      leaderId: user._id,
-      members: [user._id], // Leader is also a member
+      leaderId: new Types.ObjectId(session.user.id),
+      members: [new Types.ObjectId(session.user.id)],
+      projects: [],
+      documents: [],
+      activity: [{
+        type: 'member',
+        action: 'Team created',
+        user: new Types.ObjectId(session.user.id),
+        timestamp: new Date(),
+        details: {
+          teamName: validatedData.name
+        }
+      }],
+      chat: { messages: [] },
+      calendar: { events: [] },
+      progress: { tasks: [], milestones: [] }
     });
 
-    // Update user's teams array
-    await User.findByIdAndUpdate(user._id, {
+    // Save the team
+    await team.save();
+    console.log('POST /api/teams - Team created:', team);
+
+    // Update the user's teams array
+    await User.findByIdAndUpdate(session.user.id, {
       $addToSet: { teams: team._id }
     });
 
-    // Send invitations to members
-    // TODO: Implement email invitations
-    console.log('Sending invitations to:', validatedData.memberEmails);
+    // If member emails are provided, create invitations
+    if (validatedData.memberEmails.length > 0) {
+      // TODO: Implement member invitation logic
+      console.log('POST /api/teams - Member emails to invite:', validatedData.memberEmails);
+    }
 
-    return NextResponse.json({
-      message: 'Team created successfully',
-      team: {
-        id: team._id,
-        name: team.name,
-        description: team.description,
-      }
+    const populatedTeam = await Team.findById(team._id).populate('leaderId', 'firstName lastName email');
+    console.log('POST /api/teams - Team populated with leader details');
+
+    return NextResponse.json(populatedTeam);
+  } catch (error: any) {
+    console.error('POST /api/teams - Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
     });
-  } catch (error) {
-    console.error('Error creating team:', error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
+        {
+          error: 'Validation error',
+          details: error.errors.map(e => ({
+            path: e.path.join('.'),
+            message: e.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      return NextResponse.json(
+        { 
+          error: 'Validation error',
+          details: Object.values(error.errors).map((err: any) => ({
+            path: err.path,
+            message: err.message
+          }))
+        },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create team' },
       { status: 500 }
     );
   }

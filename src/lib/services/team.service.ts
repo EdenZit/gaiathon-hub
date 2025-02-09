@@ -8,7 +8,8 @@ export class TeamService {
   static async createTeam(
     name: string,
     description: string,
-    leaderId: string
+    leaderId: string,
+    memberEmails?: string[]
   ): Promise<ITeam> {
     await connectDB();
 
@@ -36,10 +37,19 @@ export class TeamService {
 
     await team.save();
 
-    // Update user's teams
+    // Update leader's teams
     await User.findByIdAndUpdate(leaderId, {
-      $push: { teams: team._id },
+      $addToSet: { teams: team._id },
     });
+
+    // If member emails are provided, create invitations
+    if (memberEmails?.length) {
+      // TODO: Implement member invitation logic
+      // This would typically involve:
+      // 1. Creating invitation records
+      // 2. Sending invitation emails
+      // 3. Setting up invitation acceptance endpoints
+    }
 
     return team;
   }
@@ -54,7 +64,7 @@ export class TeamService {
   static async addMember(
     teamId: string,
     userId: string,
-    role: ITeamMember['role'] = 'member'
+    role: 'member' | 'contributor' = 'member'
   ): Promise<ITeam> {
     await connectDB();
 
@@ -69,39 +79,29 @@ export class TeamService {
     }
 
     // Check if user is already a member
-    if (team.members.some((member: ITeamMember) => member.user.toString() === userId)) {
+    if (team.members.some(member => member.user.toString() === userId)) {
       throw new Error('User is already a member of this team');
     }
 
-    // Add member to team
-    team.members.push({
+    // Add member with appropriate permissions
+    const memberData: ITeamMember = {
       user: new Types.ObjectId(userId),
       role,
       joinedAt: new Date(),
       permissions: {
-        canManageMembers: role === 'leader',
-        canManageDocuments: role === 'leader',
-        canManageProjects: role === 'leader',
-        canApproveProgress: role === 'leader',
+        canManageMembers: false,
+        canManageDocuments: role === 'member',
+        canManageProjects: role === 'member',
+        canApproveProgress: false,
       },
-    });
+    };
 
-    // Add activity
-    team.activity.push({
-      type: 'member',
-      action: 'Member joined',
-      user: new Types.ObjectId(userId),
-      timestamp: new Date(),
-      details: {
-        role,
-      },
-    });
-
+    team.members.push(memberData);
     await team.save();
 
     // Update user's teams
     await User.findByIdAndUpdate(userId, {
-      $push: { teams: team._id },
+      $addToSet: { teams: team._id },
     });
 
     return team;
@@ -115,28 +115,18 @@ export class TeamService {
       throw new Error('Team not found');
     }
 
-    // Check if user is the leader
+    // Cannot remove the leader
     if (team.leader.toString() === userId) {
-      throw new Error('Team leader cannot be removed');
+      throw new Error('Cannot remove team leader');
     }
 
     // Remove member from team
     team.members = team.members.filter(
-      (member: ITeamMember) => member.user.toString() !== userId
+      member => member.user.toString() !== userId
     );
-
-    // Add activity
-    team.activity.push({
-      type: 'member',
-      action: 'Member removed',
-      user: new Types.ObjectId(userId),
-      timestamp: new Date(),
-      details: {},
-    });
-
     await team.save();
 
-    // Update user's teams
+    // Remove team from user's teams
     await User.findByIdAndUpdate(userId, {
       $pull: { teams: team._id },
     });

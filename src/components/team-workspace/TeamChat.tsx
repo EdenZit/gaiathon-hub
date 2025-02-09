@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useTeam } from '@/contexts/TeamContext';
 import { toast } from 'react-hot-toast';
-import { format } from 'date-fns';
+import { Spinner } from '@/components/ui/Spinner';
+import { io, Socket } from 'socket.io-client';
 
 interface Message {
   id: string;
@@ -18,7 +20,7 @@ interface Message {
 }
 
 interface TeamChatProps {
-  selectedTeam: string | null;
+  selectedTeam: string;
 }
 
 export default function TeamChat({ selectedTeam }: TeamChatProps) {
@@ -26,31 +28,52 @@ export default function TeamChat({ selectedTeam }: TeamChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket>();
+  const { currentTeam } = useTeam();
 
   useEffect(() => {
+    // Initialize Socket.IO connection
+    socketRef.current = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
+      path: '/api/socketio',
+    });
+
+    // Join team room
     if (selectedTeam) {
-      fetchMessages();
-      const interval = setInterval(fetchMessages, 3000); // Poll every 3 seconds
-      return () => clearInterval(interval);
+      socketRef.current.emit('join-team', selectedTeam);
     }
+
+    // Listen for new messages
+    socketRef.current.on('chatMessage', (message: Message) => {
+      setMessages(prev => [...prev, message]);
+      scrollToBottom();
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.emit('leave-team', selectedTeam);
+        socketRef.current.disconnect();
+      }
+    };
+  }, [selectedTeam]);
+
+  useEffect(() => {
+    fetchMessages();
   }, [selectedTeam]);
 
   const fetchMessages = async () => {
-    if (!selectedTeam) return;
-
     try {
+      setIsLoading(true);
       const response = await fetch(`/api/teams/${selectedTeam}/messages`);
       if (!response.ok) throw new Error('Failed to fetch messages');
-      
       const data = await response.json();
       setMessages(data.messages);
-      scrollToBottom();
     } catch (error) {
-      console.error('Error fetching messages:', error);
       toast.error('Failed to load messages');
     } finally {
       setIsLoading(false);
+      scrollToBottom();
     }
   };
 
@@ -60,39 +83,30 @@ export default function TeamChat({ selectedTeam }: TeamChatProps) {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedTeam) return;
+    if (!newMessage.trim()) return;
 
+    setIsSending(true);
     try {
       const response = await fetch(`/api/teams/${selectedTeam}/messages`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content: newMessage.trim() }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newMessage }),
       });
 
       if (!response.ok) throw new Error('Failed to send message');
 
       setNewMessage('');
-      await fetchMessages();
     } catch (error) {
-      console.error('Error sending message:', error);
       toast.error('Failed to send message');
+    } finally {
+      setIsSending(false);
     }
   };
 
-  if (!session?.user?.teams?.length) {
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64">
-        <p className="text-gray-500">Join a team to start chatting</p>
-      </div>
-    );
-  }
-
-  if (!selectedTeam) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64">
-        <p className="text-gray-500">Select a team to view the chat</p>
+      <div className="flex justify-center items-center h-[600px]">
+        <Spinner />
       </div>
     );
   }
@@ -100,56 +114,50 @@ export default function TeamChat({ selectedTeam }: TeamChatProps) {
   return (
     <div className="flex flex-col h-[600px]">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          messages.map((message) => (
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex ${
+              message.sender.id === session?.user?.id ? 'justify-end' : 'justify-start'
+            }`}
+          >
             <div
-              key={message.id}
-              className={`flex ${
-                message.sender.id === session?.user?.id ? 'justify-end' : 'justify-start'
+              className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                message.sender.id === session?.user?.id
+                  ? 'bg-navy-600 text-white'
+                  : 'bg-gray-100 text-gray-900'
               }`}
             >
-              <div
-                className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                  message.sender.id === session?.user?.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}
-              >
-                <div className="flex items-center space-x-2 mb-1">
-                  <span className="font-medium text-sm">
-                    {message.sender.firstName} {message.sender.lastName}
-                  </span>
-                  <span className="text-xs opacity-75">
-                    {format(new Date(message.createdAt), 'HH:mm')}
-                  </span>
-                </div>
-                <p>{message.content}</p>
+              <div className="text-sm font-medium mb-1">
+                {message.sender.id === session?.user?.id
+                  ? 'You'
+                  : `${message.sender.firstName} ${message.sender.lastName}`}
+              </div>
+              <p className="text-sm">{message.content}</p>
+              <div className="text-xs mt-1 opacity-70">
+                {new Date(message.createdAt).toLocaleTimeString()}
               </div>
             </div>
-          ))
-        )}
+          </div>
+        ))}
         <div ref={messagesEndRef} />
       </div>
 
       <form onSubmit={handleSendMessage} className="p-4 border-t">
-        <div className="flex space-x-4">
+        <div className="flex gap-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-navy-500"
           />
           <button
             type="submit"
-            disabled={!newMessage.trim()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            disabled={isSending || !newMessage.trim()}
+            className="inline-flex items-center rounded-md bg-navy-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-500 focus:outline-none disabled:opacity-50"
           >
-            Send
+            {isSending ? <Spinner className="w-4 h-4" /> : 'Send'}
           </button>
         </div>
       </form>

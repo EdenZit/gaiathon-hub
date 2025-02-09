@@ -1,7 +1,8 @@
 import { Document, Types } from 'mongoose';
 
 // Base interface for all models
-export interface BaseDocument extends Document {
+export interface BaseDocument extends Omit<Document, '_id'> {
+  _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
