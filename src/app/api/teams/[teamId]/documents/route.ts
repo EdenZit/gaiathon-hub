@@ -5,6 +5,7 @@ import { connectDB } from '@/lib/db';
 import { Team } from '@/models/Team';
 import { Document } from '@/models/Document';
 import { z } from 'zod';
+import { ITeamMember } from '@/types/models';
 
 // GET /api/teams/[teamId]/documents
 export async function GET(
@@ -25,12 +26,18 @@ export async function GET(
     }
 
     // Check if user is a member of the team
-    if (!team.members.includes(session.user.id) && team.leaderId !== session.user.id) {
+    const isMember = team.members.some((member: ITeamMember) => 
+      member.user.toString() === session.user.id
+    );
+    const isLeader = team.leader.toString() === session.user.id;
+
+    if (!isMember && !isLeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const documents = await Document.find({ teamId: params.teamId })
       .populate('uploadedBy', 'firstName lastName')
+      .populate('owner', 'firstName lastName')
       .sort({ createdAt: -1 });
 
     return NextResponse.json(documents);
@@ -62,7 +69,12 @@ export async function POST(
     }
 
     // Check if user is a member of the team
-    if (!team.members.includes(session.user.id) && team.leaderId !== session.user.id) {
+    const isMember = team.members.some((member: ITeamMember) => 
+      member.user.toString() === session.user.id
+    );
+    const isLeader = team.leader.toString() === session.user.id;
+
+    if (!isMember && !isLeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -83,10 +95,27 @@ export async function POST(
       size: file.size,
       teamId: params.teamId,
       uploadedBy: session.user.id,
+      owner: session.user.id,
+      title: file.name,
+      description: `Uploaded by ${session.user.firstName} ${session.user.lastName}`,
+      visibility: 'team',
+      team: params.teamId,
+      version: 1,
+      lastModified: new Date(),
+      history: [{
+        editor: session.user.id,
+        timestamp: new Date(),
+        changes: 'Initial upload'
+      }]
     });
 
     // TODO: Implement file storage logic (e.g., upload to S3)
     // For now, we'll just return the document metadata
+
+    await document.populate([
+      { path: 'uploadedBy', select: 'firstName lastName' },
+      { path: 'owner', select: 'firstName lastName' }
+    ]);
 
     return NextResponse.json(document);
   } catch (error) {
@@ -117,11 +146,16 @@ export async function DELETE(
     }
 
     // Check if user is a member of the team
-    if (!team.members.includes(session.user.id) && team.leaderId !== session.user.id) {
+    const isMember = team.members.some((member: ITeamMember) => 
+      member.user.toString() === session.user.id
+    );
+    const isLeader = team.leader.toString() === session.user.id;
+
+    if (!isMember && !isLeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const document = await Document.findOneAndDelete({
+    const document = await Document.findOne({
       _id: params.documentId,
       teamId: params.teamId,
     });
@@ -132,6 +166,16 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    // Check if user has permission to delete
+    if (document.owner.toString() !== session.user.id && !isLeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized to delete this document' },
+        { status: 401 }
+      );
+    }
+
+    await Document.findByIdAndDelete(params.documentId);
 
     // TODO: Implement file deletion logic (e.g., delete from S3)
 

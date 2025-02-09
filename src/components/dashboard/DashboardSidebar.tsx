@@ -9,6 +9,7 @@ import {
   WrenchScrewdriverIcon,
   Squares2X2Icon,
   ShieldCheckIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import type { ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react';
 
@@ -26,6 +27,12 @@ const navigation: NavItem[] = [
     href: '/dashboard',
     icon: Squares2X2Icon,
     adminHref: '/dashboard/admin',
+  },
+  {
+    name: 'Team Workspace',
+    href: '/resources/team-workspace',
+    icon: UserGroupIcon,
+    requireAdmin: false,
   },
   {
     name: 'Profile',
@@ -74,7 +81,7 @@ export function DashboardSidebar() {
             const isActive = pathname === href || 
               (item.adminHref && pathname.startsWith('/dashboard/admin'));
             
-            if (item.requireAdmin && !isAdmin) return null;
+            if ((item.requireAdmin && !isAdmin) || (isAdmin && item.requireAdmin === false)) return null;
 
             return (
               <Link

@@ -14,6 +14,7 @@ declare module 'next-auth' {
     name: string;
     role: 'user' | 'admin';
     status: 'active' | 'inactive';
+    teamRole: 'leader' | 'member';
   }
 
   interface Session {
@@ -25,6 +26,7 @@ declare module 'next-auth' {
       name: string;
       role: 'user' | 'admin';
       status: 'active' | 'inactive';
+      teamRole: 'leader' | 'member';
     };
     expires: string;
   }
@@ -39,6 +41,7 @@ declare module 'next-auth/jwt' {
     name: string;
     role: 'user' | 'admin';
     status: 'active' | 'inactive';
+    teamRole: 'leader' | 'member';
   }
 }
 
@@ -50,6 +53,7 @@ interface UserDocument extends Document {
   name?: string;
   role: 'user' | 'admin';
   status: 'active' | 'inactive';
+  teamRole: 'leader' | 'member';
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -82,7 +86,8 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             role: user.role,
             status: user.status,
-            name: user.name
+            name: user.name,
+            teamRole: user.teamRole
           });
 
           const isValidPassword = await user.comparePassword(credentials.password);
@@ -106,7 +111,8 @@ export const authOptions: NextAuthOptions = {
             lastName: user.lastName,
             name: user.name || `${user.firstName} ${user.lastName}`,
             role: user.role as 'user' | 'admin',
-            status: user.status as 'active' | 'inactive'
+            status: user.status as 'active' | 'inactive',
+            teamRole: user.teamRole as 'leader' | 'member'
           };
 
           console.error('DEBUG: Login successful, returning user data:', userData);
@@ -129,6 +135,7 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.role = user.role;
         token.status = user.status;
+        token.teamRole = user.teamRole;
         console.error('DEBUG: JWT token after update:', token);
       }
       return token;
@@ -143,7 +150,8 @@ export const authOptions: NextAuthOptions = {
           lastName: token.lastName,
           name: token.name,
           role: token.role,
-          status: token.status
+          status: token.status,
+          teamRole: token.teamRole
         };
         console.error('DEBUG: Session after update:', session);
       }

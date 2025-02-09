@@ -11,7 +11,9 @@ declare module 'next-auth' {
       image?: string | null;
       firstName?: string;
       lastName?: string;
-      role?: 'user' | 'admin';
+      role: 'user' | 'admin';
+      status: 'active' | 'inactive';
+      teamRole: 'leader' | 'member';
       teams?: string[];
     } & DefaultSession['user'];
   }
@@ -22,7 +24,9 @@ declare module 'next-auth' {
     email?: string;
     firstName?: string;
     lastName?: string;
-    role?: 'user' | 'admin';
+    role: 'user' | 'admin';
+    status: 'active' | 'inactive';
+    teamRole: 'leader' | 'member';
     teams?: string[];
   }
 }
@@ -33,6 +37,8 @@ declare module 'next-auth/jwt' {
     name?: string;
     firstName?: string;
     lastName?: string;
-    role?: 'user' | 'admin';
+    role: 'user' | 'admin';
+    status: 'active' | 'inactive';
+    teamRole: 'leader' | 'member';
   }
 } 

@@ -322,302 +322,298 @@ export default function UserProfile() {
           </button>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Personal Information</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                {...getInputProps('firstName', true)}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium">Last Name</label>
-              <input
-                type="text"
-                id="lastName"
-                {...getInputProps('lastName', true)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={formData.email}
-              readOnly
-              className="mt-1 block w-full rounded-md border-transparent bg-gray-50 px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="institution" className="block text-sm font-medium">Institution</label>
-            <input
-              type="text"
-              id="institution"
-              {...getInputProps('institution', true)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="department" className="block text-sm font-medium">Department/Faculty</label>
-              <input
-                type="text"
-                id="department"
-                {...getInputProps('department')}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="fieldOfStudy" className="block text-sm font-medium">Major/Field of Study</label>
-              <input
-                type="text"
-                id="fieldOfStudy"
-                {...getInputProps('fieldOfStudy', true)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="yearOfStudy" className="block text-sm font-medium">Year of Study</label>
-              <select
-                id="yearOfStudy"
-                {...getInputProps('yearOfStudy', true)}
-              >
-                <option value="">Select Year</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-                <option value="5">5th Year</option>
-                <option value="graduate">Graduate Student</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium">Phone Number (Optional)</label>
-              <input
-                type="tel"
-                id="phoneNumber"
-                {...getInputProps('phoneNumber')}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Location Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium">Country</label>
-              <input
-                type="text"
-                id="country"
-                {...getInputProps('country', true)}
-                placeholder="Enter your country"
-              />
-            </div>
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium">City/Region (Optional)</label>
-              <input
-                type="text"
-                id="location"
-                {...getInputProps('location')}
-                placeholder="Enter your city or region"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Technical Skills</h3>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="coding"
-                name="techSkills.coding"
-                checked={formData.techSkills.coding}
-                onChange={handleInputChange}
-                disabled={!isEditMode}
-                className="rounded border-gray-300"
-              />
-              <label htmlFor="coding">Coding</label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="remoteSensing"
-                name="techSkills.remoteSensing"
-                checked={formData.techSkills.remoteSensing}
-                onChange={handleInputChange}
-                disabled={!isEditMode}
-                className="rounded border-gray-300"
-              />
-              <label htmlFor="remoteSensing">Remote Sensing</label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="gis"
-                name="techSkills.gis"
-                checked={formData.techSkills.gis}
-                onChange={handleInputChange}
-                disabled={!isEditMode}
-                className="rounded border-gray-300"
-              />
-              <label htmlFor="gis">GIS</label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="iot"
-                name="techSkills.iot"
-                checked={formData.techSkills.iot}
-                onChange={handleInputChange}
-                disabled={!isEditMode}
-                className="rounded border-gray-300"
-              />
-              <label htmlFor="iot">IoT</label>
-            </div>
-            
-            <div>
-              <label htmlFor="otherSkills" className="block text-sm font-medium">Other Skills</label>
-              <input
-                type="text"
-                id="otherSkills"
-                name="techSkills.other"
-                value={formData.techSkills.other || ''}
-                onChange={handleInputChange}
-                disabled={!isEditMode}
-                placeholder="Enter other technical skills"
-                className={`mt-1 block w-full rounded-md border ${
-                  isEditMode ? 'border-gray-300' : 'border-transparent bg-gray-50'
-                } px-3 py-2`}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Team Role Preference</h3>
-          <div>
-            <label className="block text-sm font-medium mb-2">How would you like to participate in teams?</label>
-            <div className="space-y-2">
-              <div className="flex items-center">
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  First Name
+                </label>
                 <input
-                  type="radio"
-                  id="member"
-                  name="teamRole"
-                  value="member"
-                  checked={formData.teamRole === 'member'}
+                  type="text"
+                  name="firstName"
+                  id="firstName"
+                  value={formData.firstName}
                   onChange={handleInputChange}
                   disabled={!isEditMode}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-navy-500 focus:outline-none focus:ring-navy-500 disabled:bg-gray-100"
                 />
-                <label htmlFor="member" className="ml-2 block text-sm text-gray-700">
-                  Join existing teams as a member
-                </label>
               </div>
-              <div className="flex items-center">
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  Last Name
+                </label>
                 <input
-                  type="radio"
-                  id="leader"
-                  name="teamRole"
-                  value="leader"
-                  checked={formData.teamRole === 'leader'}
+                  type="text"
+                  name="lastName"
+                  id="lastName"
+                  value={formData.lastName}
                   onChange={handleInputChange}
                   disabled={!isEditMode}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-navy-500 focus:outline-none focus:ring-navy-500 disabled:bg-gray-100"
                 />
-                <label htmlFor="leader" className="ml-2 block text-sm text-gray-700">
-                  Create and lead teams
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email
                 </label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={true}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-100"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="teamRole" className="block text-sm font-medium text-gray-700">
+                  Team Role
+                </label>
+                <select
+                  name="teamRole"
+                  id="teamRole"
+                  value={formData.teamRole}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-navy-500 focus:outline-none focus:ring-navy-500 disabled:bg-gray-100"
+                >
+                  <option value="member">Team Member</option>
+                  <option value="leader">Team Leader</option>
+                </select>
+                <p className="mt-1 text-sm text-gray-500">
+                  {formData.teamRole === 'leader' 
+                    ? 'As a team leader, you can create and manage teams.'
+                    : 'As a team member, you can join existing teams.'}
+                </p>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Experience & Links</h3>
-          
-          <div>
-            <label htmlFor="previousHackathonExperience" className="block text-sm font-medium">
-              Previous Hackathon Experience (Optional)
-            </label>
-            <textarea
-              id="previousHackathonExperience"
-              {...getInputProps('previousHackathonExperience')}
-              rows={3}
-              placeholder="Share your previous hackathon experiences..."
-            />
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label htmlFor="githubUrl" className="block text-sm font-medium">GitHub Profile URL (Optional)</label>
-              <input
-                type="url"
-                id="githubUrl"
-                {...getInputProps('githubUrl')}
-                placeholder="https://github.com/username"
-              />
+            <h3 className="text-lg font-semibold">Personal Information</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="institution" className="block text-sm font-medium">Institution</label>
+                <input
+                  type="text"
+                  id="institution"
+                  {...getInputProps('institution', true)}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="fieldOfStudy" className="block text-sm font-medium">Major/Field of Study</label>
+                <input
+                  type="text"
+                  id="fieldOfStudy"
+                  {...getInputProps('fieldOfStudy', true)}
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="personalWebsite" className="block text-sm font-medium">Personal Website (Optional)</label>
-              <input
-                type="url"
-                id="personalWebsite"
-                {...getInputProps('personalWebsite')}
-                placeholder="https://example.com"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="yearOfStudy" className="block text-sm font-medium">Year of Study</label>
+                <select
+                  id="yearOfStudy"
+                  {...getInputProps('yearOfStudy', true)}
+                >
+                  <option value="">Select Year</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                  <option value="5">5th Year</option>
+                  <option value="graduate">Graduate Student</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
 
-            <div>
-              <label htmlFor="linkedinUrl" className="block text-sm font-medium">LinkedIn Profile URL (Optional)</label>
-              <input
-                type="url"
-                id="linkedinUrl"
-                {...getInputProps('linkedinUrl')}
-                placeholder="https://linkedin.com/in/username"
-              />
+              <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium">Phone Number (Optional)</label>
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  {...getInputProps('phoneNumber')}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Additional Information</h3>
-          <div>
-            <label htmlFor="bio" className="block text-sm font-medium">Bio</label>
-            <textarea
-              id="bio"
-              {...getInputProps('bio')}
-              rows={3}
-              placeholder="Tell us about yourself..."
-            />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Location Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="country" className="block text-sm font-medium">Country</label>
+                <input
+                  type="text"
+                  id="country"
+                  {...getInputProps('country', true)}
+                  placeholder="Enter your country"
+                />
+              </div>
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium">City/Region (Optional)</label>
+                <input
+                  type="text"
+                  id="location"
+                  {...getInputProps('location')}
+                  placeholder="Enter your city or region"
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="contactInfo" className="block text-sm font-medium">Additional Contact Information</label>
-            <textarea
-              id="contactInfo"
-              {...getInputProps('contactInfo')}
-              rows={2}
-              placeholder="Any additional contact information..."
-            />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Technical Skills</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="coding"
+                  name="techSkills.coding"
+                  checked={formData.techSkills.coding}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="coding">Coding</label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="remoteSensing"
+                  name="techSkills.remoteSensing"
+                  checked={formData.techSkills.remoteSensing}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="remoteSensing">Remote Sensing</label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="gis"
+                  name="techSkills.gis"
+                  checked={formData.techSkills.gis}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="gis">GIS</label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="iot"
+                  name="techSkills.iot"
+                  checked={formData.techSkills.iot}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="iot">IoT</label>
+              </div>
+              
+              <div>
+                <label htmlFor="otherSkills" className="block text-sm font-medium">Other Skills</label>
+                <input
+                  type="text"
+                  id="otherSkills"
+                  name="techSkills.other"
+                  value={formData.techSkills.other || ''}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  placeholder="Enter other technical skills"
+                  className={`mt-1 block w-full rounded-md border ${
+                    isEditMode ? 'border-gray-300' : 'border-transparent bg-gray-50'
+                  } px-3 py-2`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Experience & Links</h3>
+            
+            <div>
+              <label htmlFor="previousHackathonExperience" className="block text-sm font-medium">
+                Previous Hackathon Experience (Optional)
+              </label>
+              <textarea
+                id="previousHackathonExperience"
+                {...getInputProps('previousHackathonExperience')}
+                rows={3}
+                placeholder="Share your previous hackathon experiences..."
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="githubUrl" className="block text-sm font-medium">GitHub Profile URL (Optional)</label>
+                <input
+                  type="url"
+                  id="githubUrl"
+                  {...getInputProps('githubUrl')}
+                  placeholder="https://github.com/username"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="personalWebsite" className="block text-sm font-medium">Personal Website (Optional)</label>
+                <input
+                  type="url"
+                  id="personalWebsite"
+                  {...getInputProps('personalWebsite')}
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="linkedinUrl" className="block text-sm font-medium">LinkedIn Profile URL (Optional)</label>
+                <input
+                  type="url"
+                  id="linkedinUrl"
+                  {...getInputProps('linkedinUrl')}
+                  placeholder="https://linkedin.com/in/username"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Additional Information</h3>
+            <div>
+              <label htmlFor="bio" className="block text-sm font-medium">Bio</label>
+              <textarea
+                id="bio"
+                {...getInputProps('bio')}
+                rows={3}
+                placeholder="Tell us about yourself..."
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contactInfo" className="block text-sm font-medium">Additional Contact Information</label>
+              <textarea
+                id="contactInfo"
+                {...getInputProps('contactInfo')}
+                rows={2}
+                placeholder="Any additional contact information..."
+              />
+            </div>
           </div>
         </div>
       </form>
