@@ -3,6 +3,9 @@ import { Team } from '../db/models/Team';
 import { User } from '../db/models/User';
 import { connectDB } from '../mongodb';
 import { ITeam, ITeamMember } from '../../types/models';
+import crypto from 'crypto';
+import { Invitation } from '../../models/Invitation';
+import { sendMail } from '../mail';
 
 export class TeamService {
   static async createTeam(
@@ -208,6 +211,99 @@ export class TeamService {
     });
 
     await team.save();
+    return team;
+  }
+
+  static async resendInvitation(invitationId: string): Promise<void> {
+    const invitation = await Invitation.findById(invitationId);
+    if (!invitation) {
+      throw new Error('Invitation not found');
+    }
+
+    // Get team details for the email
+    const team = await Team.findById(invitation.teamId);
+    if (!team) {
+      throw new Error('Team not found');
+    }
+
+    // Get inviter details
+    const inviter = await User.findById(invitation.invitedBy);
+    if (!inviter) {
+      throw new Error('Inviter not found');
+    }
+
+    // Generate a new token and update expiration
+    invitation.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    await invitation.save();
+
+    // Send the invitation email
+    await sendMail({
+      to: invitation.email,
+      subject: `Reminder: Join ${team.name} on GAIAthon Hub`,
+      template: 'team-invitation',
+      variables: {
+        teamName: team.name,
+        inviterName: `${inviter.firstName} ${inviter.lastName}`,
+        invitationLink: `${process.env.NEXT_PUBLIC_APP_URL}/invitations/${invitation._id}`,
+        expiryDate: invitation.expiresAt.toLocaleDateString(),
+      },
+    });
+  }
+
+  static async processInvitation(invitationId: string, userId: string): Promise<ITeam> {
+    const invitation = await Invitation.findOne({
+      _id: invitationId,
+      status: 'pending',
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!invitation) {
+      throw new Error('Invalid or expired invitation');
+    }
+
+    // Check if user is already a member
+    const team = await Team.findById(invitation.teamId);
+    if (!team) {
+      throw new Error('Team not found');
+    }
+
+    const isMember = team.members.some(member => 
+      member.user.toString() === userId
+    );
+
+    if (isMember) {
+      throw new Error('You are already a member of this team');
+    }
+
+    // Add user to team
+    const newMember: ITeamMember = {
+      user: new Types.ObjectId(userId),
+      role: invitation.role,
+      joinedAt: new Date(),
+      permissions: {
+        canManageMembers: false,
+        canManageDocuments: true,
+        canManageProjects: false,
+        canApproveProgress: false,
+      },
+    };
+
+    team.members.push(newMember);
+    await team.save();
+
+    // Update invitation status
+    invitation.status = 'accepted';
+    await invitation.save();
+
+    // Add activity
+    await this.addActivity(
+      team._id.toString(),
+      userId,
+      'member',
+      'joined',
+      { role: invitation.role }
+    );
+
     return team;
   }
 } 
