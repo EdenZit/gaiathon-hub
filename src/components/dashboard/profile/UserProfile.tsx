@@ -26,6 +26,7 @@ interface UserProfileData {
   fieldOfStudy: string;
   yearOfStudy: string;
   country: string;
+  gender: string;
   previousHackathonExperience: string;
   githubUrl?: string;
   personalWebsite?: string;
@@ -59,6 +60,7 @@ const initialFormData: UserProfileData = {
   fieldOfStudy: '',
   yearOfStudy: '',
   country: '',
+  gender: '',
   previousHackathonExperience: '',
   githubUrl: '',
   personalWebsite: '',
@@ -125,6 +127,7 @@ export default function UserProfile() {
         fieldOfStudy: userData.fieldOfStudy || '',
         yearOfStudy: userData.yearOfStudy || '',
         country: userData.country || '',
+        gender: userData.gender || '',
         previousHackathonExperience: userData.previousHackathonExperience || '',
         githubUrl: userData.githubUrl || '',
         personalWebsite: userData.personalWebsite || '',
@@ -188,6 +191,7 @@ export default function UserProfile() {
         fieldOfStudy: formData.fieldOfStudy.trim(),
         yearOfStudy: formData.yearOfStudy,
         country: formData.country.trim(),
+        gender: formData.gender.trim(),
         previousHackathonExperience: formData.previousHackathonExperience.trim(),
         githubUrl: formData.githubUrl?.trim() || '',
         personalWebsite: formData.personalWebsite?.trim() || '',
@@ -370,6 +374,24 @@ export default function UserProfile() {
                   disabled={true}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-100"
                 />
+              </div>
+
+              <div>
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                  Gender
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  disabled={!isEditMode}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-navy-500 focus:outline-none focus:ring-navy-500 disabled:bg-gray-100"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
               </div>
 
               <div>

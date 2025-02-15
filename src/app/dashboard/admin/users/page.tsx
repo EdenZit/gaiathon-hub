@@ -13,6 +13,7 @@ interface User {
   name: string;
   role: 'user' | 'admin';
   teamRole: 'leader' | 'member';
+  gender?: 'male' | 'female';
   emailVerified?: boolean;
   lastActive?: string;
   createdAt: string;
@@ -160,6 +161,9 @@ function UserManagementPage() {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Gender
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   System Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -184,6 +188,15 @@ function UserManagementPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">{user.email}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">
+                      {user.gender ? (
+                        <span className="capitalize">{user.gender}</span>
+                      ) : (
+                        <span className="text-gray-400">Not specified</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
