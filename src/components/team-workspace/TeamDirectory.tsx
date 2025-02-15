@@ -14,7 +14,7 @@ interface Team {
   name: string;
   description: string;
   leaderId: string;
-  leader: {
+  leaderDetails: {
     firstName: string;
     lastName: string;
   };
@@ -109,7 +109,7 @@ export default function TeamDirectory() {
                       {team.description}
                     </p>
                     <p className="mt-2 text-sm text-gray-500">
-                      Led by {team.leader.firstName} {team.leader.lastName}
+                      Led by {team.leaderDetails.firstName} {team.leaderDetails.lastName}
                     </p>
                   </div>
                   <div>

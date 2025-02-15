@@ -29,7 +29,7 @@ export async function GET(
     const isMember = team.members.some((member: ITeamMember) => 
       member.user.toString() === session.user.id
     );
-    const isLeader = team.leader.toString() === session.user.id;
+    const isLeader = team.leaderId.toString() === session.user.id;
 
     if (!isMember && !isLeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -72,7 +72,7 @@ export async function POST(
     const isMember = team.members.some((member: ITeamMember) => 
       member.user.toString() === session.user.id
     );
-    const isLeader = team.leader.toString() === session.user.id;
+    const isLeader = team.leaderId.toString() === session.user.id;
 
     if (!isMember && !isLeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -149,7 +149,7 @@ export async function DELETE(
     const isMember = team.members.some((member: ITeamMember) => 
       member.user.toString() === session.user.id
     );
-    const isLeader = team.leader.toString() === session.user.id;
+    const isLeader = team.leaderId.toString() === session.user.id;
 
     if (!isMember && !isLeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

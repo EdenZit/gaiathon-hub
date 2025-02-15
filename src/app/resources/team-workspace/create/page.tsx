@@ -9,9 +9,11 @@ import { Spinner } from '@/components/ui/Spinner';
 
 export default function CreateTeamPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const { fetchTeams } = useTeam();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasActiveTeam, setHasActiveTeam] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -19,21 +21,54 @@ export default function CreateTeamPage() {
   });
 
   useEffect(() => {
-    // Redirect if not authenticated or not a team leader
-    if (!session?.user) {
-      router.push('/login');
-      return;
-    }
+    const checkUserStatus = async () => {
+      try {
+        // Check if user is authenticated
+        if (!session?.user) {
+          router.push('/login');
+          return;
+        }
 
-    if (session.user.teamRole !== 'leader') {
-      toast.error('Only team leaders can create teams');
-      router.push('/resources/team-workspace');
-      return;
-    }
+        // Check if user is a team leader
+        if (session.user.teamRole !== 'leader') {
+          toast.error('Only team leaders can create teams');
+          router.push('/resources/team-workspace');
+          return;
+        }
+
+        // Check if user already has an active team
+        const response = await fetch('/api/users/profile');
+        const data = await response.json();
+        setHasActiveTeam(data.hasActiveTeam);
+
+        if (data.hasActiveTeam) {
+          toast.error('You already have an active team. Please contact an admin to remove your existing team before creating a new one.');
+          router.push('/resources/team-workspace');
+          return;
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error checking user status:', error);
+        toast.error('Failed to verify user status');
+        router.push('/resources/team-workspace');
+      }
+    };
+
+    checkUserStatus();
   }, [session, router]);
 
-  // Show nothing while checking authentication/role
-  if (!session?.user || session.user.teamRole !== 'leader') {
+  // Show loading state while checking status
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Spinner />
+      </div>
+    );
+  }
+
+  // Show nothing if user shouldn't be here
+  if (!session?.user || session.user.teamRole !== 'leader' || hasActiveTeam) {
     return null;
   }
 
@@ -58,6 +93,18 @@ export default function CreateTeamPage() {
         const data = await response.json();
         throw new Error(data.error || 'Failed to create team');
       }
+
+      const data = await response.json();
+      
+      // Update session with new user data
+      await updateSession({
+        ...session,
+        user: {
+          ...session?.user,
+          hasActiveTeam: data.user.hasActiveTeam,
+          teamRole: data.user.teamRole
+        }
+      });
 
       await fetchTeams(); // Refresh teams list
       toast.success('Team created successfully! You are now the team leader.');

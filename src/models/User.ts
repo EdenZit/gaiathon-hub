@@ -10,6 +10,7 @@ export interface IUser extends mongoose.Document {
   role: 'user' | 'admin';
   teamRole: 'leader' | 'member';
   teams?: mongoose.Types.ObjectId[];
+  hasActiveTeam: boolean;
   profileCompleted: boolean;
   institution?: string;
   fieldOfStudy?: string;
@@ -50,6 +51,10 @@ const userSchema = new mongoose.Schema({
     enum: ['leader', 'member'],
     default: 'member',
     required: true,
+  },
+  hasActiveTeam: {
+    type: Boolean,
+    default: false,
   },
   teams: [{
     type: mongoose.Schema.Types.ObjectId,

@@ -27,10 +27,10 @@ export interface IUser extends BaseDocument {
 }
 
 // Team related types
-export interface ITeam extends BaseDocument {
+export interface ITeam {
   name: string;
   description: string;
-  leader: Types.ObjectId;
+  leaderId: Types.ObjectId;
   members: ITeamMember[];
   projects: IProject[];
   documents: IDocument[];
@@ -45,6 +45,17 @@ export interface ITeam extends BaseDocument {
     tasks: ITask[];
     milestones: IMilestone[];
   };
+  contactInfo?: {
+    email: string;
+    phone: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type ITeamDocument = Document & ITeam & {
+  isMember: (userId: string) => boolean;
+  isLeader: (userId: string) => boolean;
 }
 
 export interface ITeamMember {

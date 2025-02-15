@@ -24,7 +24,7 @@ export class TeamService {
     const team = new Team({
       name,
       description,
-      leader: leaderId,
+      leaderId: leaderId,
       members: [{
         user: leaderId,
         role: 'leader',
@@ -60,7 +60,7 @@ export class TeamService {
   static async getTeamById(teamId: string): Promise<ITeam | null> {
     await connectDB();
     return Team.findById(teamId)
-      .populate('leader', 'name email')
+      .populate('leaderId', 'name email')
       .populate('members.user', 'name email');
   }
 
@@ -119,7 +119,7 @@ export class TeamService {
     }
 
     // Cannot remove the leader
-    if (team.leader.toString() === userId) {
+    if (team.leaderId.toString() === userId) {
       throw new Error('Cannot remove team leader');
     }
 

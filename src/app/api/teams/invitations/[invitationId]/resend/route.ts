@@ -36,7 +36,7 @@ export async function POST(
       );
     }
 
-    const isTeamLeader = team.leader.toString() === session.user.id;
+    const isTeamLeader = team.leaderId.toString() === session.user.id;
     const isInviter = invitation.invitedBy.toString() === session.user.id;
 
     if (!isTeamLeader && !isInviter) {

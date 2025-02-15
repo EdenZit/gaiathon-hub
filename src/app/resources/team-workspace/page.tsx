@@ -11,9 +11,18 @@ import {
   CalendarIcon,
   ChartBarIcon,
   PlusIcon,
+  UserPlusIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
 
 const features = [
+  {
+    name: 'Overview',
+    description: 'View team profile and manage members',
+    icon: ClipboardDocumentListIcon,
+    path: 'overview',
+  },
   {
     name: 'Team Chat',
     description: 'Real-time communication with team members',
@@ -50,6 +59,23 @@ export default function TeamWorkspacePage() {
   const { teams, isLoading, currentTeam, setCurrentTeam, error } = useTeam();
   const router = useRouter();
   const { data: session } = useSession();
+  const [userHasActiveTeam, setUserHasActiveTeam] = useState(false);
+
+  useEffect(() => {
+    const checkUserTeamStatus = async () => {
+      try {
+        const response = await fetch('/api/users/profile');
+        const data = await response.json();
+        setUserHasActiveTeam(data.hasActiveTeam);
+      } catch (error) {
+        console.error('Error checking user team status:', error);
+      }
+    };
+
+    if (session?.user) {
+      checkUserTeamStatus();
+    }
+  }, [session]);
 
   const handleTeamSelect = (teamId: string) => {
     setCurrentTeam(teamId);
@@ -78,10 +104,25 @@ export default function TeamWorkspacePage() {
         <h1 className="text-2xl font-bold text-gray-900">Team Workspace</h1>
         <p className="mt-2 text-sm text-gray-600">
           {isTeamLeader 
-            ? "Create or manage your team and collaborate with team members."
+            ? userHasActiveTeam
+              ? "Manage your team and collaborate with team members."
+              : "Create or manage your team and collaborate with team members."
             : "Join a team to collaborate with other participants."}
         </p>
       </div>
+
+      {/* Team Creation Button - Only show for leaders without active teams */}
+      {isTeamLeader && !userHasActiveTeam && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => router.push('/resources/team-workspace/create')}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <UserPlusIcon className="h-5 w-5 mr-2" />
+            Create New Team
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.isArray(teams) && teams.length > 0 ? (
@@ -121,7 +162,8 @@ export default function TeamWorkspacePage() {
                 {error ? 'Failed to load teams. Please try again.' : 
                   isTeamLeader ? 'Get started by creating a new team.' : 'Join a team to get started.'}
               </p>
-              {isTeamLeader && (
+              {/* Only show Create Team button for leaders without active teams */}
+              {isTeamLeader && !userHasActiveTeam && (
                 <div className="mt-6">
                   <button
                     onClick={() => router.push('/resources/team-workspace/create')}
@@ -136,7 +178,8 @@ export default function TeamWorkspacePage() {
           </div>
         )}
 
-        {Array.isArray(teams) && teams.length > 0 && isTeamLeader && (
+        {/* Only show Create New Team card for leaders without active teams */}
+        {Array.isArray(teams) && teams.length > 0 && isTeamLeader && !userHasActiveTeam && (
           <button
             onClick={() => router.push('/resources/team-workspace/create')}
             className="relative rounded-lg border-2 border-dashed border-gray-300 p-6 hover:border-navy-400 focus:outline-none"

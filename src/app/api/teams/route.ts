@@ -66,7 +66,8 @@ export async function POST(request: Request) {
     const user = await User.findById(session.user.id);
     console.log('POST /api/teams - User found:', { 
       userId: session.user.id,
-      teamRole: user?.teamRole 
+      teamRole: user?.teamRole,
+      hasActiveTeam: user?.hasActiveTeam 
     });
 
     if (!user) {
@@ -79,6 +80,15 @@ export async function POST(request: Request) {
       console.error('POST /api/teams - User is not a team leader:', user.teamRole);
       return NextResponse.json(
         { error: 'Only team leaders can create teams' },
+        { status: 403 }
+      );
+    }
+
+    // Check if user already has an active team
+    if (user.hasActiveTeam) {
+      console.error('POST /api/teams - User already has an active team');
+      return NextResponse.json(
+        { error: 'You already have an active team. Please contact an admin to remove your existing team before creating a new one.' },
         { status: 403 }
       );
     }
@@ -134,10 +144,11 @@ export async function POST(request: Request) {
     await team.save();
     console.log('POST /api/teams - Team created:', team);
 
-    // Update the user's teams array
-    await User.findByIdAndUpdate(session.user.id, {
-      $addToSet: { teams: team._id }
-    });
+    // Update the user's teams array and set hasActiveTeam to true
+    const updatedUser = await User.findByIdAndUpdate(session.user.id, {
+      $addToSet: { teams: team._id },
+      hasActiveTeam: true
+    }, { new: true });
 
     // If member emails are provided, create invitations
     if (validatedData.memberEmails.length > 0) {
@@ -148,7 +159,14 @@ export async function POST(request: Request) {
     const populatedTeam = await Team.findById(team._id).populate('leaderId', 'firstName lastName email');
     console.log('POST /api/teams - Team populated with leader details');
 
-    return NextResponse.json(populatedTeam);
+    return NextResponse.json({
+      team: populatedTeam,
+      user: {
+        id: updatedUser._id,
+        teamRole: updatedUser.teamRole,
+        hasActiveTeam: updatedUser.hasActiveTeam
+      }
+    });
   } catch (error: any) {
     console.error('POST /api/teams - Error details:', {
       name: error.name,

@@ -147,7 +147,7 @@ const teamSchema = new Schema<ITeamDocument>(
       type: String,
       required: [true, 'Team description is required'],
     },
-    leader: {
+    leaderId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
@@ -178,114 +178,24 @@ const teamSchema = new Schema<ITeamDocument>(
     }],
     chat: {
       messages: [{
-        sender: {
-          type: Schema.Types.ObjectId,
-          ref: 'User',
-          required: true,
-        },
-        content: {
-          type: String,
-          required: true,
-        },
-        timestamp: {
-          type: Date,
-          default: Date.now,
-        },
-        attachments: [{
-          type: String,
-          url: String,
-        }],
-        reactions: [{
-          emoji: String,
-          users: [{
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-          }],
-        }],
+        type: Schema.Types.Mixed,
+        default: [],
       }],
     },
     calendar: {
       events: [{
-        title: {
-          type: String,
-          required: true,
-        },
-        description: String,
-        startTime: {
-          type: Date,
-          required: true,
-        },
-        endTime: {
-          type: Date,
-          required: true,
-        },
-        location: String,
-        attendees: [{
-          type: Schema.Types.ObjectId,
-          ref: 'User',
-        }],
-        reminders: [{
-          time: Date,
-          type: {
-            type: String,
-            enum: ['email', 'notification'],
-          },
-        }],
+        type: Schema.Types.Mixed,
+        default: [],
       }],
     },
     progress: {
       tasks: [{
-        title: {
-          type: String,
-          required: true,
-        },
-        description: String,
-        status: {
-          type: String,
-          enum: ['todo', 'in-progress', 'review', 'completed'],
-          default: 'todo',
-        },
-        assignee: {
-          type: Schema.Types.ObjectId,
-          ref: 'User',
-        },
-        dueDate: Date,
-        priority: {
-          type: String,
-          enum: ['low', 'medium', 'high'],
-          default: 'medium',
-        },
-        dependencies: [{
-          type: Schema.Types.ObjectId,
-          ref: 'Task',
-        }],
+        type: Schema.Types.Mixed,
+        default: [],
       }],
       milestones: [{
-        title: {
-          type: String,
-          required: true,
-        },
-        description: {
-          type: String,
-          required: true,
-        },
-        dueDate: {
-          type: Date,
-          required: true,
-        },
-        status: {
-          type: String,
-          enum: ['upcoming', 'in-progress', 'completed', 'delayed'],
-          default: 'upcoming',
-        },
-        tasks: [{
-          type: Schema.Types.ObjectId,
-          ref: 'Task',
-        }],
-        dependencies: [{
-          type: Schema.Types.ObjectId,
-          ref: 'Milestone',
-        }],
+        type: Schema.Types.Mixed,
+        default: [],
       }],
     },
   },
@@ -297,17 +207,17 @@ const teamSchema = new Schema<ITeamDocument>(
 // Add indexes
 teamSchema.index({ name: 1 });
 teamSchema.index({ 'members.user': 1 });
-teamSchema.index({ leader: 1 });
+teamSchema.index({ leaderId: 1 });
 
 // Add instance methods
 teamSchema.methods.isMember = function(userId: string): boolean {
   return this.members.some((member: ITeamMember) => 
-    member.user.toString() === userId || this.leader.toString() === userId
+    member.user.toString() === userId || this.leaderId.toString() === userId
   );
 };
 
 teamSchema.methods.isLeader = function(userId: string): boolean {
-  return this.leader.toString() === userId;
+  return this.leaderId.toString() === userId;
 };
 
 // Add static methods
@@ -315,7 +225,7 @@ teamSchema.statics.findByMember = function(userId: string): Promise<ITeamDocumen
   return this.find({ 
     $or: [
       { 'members.user': new Types.ObjectId(userId) },
-      { leader: new Types.ObjectId(userId) }
+      { leaderId: new Types.ObjectId(userId) }
     ]
   });
 };
