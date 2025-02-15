@@ -50,8 +50,35 @@ export function Features() {
           </div>
         </div>
 
-        {/* Winners Showcase */}
+        {/* Categories Section */}
         <div className="mb-20">
+          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">GAIAthon'25 Categories</h3>
+          <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-8 shadow-lg">
+            <div className="space-y-8">
+              <div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-2">Digital Platforms and Interactive Applications</h4>
+                <p className="text-sm text-gray-600">
+                  Innovative web and mobile applications designed to process, analyse, and visualise Earth observation (EO) data and IoT insights for decision-making and user engagement
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-2">IoT-Enabled Smart Systems</h4>
+                <p className="text-sm text-gray-600">
+                  Integrated IoT solutions that leverage sensors and real-time data transmission, complemented by interactive dashboards for monitoring, automation, and actionable insights
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-2">Geospatial Intelligence and Policy Innovation</h4>
+                <p className="text-sm text-gray-600">
+                  Solutions that utilise EO data for mapping, spatial analysis, and evidence-based policy recommendations to address environmental and societal challenges
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Winners Showcase */}
+        <div>
           <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">GAIAthon'24 Winners</h3>
           <div className="relative h-96 bg-gray-100 rounded-xl overflow-hidden shadow-lg">
             <div className="absolute inset-0 transition-opacity duration-1000">
@@ -79,33 +106,6 @@ export function Features() {
                   onClick={() => setCurrentWinner(index)}
                 />
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Categories Section */}
-        <div>
-          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">GAIAthon'25 Categories</h3>
-          <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-8 shadow-lg">
-            <div className="space-y-8">
-              <div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-2">Digital Platforms and Interactive Applications</h4>
-                <p className="text-sm text-gray-600">
-                  Innovative web and mobile applications designed to process, analyse, and visualise Earth observation (EO) data and IoT insights for decision-making and user engagement
-                </p>
-              </div>
-              <div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-2">IoT-Enabled Smart Systems</h4>
-                <p className="text-sm text-gray-600">
-                  Integrated IoT solutions that leverage sensors and real-time data transmission, complemented by interactive dashboards for monitoring, automation, and actionable insights
-                </p>
-              </div>
-              <div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-2">Geospatial Intelligence and Policy Innovation</h4>
-                <p className="text-sm text-gray-600">
-                  Solutions that utilise EO data for mapping, spatial analysis, and evidence-based policy recommendations to address environmental and societal challenges
-                </p>
-              </div>
             </div>
           </div>
         </div>

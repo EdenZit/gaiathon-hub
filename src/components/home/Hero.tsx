@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { FaRocket, FaUsers, FaGlobe } from 'react-icons/fa6';
 
 const stats = [
-  { label: 'Universities', value: '50+', icon: FaUsers },
-  { label: 'Countries', value: '15+', icon: FaGlobe },
+  { label: 'Universities', value: '16', icon: FaUsers },
+  { label: 'Countries', value: '12', icon: FaGlobe },
   { label: 'Projects', value: '100+', icon: FaRocket },
 ];
 
