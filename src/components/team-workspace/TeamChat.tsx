@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { useTeam } from '@/contexts/TeamContext';
 import { toast } from 'react-hot-toast';
 import { Spinner } from '@/components/ui/Spinner';
-import { io, Socket } from 'socket.io-client';
 
 interface Message {
   id: string;
@@ -30,36 +29,12 @@ export default function TeamChat({ selectedTeam }: TeamChatProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<Socket>();
   const { currentTeam } = useTeam();
 
   useEffect(() => {
-    // Initialize Socket.IO connection
-    socketRef.current = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
-      path: '/api/socketio',
-    });
-
-    // Join team room
-    if (selectedTeam) {
-      socketRef.current.emit('join-team', selectedTeam);
-    }
-
-    // Listen for new messages
-    socketRef.current.on('chatMessage', (message: Message) => {
-      setMessages(prev => [...prev, message]);
-      scrollToBottom();
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.emit('leave-team', selectedTeam);
-        socketRef.current.disconnect();
-      }
-    };
-  }, [selectedTeam]);
-
-  useEffect(() => {
     fetchMessages();
+    const interval = setInterval(fetchMessages, 5000); // Poll every 5 seconds
+    return () => clearInterval(interval);
   }, [selectedTeam]);
 
   const fetchMessages = async () => {
@@ -94,8 +69,11 @@ export default function TeamChat({ selectedTeam }: TeamChatProps) {
       });
 
       if (!response.ok) throw new Error('Failed to send message');
-
+      
+      const data = await response.json();
+      setMessages(prev => [...prev, data.message]);
       setNewMessage('');
+      scrollToBottom();
     } catch (error) {
       toast.error('Failed to send message');
     } finally {
@@ -103,7 +81,7 @@ export default function TeamChat({ selectedTeam }: TeamChatProps) {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && messages.length === 0) {
     return (
       <div className="flex justify-center items-center h-[600px]">
         <Spinner />

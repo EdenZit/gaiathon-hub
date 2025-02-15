@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   web:
     build:
@@ -17,6 +19,8 @@ services:
       - HOST=0.0.0.0
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=http://localhost:3000
+    networks:
+      - app-network
     depends_on:
       redis:
         condition: service_healthy
@@ -26,6 +30,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
 
   task-runner:
     build:
@@ -39,10 +44,14 @@ services:
       - NODE_ENV=development
       - MONGODB_URI=${MONGODB_URI}
       - REDIS_URL=redis://redis:6379
+    networks:
+      - app-network
     depends_on:
       - redis
+      - web
     profiles:
       - tasks
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
@@ -50,12 +59,20 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    networks:
+      - app-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
-  redis_data: 
+  redis_data:
+    driver: local 
