@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { withAdminGuard } from '@/components/auth/AdminGuard';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'react-hot-toast';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 interface User {
   _id: string;
@@ -85,6 +86,30 @@ function UserManagementPage() {
     } catch (error) {
       console.error('Error updating team role:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to update team role');
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete user');
+      }
+      
+      toast.success('User deleted successfully');
+      fetchUsers(); // Refresh the user list
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to delete user');
     }
   };
 
@@ -232,12 +257,23 @@ function UserManagementPage() {
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => router.push(`/dashboard/admin/users/${user._id}`)}
-                      className="text-navy-600 hover:text-navy-900"
-                    >
-                      View Details
-                    </button>
+                    <div className="flex justify-end items-center space-x-4">
+                      <button
+                        onClick={() => router.push(`/dashboard/admin/users/${user._id}`)}
+                        className="text-navy-600 hover:text-navy-900"
+                      >
+                        View Details
+                      </button>
+                      {user._id !== session?.user?.id && (
+                        <button
+                          onClick={() => deleteUser(user._id)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50"
+                          title="Delete user"
+                        >
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
