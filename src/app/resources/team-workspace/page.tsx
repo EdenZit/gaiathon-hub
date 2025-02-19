@@ -1,227 +1,177 @@
 'use client';
 
-import { useTeam } from '@/contexts/TeamContext';
-import { useRouter } from 'next/navigation';
-import { Spinner } from '@/components/ui/Spinner';
 import { useSession } from 'next-auth/react';
-import {
-  UsersIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-  CalendarIcon,
-  ChartBarIcon,
-  PlusIcon,
-  UserPlusIcon,
-  ClipboardDocumentListIcon,
-} from '@heroicons/react/24/outline';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
-const features = [
-  {
-    name: 'Overview',
-    description: 'View team profile and manage members',
-    icon: ClipboardDocumentListIcon,
-    path: 'overview',
-  },
-  {
-    name: 'Team Chat',
-    description: 'Real-time communication with team members',
-    icon: ChatBubbleLeftRightIcon,
-    path: 'chat',
-  },
-  {
-    name: 'Documents',
-    description: 'Collaborative document management',
-    icon: DocumentTextIcon,
-    path: 'documents',
-  },
-  {
-    name: 'Members',
-    description: 'View and manage team members',
-    icon: UsersIcon,
-    path: 'members',
-  },
-  {
-    name: 'Calendar',
-    description: 'Team events and timeline',
-    icon: CalendarIcon,
-    path: 'calendar',
-  },
-  {
-    name: 'Progress',
-    description: 'Track team progress and metrics',
-    icon: ChartBarIcon,
-    path: 'progress',
-  },
-];
+interface TeamMember {
+  _id: string;
+  email: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface Team {
+  _id: string;
+  name: string;
+  category: string;
+  status: 'pending' | 'approved' | 'rejected';
+  leaderId: string;
+  members: TeamMember[];
+  createdAt: string;
+}
 
 export default function TeamWorkspacePage() {
-  const { teams, isLoading, currentTeam, setCurrentTeam, error } = useTeam();
-  const router = useRouter();
   const { data: session } = useSession();
-  const [userHasActiveTeam, setUserHasActiveTeam] = useState(false);
+  const router = useRouter();
+  const [team, setTeam] = useState<Team | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkUserTeamStatus = async () => {
-      try {
-        const response = await fetch('/api/users/profile');
-        const data = await response.json();
-        setUserHasActiveTeam(data.hasActiveTeam);
-      } catch (error) {
-        console.error('Error checking user team status:', error);
-      }
-    };
-
-    if (session?.user) {
-      checkUserTeamStatus();
+    if (!session?.user) {
+      router.push('/register');
+      return;
     }
+
+    fetchTeam();
   }, [session]);
 
-  const handleTeamSelect = (teamId: string) => {
-    setCurrentTeam(teamId);
-    router.push(`/resources/team-workspace/${teamId}`);
+  const fetchTeam = async () => {
+    try {
+      const response = await fetch('/api/teams/my-team');
+      if (!response.ok) {
+        if (response.status === 404) {
+          setTeam(null);
+        } else {
+          throw new Error('Failed to fetch team');
+        }
+      } else {
+        const data = await response.json();
+        setTeam(data.team);
+      }
+    } catch (error) {
+      console.error('Error fetching team:', error);
+      toast.error('Failed to load team data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getMemberCount = (team: { members?: Array<any> }) => {
-    if (!team.members || !Array.isArray(team.members)) return 0;
-    return team.members.length;
+  const handleCreateTeam = () => {
+    if (team) {
+      toast.error('You are already part of a team');
+      return;
+    }
+    router.push('/resources/team-workspace/create');
   };
 
-  // Check if user is a team leader from their profile
-  const isTeamLeader = session?.user?.teamRole === 'leader';
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Spinner />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!team) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900">Welcome to Team Workspace</h2>
+            <p className="mt-4 text-lg text-gray-600">
+              You are not part of any team yet. Create a new team to get started.
+            </p>
+            <button
+              onClick={handleCreateTeam}
+              className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create New Team
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Team Workspace</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          {isTeamLeader 
-            ? userHasActiveTeam
-              ? "Manage your team and collaborate with team members."
-              : "Create or manage your team and collaborate with team members."
-            : "Join a team to collaborate with other participants."}
-        </p>
-      </div>
-
-      {/* Team Creation Button - Only show for leaders without active teams */}
-      {isTeamLeader && !userHasActiveTeam && (
-        <div className="flex justify-end">
-          <button
-            onClick={() => router.push('/resources/team-workspace/create')}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <UserPlusIcon className="h-5 w-5 mr-2" />
-            Create New Team
-          </button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.isArray(teams) && teams.length > 0 ? (
-          teams.map((team) => (
-            <button
-              key={team._id}
-              onClick={() => handleTeamSelect(team._id)}
-              className={`relative rounded-lg border ${
-                currentTeam?._id === team._id
-                  ? 'border-navy-600 ring-2 ring-navy-600'
-                  : 'border-gray-300 hover:border-navy-400'
-              } bg-white p-6 shadow-sm focus:outline-none`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-50">
-                    <UsersIcon className="h-6 w-6 text-navy-600" aria-hidden="true" />
-                  </div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 text-left">
-                    {team.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 text-left">
-                    {getMemberCount(team)} members
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))
-        ) : (
-          <div className="col-span-full">
-            <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
-              <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No teams</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                {error ? 'Failed to load teams. Please try again.' : 
-                  isTeamLeader ? 'Get started by creating a new team.' : 'Join a team to get started.'}
-              </p>
-              {/* Only show Create Team button for leaders without active teams */}
-              {isTeamLeader && !userHasActiveTeam && (
-                <div className="mt-6">
-                  <button
-                    onClick={() => router.push('/resources/team-workspace/create')}
-                    className="inline-flex items-center rounded-md bg-navy-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-500 focus:outline-none"
-                  >
-                    <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
-                    Create Team
-                  </button>
-                </div>
-              )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Team Profile Header */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">{team.name}</h1>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-500">Status:</span>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                ${team.status === 'approved' ? 'bg-green-100 text-green-800' : 
+                  team.status === 'rejected' ? 'bg-red-100 text-red-800' : 
+                  'bg-yellow-100 text-yellow-800'}`}
+              >
+                {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
+              </span>
             </div>
           </div>
-        )}
-
-        {/* Only show Create New Team card for leaders without active teams */}
-        {Array.isArray(teams) && teams.length > 0 && isTeamLeader && !userHasActiveTeam && (
-          <button
-            onClick={() => router.push('/resources/team-workspace/create')}
-            className="relative rounded-lg border-2 border-dashed border-gray-300 p-6 hover:border-navy-400 focus:outline-none"
-          >
-            <div className="flex flex-col items-center justify-center space-y-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-50">
-                <PlusIcon className="h-6 w-6 text-gray-400" aria-hidden="true" />
-              </div>
-              <span className="text-sm font-medium text-gray-900">Create New Team</span>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Team Category</h3>
+              <p className="text-gray-600">{team.category}</p>
             </div>
-          </button>
-        )}
-      </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Created On</h3>
+              <p className="text-gray-600">{new Date(team.createdAt).toLocaleDateString()}</p>
+            </div>
+          </div>
+        </div>
 
-      {currentTeam && (
-        <div className="mt-12">
-          <h2 className="text-lg font-medium text-gray-900 mb-6">Team Features</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <button
-                key={feature.name}
-                onClick={() => router.push(`/resources/team-workspace/${currentTeam._id}/${feature.path}`)}
-                className="relative rounded-lg border border-gray-300 bg-white p-6 shadow-sm hover:border-navy-400 focus:outline-none"
+        {/* Team Members Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Team Members</h2>
+          <div className="space-y-4">
+            {team.members.map((member) => (
+              <div
+                key={member._id}
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
               >
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-50">
-                      <feature.icon className="h-6 w-6 text-navy-600" aria-hidden="true" />
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1 text-left">
-                    <h3 className="text-base font-medium text-gray-900">
-                      {feature.name}
-                    </h3>
-                    <p className="text-sm text-gray-500">{feature.description}</p>
-                  </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {member.firstName} {member.lastName}
+                    {team.leaderId === member._id && (
+                      <span className="ml-2 text-sm text-blue-600">(Team Leader)</span>
+                    )}
+                  </h3>
+                  <p className="text-gray-600">{member.email}</p>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
-      )}
+
+        {team.status === 'rejected' && (
+          <div className="mt-8 bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800">
+              Your team registration has been rejected. Please contact the administrator for more information.
+            </p>
+          </div>
+        )}
+
+        {team.status === 'pending' && (
+          <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800">
+              Your team registration is pending approval from the administrator. You will be notified once it's approved.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 } 

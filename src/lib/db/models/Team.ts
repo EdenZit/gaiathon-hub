@@ -10,6 +10,7 @@ interface ITeamDocument extends Document {
   category: TeamCategory;
   leaderId: Types.ObjectId;
   members: Types.ObjectId[];
+  status: 'pending' | 'approved' | 'rejected';
   isLeader: (userId: string) => boolean;
 }
 
@@ -43,6 +44,12 @@ const teamSchema = new Schema<ITeamDocument>(
       type: Schema.Types.ObjectId,
       ref: 'User',
     }],
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
+      required: true
+    }
   },
   {
     timestamps: true,

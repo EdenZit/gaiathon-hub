@@ -63,15 +63,30 @@ export async function POST(request: Request) {
 
     await connectDB();
     
+    // Check if user is already in a team
+    const existingTeam = await Team.findOne({
+      $or: [
+        { leaderId: new Types.ObjectId(session.user.id) },
+        { members: new Types.ObjectId(session.user.id) }
+      ]
+    });
+
+    if (existingTeam) {
+      return NextResponse.json(
+        { error: 'You are already a member of a team' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = createTeamSchema.parse(body);
 
     // Check if team name already exists (case-insensitive)
-    const existingTeam = await Team.findOne({ 
+    const existingTeamName = await Team.findOne({ 
       name: { $regex: new RegExp(`^${validatedData.name}$`, 'i') } 
     });
     
-    if (existingTeam) {
+    if (existingTeamName) {
       return NextResponse.json(
         { error: 'Team name already exists' },
         { status: 400 }
@@ -84,7 +99,8 @@ export async function POST(request: Request) {
         name: validatedData.name,
         category: validatedData.category,
         leaderId: new Types.ObjectId(session.user.id),
-        members: [new Types.ObjectId(session.user.id)]
+        members: [new Types.ObjectId(session.user.id)],
+        status: 'pending' // Set initial status to pending
       });
 
       await team.save();
@@ -96,7 +112,8 @@ export async function POST(request: Request) {
           $set: { 
             teamRole: 'leader',
             status: 'active'
-          } 
+          },
+          $push: { teams: team._id }
         },
         { new: true }
       );
@@ -114,7 +131,8 @@ export async function POST(request: Request) {
           id: team._id,
           name: team.name,
           category: team.category,
-          leaderId: team.leaderId
+          leaderId: team.leaderId,
+          status: team.status
         }
       });
     } catch (saveError) {
