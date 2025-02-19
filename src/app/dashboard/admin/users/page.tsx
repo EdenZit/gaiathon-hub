@@ -146,6 +146,32 @@ function UserManagementPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">User Management</h1>
         <div className="flex gap-4">
+          <button
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/admin/users/export');
+                if (!response.ok) throw new Error('Export failed');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'users.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                toast.success('Users exported successfully');
+              } catch (error) {
+                console.error('Error exporting users:', error);
+                toast.error('Failed to export users');
+              }
+            }}
+            className="px-4 py-2 bg-navy-600 text-white rounded-lg hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
+          >
+            Export Users
+          </button>
           <input
             type="text"
             placeholder="Search users..."
@@ -264,7 +290,7 @@ function UserManagementPage() {
                       >
                         View Details
                       </button>
-                      {user._id !== session?.user?.id && (
+                      {user._id !== session?.user?.id && user.role !== 'admin' && (
                         <button
                           onClick={() => deleteUser(user._id)}
                           className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50"
