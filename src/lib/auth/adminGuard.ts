@@ -1,22 +1,44 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import Redis from "ioredis";
 import { headers } from "next/headers";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Create a new ratelimiter for admin endpoints
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// Create a new Redis client for Docker
+const redis = new Redis(process.env.REDIS_URL || "redis://redis:6379");
 
-const adminLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "1m"), // 10 requests per minute
-  analytics: true,
-  prefix: "@upstash/ratelimit/admin",
-});
+// Simple rate limiting implementation
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX = 10; // 10 requests per minute
+
+async function checkRateLimit(userId: string): Promise<{
+  success: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+}> {
+  const now = Date.now();
+  const key = `ratelimit:admin:${userId}`;
+  
+  const multi = redis.multi();
+  multi.zremrangebyscore(key, 0, now - RATE_LIMIT_WINDOW);
+  multi.zadd(key, now, now.toString());
+  multi.zcard(key);
+  multi.expire(key, 60);
+  
+  const [, , count] = await multi.exec() as [any, any, [null | Error, number]];
+  
+  const reset = now + RATE_LIMIT_WINDOW;
+  const remaining = Math.max(0, RATE_LIMIT_MAX - (count?.[1] || 0));
+  
+  return {
+    success: remaining > 0,
+    limit: RATE_LIMIT_MAX,
+    remaining,
+    reset,
+  };
+}
 
 interface AdminActionLog {
   timestamp: Date;
@@ -55,26 +77,34 @@ async function logAdminAction(
 
   // Log to console in development
   if (process.env.NODE_ENV === "development") {
-    console.log("Admin Action:", log);
+    console.log("Admin Action Log:", log);
   }
 }
 
 export async function adminGuard(req: NextRequest, action: string = "unknown") {
-  const session = await getServerSession();
-  
   try {
+    const session = await getServerSession(authOptions);
+    console.log('Session in adminGuard:', {
+      id: session?.user?.id,
+      email: session?.user?.email,
+      role: session?.user?.role,
+      name: session?.user?.name
+    });
+    
     // Check basic authentication
     if (!session?.user) {
+      console.log('No session found in adminGuard');
       throw new Error("No session found");
     }
 
     // Check admin role
     if (session.user.role !== "admin") {
+      console.log('User is not admin. Current role:', session.user.role);
       throw new Error("User is not an admin");
     }
 
     // Rate limiting check
-    const { success, limit, reset, remaining } = await adminLimiter.limit(
+    const { success, limit, reset, remaining } = await checkRateLimit(
       session.user.id || "anonymous"
     );
 
@@ -100,12 +130,14 @@ export async function adminGuard(req: NextRequest, action: string = "unknown") {
 
     // Log successful auth
     await logAdminAction(action, session, req, true);
+    console.log('Admin access granted for:', session.user.email);
     
-    // Allow the request to proceed
-    return null;
+    return true;
 
   } catch (error) {
     // Log failed attempt
+    const session = await getServerSession(authOptions);
+    console.error('Admin guard error:', error);
     await logAdminAction(
       action,
       session,
@@ -114,19 +146,12 @@ export async function adminGuard(req: NextRequest, action: string = "unknown") {
       error instanceof Error ? error.message : "Unknown error"
     );
 
-    return NextResponse.json(
-      {
-        error: "Unauthorized",
-        code: "UNAUTHORIZED_ACCESS",
-        message: "You must be an administrator to access this resource",
-      },
-      { status: 403 }
-    );
+    return false;
   }
 }
 
 export async function validateAdminSession() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "admin") {
     throw new Error("Unauthorized - Admin access required");
   }

@@ -18,6 +18,10 @@ interface User {
   emailVerified?: boolean;
   lastActive?: string;
   createdAt: string;
+  institution?: string;
+  yearOfStudy?: string;
+  fieldOfStudy?: string;
+  country?: string;
 }
 
 function UserManagementPage() {
@@ -110,6 +114,34 @@ function UserManagementPage() {
     } catch (error) {
       console.error('Error deleting user:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to delete user');
+    }
+  };
+
+  const handleProfileUpdate = async (userId: string, updateData: Partial<{
+    institution: string;
+    yearOfStudy: string;
+    fieldOfStudy: string;
+    teamRole: 'leader' | 'member';
+    gender: 'male' | 'female' | 'other';
+    country: string;
+  }>) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update user profile');
+      }
+
+      toast.success('Profile updated successfully');
+      fetchUsers(); // Refresh the user list
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update user profile');
     }
   };
 
@@ -221,6 +253,18 @@ function UserManagementPage() {
                   Team Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Institution
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Year of Study
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Field of Study
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Country
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -269,6 +313,54 @@ function UserManagementPage() {
                       <option value="member">Member</option>
                       <option value="leader">Leader</option>
                     </select>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      value={user.institution || ''}
+                      onChange={(e) => handleProfileUpdate(user._id, { institution: e.target.value })}
+                      placeholder="Institution"
+                      className="text-sm text-gray-500 border rounded px-2 py-1 w-full"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      value={user.yearOfStudy || ''}
+                      onChange={(e) => handleProfileUpdate(user._id, { yearOfStudy: e.target.value })}
+                      placeholder="Year of Study"
+                      className="text-sm text-gray-500 border rounded px-2 py-1 w-full"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      value={user.fieldOfStudy || ''}
+                      onChange={(e) => handleProfileUpdate(user._id, { fieldOfStudy: e.target.value })}
+                      placeholder="Field of Study"
+                      className="text-sm text-gray-500 border rounded px-2 py-1 w-full"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <select
+                      value={user.gender || ''}
+                      onChange={(e) => handleProfileUpdate(user._id, { gender: e.target.value as 'male' | 'female' | 'other' })}
+                      className="text-sm text-gray-500 border rounded px-2 py-1"
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      value={user.country || ''}
+                      onChange={(e) => handleProfileUpdate(user._id, { country: e.target.value })}
+                      placeholder="Country"
+                      className="text-sm text-gray-500 border rounded px-2 py-1 w-full"
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

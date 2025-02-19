@@ -8,22 +8,57 @@ export interface BaseDocument extends Omit<Document, '_id'> {
 }
 
 // User related types
-export interface IUser extends BaseDocument {
+export interface IUser {
+  _id: string;
   email: string;
   password: string;
   name: string;
   firstName?: string;
   lastName?: string;
   role: 'user' | 'admin';
+  teamRole: 'leader' | 'member';
   status: 'active' | 'inactive';
-  teams: Types.ObjectId[];
-  profile: {
+  gender?: 'male' | 'female' | 'other';
+  emailVerified?: boolean;
+  lastActive?: Date;
+  teams?: string[];
+  institution?: string;
+  yearOfStudy?: string;
+  fieldOfStudy?: string;
+  country?: string;
+  department?: string;
+  location?: string;
+  contactInfo?: string;
+  bio?: string;
+  phoneNumber?: string;
+  previousHackathonExperience?: string;
+  githubUrl?: string;
+  personalWebsite?: string;
+  linkedinUrl?: string;
+  techSkills?: {
+    coding: boolean;
+    remoteSensing: boolean;
+    gis: boolean;
+    iot: boolean;
+    other?: string;
+  };
+  profileCompleted?: boolean;
+  profile?: {
     avatar?: string;
     bio?: string;
     organization?: string;
     position?: string;
     skills?: string[];
+    socialLinks?: {
+      github?: string;
+      linkedin?: string;
+      twitter?: string;
+      website?: string;
+      [key: string]: string | undefined;
+    };
   };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Team related types

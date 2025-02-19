@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import mongoose, { Connection, ConnectOptions } from 'mongoose';
+import mongoose from 'mongoose';
 
 // Load environment variables
 config();
@@ -7,58 +7,54 @@ config();
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+  throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-// After the check above, we know MONGODB_URI is defined
-const MONGODB_URI_SAFE = MONGODB_URI as string;
-
-interface GlobalMongoose {
-  conn: Connection | null;
+interface MongooseCache {
+  conn: mongoose.Connection | null;
   promise: Promise<typeof mongoose> | null;
 }
 
 declare global {
-  // eslint-disable-next-line no-var
-  var mongoose: GlobalMongoose | undefined;
+  var mongoose: { cache?: MongooseCache };
 }
+
+let cached: MongooseCache = global.mongoose?.cache || { conn: null, promise: null };
 
 if (!global.mongoose) {
-  global.mongoose = { conn: null, promise: null };
+  global.mongoose = { cache: cached };
 }
 
-const cached = global.mongoose;
-
-export async function connectDB(): Promise<Connection> {
+export async function connectDB(): Promise<mongoose.Connection> {
   if (cached.conn) {
+    console.log('Using cached MongoDB connection');
     return cached.conn;
   }
 
   if (!cached.promise) {
-    const opts: ConnectOptions = {
+    const opts = {
       bufferCommands: true,
       maxPoolSize: 10,
-      socketTimeoutMS: 30000,
       serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
       family: 4
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI_SAFE, opts).catch((error) => {
-      console.error('MongoDB Atlas connection error:', error);
-      throw error;
+    cached.promise = mongoose.connect(MONGODB_URI!).then((mongoose) => {
+      console.log('New MongoDB connection established');
+      return mongoose;
     });
   }
 
   try {
-    const m = await cached.promise;
-    cached.conn = m.connection;
-    console.log('Connected to MongoDB Atlas');
-    return cached.conn;
+    const mongoose = await cached.promise;
+    cached.conn = mongoose.connection;
   } catch (e) {
     cached.promise = null;
-    console.error('MongoDB Atlas connection error:', e);
     throw e;
   }
+
+  return cached.conn;
 }
 
 export async function disconnectDB() {

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
@@ -6,19 +6,31 @@ import { User } from '@/lib/db/models/User';
 import { AdminUserQuery, ApiError, PaginatedResponse } from '@/types/admin';
 import { IUser } from '@/types/models';
 import { adminMiddleware } from '@/middleware/adminMiddleware';
+import { adminGuard } from '@/lib/auth/adminGuard';
 
 const ITEMS_PER_PAGE = 10;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const db = await connectDB();
-    const users = await db.collection('users')
-      .find({})
-      .project({
-        password: 0, // Exclude password field
-      })
+    // Verify admin access
+    const isAdmin = await adminGuard(request, 'fetch_users');
+    if (!isAdmin) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    // Connect to MongoDB Atlas
+    await connectDB();
+    console.log('Connected to MongoDB Atlas for user fetch');
+
+    // Fetch all users with specific field selection
+    const users = await User.find({})
+      .select('-password')  // Exclude password field
       .sort({ createdAt: -1 })
-      .toArray();
+      .lean();  // Convert to plain JavaScript objects
+
+    if (!users || users.length === 0) {
+      return NextResponse.json({ users: [] });
+    }
 
     // Convert _id to string for JSON serialization
     const serializedUsers = users.map(user => ({

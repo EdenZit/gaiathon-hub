@@ -1,90 +1,91 @@
-import NextAuth from 'next-auth';
+import NextAuth, { AuthOptions, DefaultSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { connectDB } from '@/lib/mongodb';
-import { User } from '@/models/User';
+import { User } from '@/lib/db/models/User';
+import { IUser } from '@/types/models';
 
-const handler = NextAuth({
+// Extend the built-in session types
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string;
+      role: 'user' | 'admin';
+      firstName?: string;
+    } & DefaultSession['user']
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    role?: 'user' | 'admin';
+    firstName?: string;
+  }
+}
+
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: 'credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter an email and password');
+          throw new Error('Please provide email and password');
         }
 
-        try {
-          await connectDB();
-
-          const user = await User.findOne({ email: credentials.email.toLowerCase() });
-          if (!user) {
-            throw new Error('Invalid email or password');
-          }
-
-          const isValid = await user.comparePassword(credentials.password);
-          if (!isValid) {
-            throw new Error('Invalid email or password');
-          }
-
-          const userObject = user.toObject();
-          return {
-            id: userObject._id.toString(),
-            email: userObject.email,
-            name: userObject.name,
-            firstName: userObject.firstName,
-            lastName: userObject.lastName,
-            role: userObject.role,
-            status: userObject.status,
-            teamRole: userObject.teamRole,
-            teams: userObject.teams,
-          };
-        } catch (error) {
-          console.error('Authentication error:', error);
-          throw error;
+        await connectDB();
+        
+        const user = await User.findOne({ email: credentials.email.toLowerCase() });
+        if (!user) {
+          throw new Error('No user found with this email');
         }
-      },
-    }),
+
+        const isValid = await user.comparePassword(credentials.password);
+        if (!isValid) {
+          throw new Error('Invalid password');
+        }
+
+        // Convert Mongoose document to plain object and return required fields
+        const userDoc = user.toObject();
+        return {
+          id: userDoc._id.toString(),
+          email: userDoc.email,
+          name: userDoc.name || '',
+          role: userDoc.role as 'user' | 'admin',
+          firstName: userDoc.firstName,
+        };
+      }
+    })
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.firstName = user.firstName;
-        token.lastName = user.lastName;
         token.role = user.role;
-        token.status = user.status;
-        token.teamRole = user.teamRole;
-        token.teams = user.teams;
+        token.firstName = user.firstName;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.name = token.name;
+      if (token && session.user) {
+        session.user.role = token.role || 'user';
         session.user.firstName = token.firstName;
-        session.user.lastName = token.lastName;
-        session.user.role = token.role;
-        session.user.status = token.status;
-        session.user.teamRole = token.teamRole;
-        session.user.teams = token.teams;
       }
       return session;
-    },
+    }
   },
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: '/auth/login',
+    error: '/auth/error',
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 24 * 60 * 60, // 24 hours
   },
+  secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
-});
+};
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST }; 

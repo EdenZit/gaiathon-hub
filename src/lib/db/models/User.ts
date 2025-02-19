@@ -43,21 +43,121 @@ const userSchema = new Schema<IUserDocument>(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    teamRole: {
+      type: String,
+      enum: ['leader', 'member'],
+      default: 'member',
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active'
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other'],
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    lastActive: {
+      type: Date,
+    },
     teams: [{
       type: Schema.Types.ObjectId,
       ref: 'Team',
     }],
+    institution: {
+      type: String,
+      trim: true,
+    },
+    yearOfStudy: {
+      type: String,
+      trim: true,
+    },
+    fieldOfStudy: {
+      type: String,
+      trim: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+    department: {
+      type: String,
+      trim: true,
+    },
+    location: {
+      type: String,
+      trim: true,
+    },
+    contactInfo: {
+      type: String,
+      trim: true,
+    },
+    bio: {
+      type: String,
+      trim: true,
+    },
+    phoneNumber: {
+      type: String,
+      trim: true,
+    },
+    previousHackathonExperience: {
+      type: String,
+      trim: true,
+    },
+    githubUrl: {
+      type: String,
+      trim: true,
+    },
+    personalWebsite: {
+      type: String,
+      trim: true,
+    },
+    linkedinUrl: {
+      type: String,
+      trim: true,
+    },
+    techSkills: {
+      coding: {
+        type: Boolean,
+        default: false,
+      },
+      remoteSensing: {
+        type: Boolean,
+        default: false,
+      },
+      gis: {
+        type: Boolean,
+        default: false,
+      },
+      iot: {
+        type: Boolean,
+        default: false,
+      },
+      other: {
+        type: String,
+        trim: true,
+      },
+    },
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
     profile: {
       avatar: String,
       bio: String,
       organization: String,
       position: String,
       skills: [String],
-    },
-    status: {
-      type: String,
-      enum: ['active', 'inactive'],
-      default: 'active'
+      socialLinks: {
+        github: String,
+        linkedin: String,
+        twitter: String,
+        website: String,
+      },
     },
   },
   {

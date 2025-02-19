@@ -1,31 +1,31 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { User } from '@/models/User';
+import { User } from '@/lib/db/models/User';
 import { connectDB } from '@/lib/mongodb';
 import { z } from 'zod';
 import mongoose from 'mongoose';
 
 // Schema for profile update validation
 const profileSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   email: z.string().email(),
-  institution: z.string().min(1, 'Institution is required'),
+  institution: z.string().optional(),
   department: z.string().nullable(),
   location: z.string().nullable(),
   contactInfo: z.string().nullable(),
   bio: z.string().nullable(),
   phoneNumber: z.string().nullable(),
-  fieldOfStudy: z.string().min(1, 'Field of study is required'),
-  yearOfStudy: z.string().min(1, 'Year of study is required'),
-  country: z.string().min(1, 'Country is required'),
-  gender: z.enum(['male', 'female']).optional(),
-  previousHackathonExperience: z.string(),
+  fieldOfStudy: z.string().optional(),
+  yearOfStudy: z.string().optional(),
+  country: z.string().optional(),
+  gender: z.enum(['male', 'female', 'other']).optional(),
+  previousHackathonExperience: z.string().optional(),
   githubUrl: z.string().optional(),
   personalWebsite: z.string().optional(),
   linkedinUrl: z.string().optional(),
-  teamRole: z.enum(['leader', 'member']).default('member'),
+  teamRole: z.enum(['leader', 'member']).optional(),
   techSkills: z.object({
     coding: z.boolean(),
     remoteSensing: z.boolean(),
@@ -112,42 +112,29 @@ export async function PUT(request: Request) {
       const validatedData = profileSchema.parse(body);
       console.log('Validated data:', validatedData);
 
-      // Update the user with findOneAndUpdate
+      // Prepare update data
+      const updateData: any = { ...validatedData };
+      
+      // Only update name if both firstName and lastName are provided
+      if (validatedData.firstName && validatedData.lastName) {
+        updateData.name = `${validatedData.firstName} ${validatedData.lastName}`;
+      }
+
+      // Remove email from update if it matches current email
+      if (updateData.email === session.user.email) {
+        delete updateData.email;
+      }
+
+      console.log('Final update data:', updateData);
+
+      // Update the user
       const updatedUser = await User.findOneAndUpdate(
         { email: session.user.email },
+        { $set: updateData },
         {
-          $set: {
-            firstName: validatedData.firstName,
-            lastName: validatedData.lastName,
-            fullName: `${validatedData.firstName} ${validatedData.lastName}`,
-            institution: validatedData.institution,
-            department: validatedData.department,
-            location: validatedData.location,
-            contactInfo: validatedData.contactInfo,
-            bio: validatedData.bio,
-            phoneNumber: validatedData.phoneNumber,
-            fieldOfStudy: validatedData.fieldOfStudy,
-            yearOfStudy: validatedData.yearOfStudy,
-            country: validatedData.country,
-            gender: validatedData.gender,
-            previousHackathonExperience: validatedData.previousHackathonExperience,
-            githubUrl: validatedData.githubUrl,
-            personalWebsite: validatedData.personalWebsite,
-            linkedinUrl: validatedData.linkedinUrl,
-            teamRole: validatedData.teamRole,
-            techSkills: validatedData.techSkills || {
-              coding: false,
-              remoteSensing: false,
-              gis: false,
-              iot: false,
-              other: '',
-            },
-          }
-        },
-        {
-          new: true, // Return the updated document
-          runValidators: true, // Run schema validators
-          upsert: false, // Don't create if not exists
+          new: true,
+          runValidators: true,
+          lean: true
         }
       );
 
@@ -158,9 +145,10 @@ export async function PUT(request: Request) {
         );
       }
 
+      console.log('Updated user:', updatedUser);
+
       return NextResponse.json({
         message: 'Profile updated successfully',
-        profileCompleted: updatedUser.profileCompleted,
         user: {
           firstName: updatedUser.firstName,
           lastName: updatedUser.lastName,
@@ -181,7 +169,7 @@ export async function PUT(request: Request) {
           linkedinUrl: updatedUser.linkedinUrl,
           teamRole: updatedUser.teamRole,
           techSkills: updatedUser.techSkills,
-          profileCompleted: updatedUser.profileCompleted,
+          profileCompleted: updatedUser.profileCompleted
         }
       });
     } catch (validationError) {
