@@ -1,25 +1,35 @@
-import NextAuth, { AuthOptions, DefaultSession } from 'next-auth';
+import NextAuth, { AuthOptions, DefaultSession, User as NextAuthUser } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/lib/db/models/User';
 import { IUser } from '@/types/models';
+import { Types, Document } from 'mongoose';
+
+interface ExtendedUser extends NextAuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: 'user' | 'admin';
+  firstName: string;
+  lastName: string;
+  teamRole: 'leader' | 'member';
+  status: 'active' | 'inactive';
+}
+
+interface UserDocument extends Omit<IUser, '_id'>, Document {
+  _id: Types.ObjectId;
+  comparePassword(password: string): Promise<boolean>;
+}
 
 // Extend the built-in session types
 declare module 'next-auth' {
   interface Session {
-    user: {
-      id: string;
-      role: 'user' | 'admin';
-      firstName?: string;
-    } & DefaultSession['user']
+    user: ExtendedUser;
   }
 }
 
 declare module 'next-auth/jwt' {
-  interface JWT {
-    role?: 'user' | 'admin';
-    firstName?: string;
-  }
+  interface JWT extends ExtendedUser {}
 }
 
 export const authOptions: AuthOptions = {
@@ -37,7 +47,7 @@ export const authOptions: AuthOptions = {
 
         await connectDB();
         
-        const user = await User.findOne({ email: credentials.email.toLowerCase() });
+        const user = await User.findOne({ email: credentials.email.toLowerCase() }) as UserDocument | null;
         if (!user) {
           throw new Error('No user found with this email');
         }
@@ -47,30 +57,51 @@ export const authOptions: AuthOptions = {
           throw new Error('Invalid password');
         }
 
-        // Convert Mongoose document to plain object and return required fields
-        const userDoc = user.toObject();
+        // Convert Mongoose document to plain object and ensure all required fields
         return {
-          id: userDoc._id.toString(),
-          email: userDoc.email,
-          name: userDoc.name || '',
-          role: userDoc.role as 'user' | 'admin',
-          firstName: userDoc.firstName,
-        };
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name || '',
+          role: user.role || 'user',
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          teamRole: user.teamRole || 'member',
+          status: user.status || 'active',
+        } as ExtendedUser;
       }
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
+        // Initial sign in
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
         token.role = user.role;
         token.firstName = user.firstName;
+        token.lastName = user.lastName;
+        token.teamRole = user.teamRole;
+        token.status = user.status;
+      } else if (trigger === "update" && session) {
+        // Handle session updates
+        return { ...token, ...session.user };
       }
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.role = token.role || 'user';
-        session.user.firstName = token.firstName;
+      if (session.user) {
+        // Map all token data to session
+        session.user = {
+          id: token.id,
+          email: token.email,
+          name: token.name,
+          role: token.role,
+          firstName: token.firstName,
+          lastName: token.lastName,
+          teamRole: token.teamRole,
+          status: token.status,
+        };
       }
       return session;
     }

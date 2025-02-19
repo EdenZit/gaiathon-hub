@@ -2,16 +2,35 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
-import { Team } from '@/models/Team';
-import { User } from '@/models/User';
+import { Team } from '@/lib/db/models/Team';
+import { User } from '@/lib/db/models/User';
 import { z } from 'zod';
 import { Types } from 'mongoose';
 
+const TEAM_CATEGORIES = [
+  'Digital Platforms and Interactive Applications',
+  'IoT-Enabled Smart Systems',
+  'Geospatial Intelligence and Policy Innovation'
+] as const;
+
 const createTeamSchema = z.object({
   name: z.string().min(3, 'Team name must be at least 3 characters'),
-  description: z.string(),
-  memberEmails: z.array(z.string().email('Invalid email address')),
+  category: z.enum(TEAM_CATEGORIES, {
+    errorMap: () => ({ message: 'Please select a valid team category' })
+  }),
+  memberEmails: z.array(z.string().email('Invalid email format')).optional()
 });
+
+interface UpdatedUser {
+  _id: Types.ObjectId;
+  email: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+  role: 'user' | 'admin';
+  teamRole: 'leader' | 'member';
+  status: 'active' | 'inactive';
+}
 
 export async function GET() {
   try {
@@ -22,26 +41,10 @@ export async function GET() {
 
     await connectDB();
     
-    // Find teams where user is either the leader or a member
-    const teams = await Team.find({
-      $or: [
-        { leaderId: session.user.id },
-        { members: session.user.id }
-      ]
-    }).populate('leaderId', 'firstName lastName email');
+    const teams = await Team.findByMember(session.user.id)
+      .populate('leaderId members', 'firstName lastName email');
 
-    // Format the response
-    const formattedTeams = teams.map(team => ({
-      _id: team._id.toString(),
-      name: team.name,
-      description: team.description,
-      leader: team.leaderId,
-      members: team.members,
-      createdAt: team.createdAt,
-      updatedAt: team.updatedAt
-    }));
-
-    return NextResponse.json(formattedTeams);
+    return NextResponse.json(teams);
   } catch (error) {
     console.error('Error fetching teams:', error);
     return NextResponse.json(
@@ -55,124 +58,74 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      console.error('POST /api/teams - No session found');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Double check user's teamRole from the database
     await connectDB();
-    console.log('POST /api/teams - Connected to database');
     
-    const user = await User.findById(session.user.id);
-    console.log('POST /api/teams - User found:', { 
-      userId: session.user.id,
-      teamRole: user?.teamRole,
-      hasActiveTeam: user?.hasActiveTeam 
-    });
-
-    if (!user) {
-      console.error('POST /api/teams - User not found in database');
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    // Check if user is a team leader
-    if (user.teamRole !== 'leader') {
-      console.error('POST /api/teams - User is not a team leader:', user.teamRole);
-      return NextResponse.json(
-        { error: 'Only team leaders can create teams' },
-        { status: 403 }
-      );
-    }
-
-    // Check if user already has an active team
-    if (user.hasActiveTeam) {
-      console.error('POST /api/teams - User already has an active team');
-      return NextResponse.json(
-        { error: 'You already have an active team. Please contact an admin to remove your existing team before creating a new one.' },
-        { status: 403 }
-      );
-    }
-
     const body = await request.json();
-    console.log('POST /api/teams - Request body:', body);
-    
     const validatedData = createTeamSchema.parse(body);
-    console.log('POST /api/teams - Validated data:', validatedData);
 
-    // Check if team name already exists
+    // Check if team name already exists (case-insensitive)
     const existingTeam = await Team.findOne({ 
       name: { $regex: new RegExp(`^${validatedData.name}$`, 'i') } 
     });
     
     if (existingTeam) {
-      console.log('POST /api/teams - Team name already exists:', {
-        attemptedName: validatedData.name,
-        existingTeamId: existingTeam._id
-      });
       return NextResponse.json(
-        { 
-          error: 'Team name already exists',
-          message: `A team with the name "${validatedData.name}" already exists. Please choose a different name.`
-        },
+        { error: 'Team name already exists' },
         { status: 400 }
       );
     }
 
-    // Create the team document
-    const team = new Team({
-      name: validatedData.name,
-      description: validatedData.description,
-      leaderId: new Types.ObjectId(session.user.id),
-      members: [new Types.ObjectId(session.user.id)],
-      projects: [],
-      documents: [],
-      activity: [{
-        type: 'member',
-        action: 'Team created',
-        user: new Types.ObjectId(session.user.id),
-        timestamp: new Date(),
-        details: {
-          teamName: validatedData.name
-        }
-      }],
-      chat: { messages: [] },
-      calendar: { events: [] },
-      progress: { tasks: [], milestones: [] }
-    });
+    // Create the team with proper error handling
+    try {
+      const team = new Team({
+        name: validatedData.name,
+        category: validatedData.category,
+        leaderId: new Types.ObjectId(session.user.id),
+        members: [new Types.ObjectId(session.user.id)]
+      });
 
-    // Save the team
-    await team.save();
-    console.log('POST /api/teams - Team created:', team);
+      await team.save();
 
-    // Update the user's teams array and set hasActiveTeam to true
-    const updatedUser = await User.findByIdAndUpdate(session.user.id, {
-      $addToSet: { teams: team._id },
-      hasActiveTeam: true
-    }, { new: true });
+      // Update user's role to leader
+      await User.findByIdAndUpdate(
+        session.user.id,
+        { 
+          $set: { 
+            teamRole: 'leader',
+            status: 'active'
+          } 
+        },
+        { new: true }
+      );
 
-    // If member emails are provided, create invitations
-    if (validatedData.memberEmails.length > 0) {
-      // TODO: Implement member invitation logic
-      console.log('POST /api/teams - Member emails to invite:', validatedData.memberEmails);
-    }
-
-    const populatedTeam = await Team.findById(team._id).populate('leaderId', 'firstName lastName email');
-    console.log('POST /api/teams - Team populated with leader details');
-
-    return NextResponse.json({
-      team: populatedTeam,
-      user: {
-        id: updatedUser._id,
-        teamRole: updatedUser.teamRole,
-        hasActiveTeam: updatedUser.hasActiveTeam
+      // If member emails were provided, store them for invitation processing
+      if (validatedData.memberEmails?.length) {
+        // Here you would typically store the pending invitations
+        // This will be handled by your invitation system
+        console.log('Member emails to invite:', validatedData.memberEmails);
       }
-    });
-  } catch (error: any) {
-    console.error('POST /api/teams - Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
+
+      return NextResponse.json({
+        message: 'Team created successfully',
+        team: {
+          id: team._id,
+          name: team.name,
+          category: team.category,
+          leaderId: team.leaderId
+        }
+      });
+    } catch (saveError) {
+      console.error('Error saving team:', saveError);
+      return NextResponse.json(
+        { error: 'Failed to save team' },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error('Error creating team:', error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -182,20 +135,6 @@ export async function POST(request: Request) {
             path: e.path.join('.'),
             message: e.message,
           })),
-        },
-        { status: 400 }
-      );
-    }
-
-    // Handle Mongoose validation errors
-    if (error.name === 'ValidationError') {
-      return NextResponse.json(
-        { 
-          error: 'Validation error',
-          details: Object.values(error.errors).map((err: any) => ({
-            path: err.path,
-            message: err.message
-          }))
         },
         { status: 400 }
       );
