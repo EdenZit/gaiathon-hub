@@ -20,6 +20,35 @@ A unified platform for Earth Observation resources, collaboration, and innovatio
 - **Containerization**: Docker
 - **Styling**: Tailwind CSS
 
+## Security Best Practices
+
+### Environment Variables
+1. Never commit `.env` files to version control
+2. Use `.env.example` as a template
+3. Generate secure secrets using `npm run generate-secrets`
+4. Use different secrets for each environment
+5. Rotate secrets periodically
+
+### MongoDB Atlas
+1. Use strong, unique passwords
+2. Enable IP whitelist
+3. Use the minimum required permissions
+4. Enable database auditing
+5. Regular security audits
+
+### Redis Security
+1. Run Redis in Docker with persistence
+2. Enable protected mode
+3. Use strong Redis passwords
+4. Regular security updates
+
+### API Security
+1. Rate limiting enabled
+2. CSRF protection
+3. Secure session management
+4. Input validation
+5. Error handling
+
 ## Getting Started
 
 ### Prerequisites
@@ -58,6 +87,32 @@ The project uses Docker for development. The development environment includes:
 - TypeScript compilation
 - Tailwind CSS processing
 - MongoDB and Redis services
+
+## Docker Deployment
+
+```bash
+# Build and start services
+docker-compose up --build
+
+# Run in background
+docker-compose up -d
+
+# Stop services
+docker-compose down
+```
+
+## Testing
+
+```bash
+# Run tests
+npm run test
+
+# Check database connection
+npm run check:db
+
+# Clean database
+npm run db:clean
+```
 
 ## Contributing
 
