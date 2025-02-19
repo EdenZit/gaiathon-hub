@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { CalendarDaysIcon, MegaphoneIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 export const metadata: Metadata = {
@@ -58,14 +59,34 @@ export default function EventsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl mb-4">
-            GAIAthon'25 Updates
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Stay informed about the latest events, announcements, and important dates for GAIAthon 2025
-          </p>
+        {/* Header with Map */}
+        <div className="relative mb-16">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl mb-4">
+              GAIAthon'25 Updates
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Stay informed about the latest events, announcements, and important dates for GAIAthon 2025
+            </p>
+          </div>
+          
+          {/* Centered Map */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-[420px]">
+              <div className="relative w-full h-[420px] bg-white rounded-lg shadow-lg overflow-hidden">
+                <Image
+                  src="/images/maps/africa-participants.png"
+                  alt="Map of participating African countries"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <p className="mt-2 text-sm text-blue-600 text-center font-medium">
+                Participating Countries
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Upcoming Events Section */}
