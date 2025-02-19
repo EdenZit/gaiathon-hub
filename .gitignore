@@ -18,15 +18,27 @@
 # misc
 .DS_Store
 *.pem
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+debug.log
 
 # local env files
 .env
 .env*.local
+.env.development
+.env.test
+.env.production
+.env*.backup
 
 # vercel
 .vercel
@@ -36,12 +48,46 @@ yarn-error.log*
 next-env.d.ts
 
 # IDE
-.idea
-.vscode
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Secrets and keys
+*.key
+*.pem
+*.cert
+*.crt
+*.p12
+*.pfx
+*secret*
+*password*
+*credential*
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+dump.rdb
+
+# Build and temp files
+dist/
+tmp/
+temp/
+.cache/
+
+# Docker volumes
+docker-volumes/
+redis-data/
+mongodb-data/
+
+# System Files
+.env.save
+*copy.env
+config.backup
+*.bak
+*backup
+*~
