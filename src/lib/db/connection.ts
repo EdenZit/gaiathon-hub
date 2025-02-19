@@ -1,4 +1,8 @@
 import mongoose from 'mongoose';
+import { config } from 'dotenv';
+
+// Load environment variables
+config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -6,22 +10,22 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
 }
 
-interface MongooseConnection {
-  conn: typeof mongoose | null;
+interface MongooseCache {
+  conn: mongoose.Connection | null;
   promise: Promise<typeof mongoose> | null;
 }
 
 declare global {
-  var mongoose: MongooseConnection | undefined;
+  var mongoose: { cache?: MongooseCache };
 }
 
-const cached: MongooseConnection = global.mongoose || { conn: null, promise: null };
+let cached: MongooseCache = global.mongoose?.cache || { conn: null, promise: null };
 
 if (!global.mongoose) {
-  global.mongoose = cached;
+  global.mongoose = { cache: cached };
 }
 
-export async function connectDB() {
+export async function connectDB(): Promise<mongoose.Connection> {
   if (cached.conn) {
     console.log('Using cached MongoDB connection');
     return cached.conn;
@@ -29,7 +33,7 @@ export async function connectDB() {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
+      bufferCommands: true,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
@@ -38,7 +42,7 @@ export async function connectDB() {
 
     console.log('Connecting to MongoDB...');
     cached.promise = mongoose
-      .connect(MONGODB_URI as string, opts)
+      .connect(MONGODB_URI!)
       .then((mongoose) => {
         console.log('MongoDB connected successfully');
         return mongoose;
@@ -50,11 +54,25 @@ export async function connectDB() {
   }
 
   try {
-    cached.conn = await cached.promise;
+    const mongoose = await cached.promise;
+    cached.conn = mongoose.connection;
   } catch (error) {
     cached.promise = null;
     throw error;
   }
 
   return cached.conn;
-} 
+}
+
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received. Closing MongoDB connection...');
+  await mongoose.disconnect();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received. Closing MongoDB connection...');
+  await mongoose.disconnect();
+  process.exit(0);
+}); 

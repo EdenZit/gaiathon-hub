@@ -22,17 +22,19 @@ export function AdminGuard({ children, fallback }: AdminGuardProps) {
     );
   }
 
-  // Redirect non-admin users
+  // Redirect non-admin users to dashboard
   if (status === "authenticated" && session?.user?.role !== "admin") {
+    console.log('User is not admin, redirecting to dashboard');
     redirect("/dashboard");
   }
 
-  // Show fallback for unauthenticated users
+  // Show fallback or redirect unauthenticated users to admin login
   if (status === "unauthenticated") {
+    console.log('User is not authenticated, redirecting to admin login');
     if (fallback) {
       return <>{fallback}</>;
     }
-    redirect("/login");
+    redirect("/admin-login");
   }
 
   // Render children for admin users

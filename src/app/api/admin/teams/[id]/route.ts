@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { Team } from '@/lib/db/models/Team';
 import { User } from '@/lib/db/models/User';
+import { adminGuard } from '@/lib/auth/adminGuard';
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -37,25 +38,41 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const session = await getServerSession();
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Verify admin access
+    const isAdmin = await adminGuard(request, 'delete_team');
+    if (!isAdmin) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
     await connectDB();
 
     const team = await Team.findById(params.id);
     if (!team) {
-      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Team not found' },
+        { status: 404 }
+      );
     }
 
-    await team.deleteOne();
+    await Team.findByIdAndDelete(params.id);
 
-    return NextResponse.json({ message: 'Team deleted successfully' });
-  } catch (error: any) {
+    return NextResponse.json({
+      message: 'Team deleted successfully'
+    });
+
+  } catch (error) {
     console.error('Error deleting team:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to delete team' },
+      { status: 500 }
+    );
   }
-} 
+}
+
+// Apply admin middleware to all routes
+export { adminMiddleware as middleware } from '@/middleware/adminMiddleware'; 

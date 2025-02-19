@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { 
   UsersIcon, 
@@ -11,6 +11,7 @@ import {
   Cog6ToothIcon,
   CircleStackIcon
 } from '@heroicons/react/24/outline';
+import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: ChartBarIcon },
@@ -27,6 +28,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+
+  // Add console logging for debugging
+  console.log('Current pathname:', pathname);
+  console.log('Session status:', status);
+  console.log('User role:', session?.user?.role);
 
   if (status === 'loading') {
     return (
@@ -49,16 +56,25 @@ export default function AdminLayout({
             <h1 className="text-xl font-semibold text-gray-800">Admin Panel</h1>
           </div>
           <nav className="mt-6 px-4">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="group flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.name}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isActive = pathname.startsWith(item.href); // Changed to startsWith for better matching
+              console.log(`Nav item: ${item.name}, Path: ${item.href}, Active: ${isActive}`);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "group flex items-center px-4 py-3 text-gray-600 rounded-md transition-colors",
+                    isActive 
+                      ? "bg-blue-50 text-blue-600" 
+                      : "hover:bg-blue-50 hover:text-blue-600"
+                  )}
+                >
+                  <item.icon className="mr-3 h-5 w-5" />
+                  {item.name}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 

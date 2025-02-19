@@ -6,17 +6,20 @@ import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import { 
   UsersIcon, 
+  UserGroupIcon,
   Cog6ToothIcon, 
   ChartBarIcon,
   DocumentChartBarIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  HomeIcon,
+  DocumentTextIcon
 } from "@heroicons/react/24/outline";
 
 const adminNavItems = [
   {
     name: "Dashboard",
     href: "/dashboard/admin",
-    icon: ChartBarIcon,
+    icon: HomeIcon,
     description: "Admin dashboard overview"
   },
   {
@@ -24,6 +27,12 @@ const adminNavItems = [
     href: "/dashboard/admin/users",
     icon: UsersIcon,
     description: "Manage users and permissions"
+  },
+  {
+    name: "Teams",
+    href: "/dashboard/admin/teams",
+    icon: UserGroupIcon,
+    description: "Manage teams and registrations"
   },
   {
     name: "System Settings",
@@ -40,7 +49,7 @@ const adminNavItems = [
   {
     name: "Reports",
     href: "/dashboard/admin/reports",
-    icon: DocumentChartBarIcon,
+    icon: DocumentTextIcon,
     description: "Generate and view reports"
   },
   {

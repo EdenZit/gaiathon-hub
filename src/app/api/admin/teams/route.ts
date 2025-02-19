@@ -2,150 +2,223 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { Team } from '@/lib/db/models/Team';
-import { AdminTeamQuery, ApiError, PaginatedResponse } from '@/types/admin';
-import { ITeam } from '@/types/models';
+import { adminGuard } from '@/lib/auth/adminGuard';
+import { Types, Document } from 'mongoose';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-const ITEMS_PER_PAGE = 10;
+type TeamCategory = 
+  | 'Digital Platforms and Interactive Applications'
+  | 'IoT-Enabled Smart Systems'
+  | 'Geospatial Intelligence and Policy Innovation';
 
-export async function GET(request: Request) {
+interface IUser {
+  _id: Types.ObjectId;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  institution?: string;
+  country?: string;
+}
+
+interface ITeam extends Document {
+  _id: Types.ObjectId;
+  name: string;
+  category: TeamCategory;
+  leaderId: IUser;
+  members: IUser[];
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface TeamMember {
+  _id: Types.ObjectId;
+  firstName: string;
+  lastName: string;
+  email: string;
+  teamRole: 'leader' | 'member';
+  institution?: string;
+  country?: string;
+}
+
+interface RawTeamMember {
+  _id: Types.ObjectId;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  teamRole?: 'leader' | 'member';
+  institution?: string;
+  country?: string;
+}
+
+interface TransformedTeamMember {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  teamRole: 'leader' | 'member';
+  institution: string;
+  country: string;
+}
+
+interface DBTeam {
+  _id: Types.ObjectId;
+  name: string;
+  category: 'Digital Platforms and Interactive Applications' | 'IoT-Enabled Smart Systems' | 'Geospatial Intelligence and Policy Innovation';
+  status: 'pending' | 'approved' | 'rejected';
+  members: TeamMember[];
+  createdAt: Date;
+}
+
+interface TransformedTeam {
+  _id: string;
+  name: string;
+  category: string;
+  status: 'pending' | 'approved' | 'rejected';
+  members: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    teamRole: 'leader' | 'member';
+    institution: string;
+    country: string;
+  }[];
+  createdAt: string;
+}
+
+interface TeamDocument {
+  _id: Types.ObjectId;
+  name: string;
+  members: TeamMember[];
+  createdAt: Date;
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Verify admin access
+    const isAdmin = await adminGuard(request, 'fetch_teams');
+    if (!isAdmin) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
+    // Connect to MongoDB Atlas
     await connectDB();
+    console.log('Connected to MongoDB Atlas for team fetch');
 
-    const { searchParams } = new URL(request.url);
-    const query: AdminTeamQuery = {
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || String(ITEMS_PER_PAGE)),
-      search: searchParams.get('search') || undefined,
-      leader: searchParams.get('leader') || undefined,
-      status: (searchParams.get('status') as AdminTeamQuery['status']) || 'active'
-    };
+    // Fetch all teams with populated member data
+    const teamsData = await Team.find({})
+      .populate('members', 'firstName lastName email teamRole institution country')
+      .sort({ createdAt: -1 })
+      .lean();
 
-    // Build MongoDB query
-    const mongoQuery: Record<string, unknown> = {};
-    
-    if (query.leader) {
-      mongoQuery.leader = query.leader;
-    }
-    
-    if (query.status) {
-      mongoQuery.status = query.status;
-    }
-    
-    if (query.search) {
-      mongoQuery.$or = [
-        { name: { $regex: query.search, $options: 'i' } },
-        { description: { $regex: query.search, $options: 'i' } }
-      ];
+    // Type assertion after fetching
+    const teams = teamsData as unknown as DBTeam[];
+
+    if (!teams || teams.length === 0) {
+      return NextResponse.json({ teams: [] });
     }
 
-    // Execute query with pagination
-    const total = await Team.countDocuments(mongoQuery);
-    const pages = Math.ceil(total / query.limit!);
-    const skip = (query.page! - 1) * query.limit!;
+    // Transform the teams data for the frontend
+    const transformedTeams: TransformedTeam[] = teams.map(team => ({
+      _id: team._id.toString(),
+      name: team.name,
+      category: team.category,
+      status: team.status,
+      members: team.members.map(member => ({
+        _id: member._id.toString(),
+        firstName: member.firstName || '',
+        lastName: member.lastName || '',
+        email: member.email,
+        teamRole: member.teamRole || 'member',
+        institution: member.institution || '',
+        country: member.country || ''
+      })),
+      createdAt: team.createdAt.toISOString()
+    }));
 
-    const teams = await Team.find(mongoQuery)
-      .populate('leader members', 'firstName lastName email')
-      .skip(skip)
-      .limit(query.limit!)
-      .sort({ createdAt: -1 });
-
-    const response: PaginatedResponse<ITeam> = {
-      data: teams,
-      pagination: {
-        page: query.page!,
-        limit: query.limit!,
-        total,
-        pages
-      }
-    };
-
-    return NextResponse.json(response);
+    return NextResponse.json({ teams: transformedTeams });
   } catch (error) {
-    const apiError = error as ApiError;
-    console.error('Error fetching teams:', apiError);
+    console.error('Error fetching teams:', error);
     return NextResponse.json(
-      { error: apiError.message || 'Failed to fetch teams' },
-      { status: apiError.status || 500 }
+      { error: 'Failed to fetch teams' },
+      { status: 500 }
     );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Verify admin access
+    const isAdmin = await adminGuard(request, 'create_team');
+    if (!isAdmin) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
     await connectDB();
 
     const body = await request.json();
-    const { name, description, leaderId, members = [] } = body;
+    const { name, description, leaderId } = body;
 
-    if (!name || !description || !leaderId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!name || !leaderId) {
+      return NextResponse.json(
+        { error: 'Name and leader are required' },
+        { status: 400 }
+      );
     }
 
-    // Create team with leader as first member
-    const teamData = {
+    // Check if team name already exists
+    const existingTeam = await Team.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+    if (existingTeam) {
+      return NextResponse.json(
+        { error: 'Team name already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Create new team
+    const team = new Team({
       name,
       description,
-      leader: leaderId,
-      members: [{
-        user: leaderId,
-        role: 'leader',
-        joinedAt: new Date(),
-        permissions: {
-          canManageMembers: true,
-          canManageDocuments: true,
-          canManageProjects: true,
-          canApproveProgress: true
-        }
-      }]
-    };
+      leaderId: new Types.ObjectId(leaderId),
+      members: [new Types.ObjectId(leaderId)],
+      status: 'pending'
+    });
 
-    // Add additional members if provided
-    if (members.length > 0) {
-      const additionalMembers = members
-        .filter((memberId: string) => memberId !== leaderId)
-        .map((memberId: string) => ({
-          user: memberId,
-          role: 'member',
-          joinedAt: new Date(),
-          permissions: {
-            canManageMembers: false,
-            canManageDocuments: false,
-            canManageProjects: false,
-            canApproveProgress: false
-          }
-        }));
-      teamData.members.push(...additionalMembers);
-    }
+    await team.save();
+    await team.populate('members', 'firstName lastName email institution country');
+    await team.populate('leaderId', 'firstName lastName email');
 
-    const team = await Team.create(teamData);
-    await team.populate('leader members.user', 'name email');
-
-    // Transform response to match expected format
     const transformedTeam = {
-      ...team.toObject(),
-      leaderId: team.leader._id || team.leader,
+      _id: team._id.toString(),
+      name: team.name,
+      status: team.status,
+      leaderId: team.leaderId._id.toString(),
       members: team.members.map(member => ({
-        ...member,
-        userId: member.user._id || member.user
-      }))
+        _id: member._id.toString(),
+        firstName: member.firstName || '',
+        lastName: member.lastName || '',
+        email: member.email,
+        teamRole: member.teamRole || 'member',
+        institution: member.institution,
+        country: member.country,
+        teamRole: member.teamRole
+      })),
+      createdAt: team.createdAt.toISOString()
     };
 
-    return NextResponse.json({ message: 'Team created successfully', team: transformedTeam });
-  } catch (error: any) {
+    return NextResponse.json({
+      message: 'Team created successfully',
+      team: transformedTeam
+    });
+  } catch (error) {
     console.error('Error creating team:', error);
-    if (error.code === 11000) {
-      return NextResponse.json({ error: 'Team name already exists' }, { status: 400 });
-    }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create team' },
+      { status: 500 }
+    );
   }
-} 
+}
+
+// Apply admin middleware to all routes
+export { adminMiddleware as middleware } from '@/middleware/adminMiddleware'; 
