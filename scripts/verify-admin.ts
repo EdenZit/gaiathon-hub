@@ -1,5 +1,5 @@
-import { connectDB } from '@/lib/mongodb';
-import { User } from '@/lib/db/models/User';
+import { connectDB } from '../src/lib/mongodb';
+import { User } from '../src/lib/db/models/User';
 import mongoose from 'mongoose';
 
 async function main() {
