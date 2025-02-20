@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { CalendarDaysIcon, MegaphoneIcon, ClockIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: "GAIAthon'25 Updates | GAIAthon-Hub",
@@ -72,20 +73,22 @@ export default function EventsPage() {
           
           {/* Centered Map */}
           <div className="flex justify-center">
-            <div className="w-full max-w-[420px]">
-              <div className="relative w-full h-[420px] bg-white rounded-lg shadow-lg overflow-hidden">
-                <Image
-                  src="/images/maps/africa-participants.png"
-                  alt="Map of participating African countries"
-                  fill
-                  className="object-contain"
-                  priority
-                />
+            <Link href="/company/events/participating-countries" className="group">
+              <div className="w-full max-w-[250px]">
+                <div className="relative w-full h-[250px] bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform group-hover:scale-105">
+                  <Image
+                    src="/images/maps/africa-participants.png"
+                    alt="Map of participating African countries"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+                <p className="mt-2 text-sm text-blue-600 text-center font-medium">
+                  Click to view participating countries and universities
+                </p>
               </div>
-              <p className="mt-2 text-sm text-blue-600 text-center font-medium">
-                Participating Countries
-              </p>
-            </div>
+            </Link>
           </div>
         </div>
 

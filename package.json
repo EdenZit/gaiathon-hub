@@ -25,6 +25,7 @@
     "agent:pages": "ts-node scripts/composer/agent.ts pages",
     "agent:all": "ts-node scripts/composer/agent.ts all",
     "db:clean": "ts-node --project scripts/tsconfig.json scripts/cleanDatabase.ts",
+    "db:update-countries": "NODE_PATH=. ts-node --project scripts/tsconfig.json scripts/db/manage-participating-countries.ts",
     "project:reorganize": "ts-node --project scripts/tsconfig.json scripts/reorganizeProject.ts",
     "test:data": "TS_NODE_PROJECT=scripts/tests/tsconfig.json ts-node scripts/tests/testDataLayer.ts",
     "check:db": "TS_NODE_PROJECT=scripts/tests/tsconfig.json ts-node scripts/tests/checkMongoConnection.ts",
