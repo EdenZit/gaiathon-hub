@@ -16,7 +16,7 @@ export interface IUser extends mongoose.Document {
   fieldOfStudy?: string;
   yearOfStudy?: string;
   country?: string;
-  gender?: 'male' | 'female';
+  gender?: 'male' | 'female' | null;
   comparePassword(candidatePassword: string): Promise<boolean>;
   checkProfileCompletion(): boolean;
 }
@@ -70,7 +70,8 @@ const userSchema = new mongoose.Schema({
   country: String,
   gender: {
     type: String,
-    enum: ['male', 'female'],
+    enum: ['male', 'female', null],
+    default: null,
   },
 }, {
   timestamps: true,

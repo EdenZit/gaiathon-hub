@@ -20,7 +20,7 @@ const profileSchema = z.object({
   fieldOfStudy: z.string().optional(),
   yearOfStudy: z.string().optional(),
   country: z.string().optional(),
-  gender: z.enum(['male', 'female', 'other']).optional(),
+  gender: z.enum(['male', 'female']).nullable(),
   previousHackathonExperience: z.string().optional(),
   githubUrl: z.string().optional(),
   personalWebsite: z.string().optional(),

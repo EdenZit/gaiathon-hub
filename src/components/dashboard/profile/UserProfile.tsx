@@ -26,7 +26,7 @@ interface UserProfileData {
   fieldOfStudy: string;
   yearOfStudy: string;
   country: string;
-  gender: string;
+  gender: string | null;
   previousHackathonExperience: string;
   githubUrl?: string;
   personalWebsite?: string;
@@ -60,7 +60,7 @@ const initialFormData: UserProfileData = {
   fieldOfStudy: '',
   yearOfStudy: '',
   country: '',
-  gender: '',
+  gender: null,
   previousHackathonExperience: '',
   githubUrl: '',
   personalWebsite: '',
@@ -127,7 +127,7 @@ export default function UserProfile() {
         fieldOfStudy: userData.fieldOfStudy || '',
         yearOfStudy: userData.yearOfStudy || '',
         country: userData.country || '',
-        gender: userData.gender || '',
+        gender: userData.gender || null,
         previousHackathonExperience: userData.previousHackathonExperience || '',
         githubUrl: userData.githubUrl || '',
         personalWebsite: userData.personalWebsite || '',
@@ -191,7 +191,7 @@ export default function UserProfile() {
         fieldOfStudy: formData.fieldOfStudy.trim(),
         yearOfStudy: formData.yearOfStudy,
         country: formData.country.trim(),
-        gender: formData.gender.trim(),
+        gender: formData.gender,
         previousHackathonExperience: formData.previousHackathonExperience.trim(),
         githubUrl: formData.githubUrl?.trim() || '',
         personalWebsite: formData.personalWebsite?.trim() || '',
@@ -312,6 +312,10 @@ export default function UserProfile() {
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto p-6">
+      <div className="text-2xl font-semibold text-gray-900">
+        Welcome {session?.user?.firstName || session?.user?.name?.split(' ')[0] || 'User'}!
+      </div>
+      
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Profile Information</h2>
@@ -378,17 +382,20 @@ export default function UserProfile() {
 
               <div>
                 <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
-                  Gender
+                  Gender (Optional)
                 </label>
                 <select
                   id="gender"
                   name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
+                  value={formData.gender === null ? '' : formData.gender}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    gender: e.target.value || null
+                  }))}
                   disabled={!isEditMode}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-navy-500 focus:outline-none focus:ring-navy-500 disabled:bg-gray-100"
                 >
-                  <option value="">Select Gender</option>
+                  <option value="">Prefer not to say</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                 </select>
