@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface TeamMember {
   _id: string;
@@ -64,6 +65,10 @@ export default function TeamWorkspacePage() {
       toast.error('You are already part of a team');
       return;
     }
+    if (session?.user?.teamRole !== 'leader') {
+      toast.error('Only team leaders can create teams');
+      return;
+    }
     router.push('/resources/team-workspace/create');
   };
 
@@ -88,14 +93,28 @@ export default function TeamWorkspacePage() {
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900">Welcome to Team Workspace</h2>
             <p className="mt-4 text-lg text-gray-600">
-              You are not part of any team yet. Create a new team to get started.
+              You are not part of any team yet.
+              {session?.user?.teamRole === 'leader' ? (
+                ' Create a new team to get started.'
+              ) : (
+                ' Join a team to get started or update your profile as Team Leader to create a new team.'
+              )}
             </p>
-            <button
-              onClick={handleCreateTeam}
-              className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Create New Team
-            </button>
+            {session?.user?.teamRole === 'leader' ? (
+              <button
+                onClick={handleCreateTeam}
+                className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Create New Team
+              </button>
+            ) : (
+              <Link
+                href="/dashboard/profile"
+                className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 hover:text-blue-700 focus:outline-none"
+              >
+                Update Profile Settings
+              </Link>
+            )}
           </div>
         </div>
       </div>

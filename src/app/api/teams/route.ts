@@ -35,14 +35,27 @@ interface UpdatedUser {
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     await connectDB();
-    
-    const teams = await Team.findByMember(session.user.id)
-      .populate('leaderId members', 'firstName lastName email');
+
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get all teams the user is a member of
+    const teams = await Team.find({
+      members: user._id
+    }).populate('leaderId members', 'firstName lastName email');
 
     return NextResponse.json(teams);
   } catch (error) {
@@ -57,17 +70,37 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     await connectDB();
+
+    // Verify user and their role
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if user is a team leader
+    if (user.teamRole !== 'leader') {
+      return NextResponse.json(
+        { error: 'Only team leaders can create teams' },
+        { status: 403 }
+      );
+    }
     
     // Check if user is already in a team
     const existingTeam = await Team.findOne({
       $or: [
-        { leaderId: new Types.ObjectId(session.user.id) },
-        { members: new Types.ObjectId(session.user.id) }
+        { leaderId: user._id },
+        { members: user._id }
       ]
     });
 
@@ -93,55 +126,40 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create the team with proper error handling
-    try {
-      const team = new Team({
-        name: validatedData.name,
-        category: validatedData.category,
-        leaderId: new Types.ObjectId(session.user.id),
-        members: [new Types.ObjectId(session.user.id)],
-        status: 'pending' // Set initial status to pending
-      });
+    // Create the team
+    const team = await Team.create({
+      name: validatedData.name,
+      category: validatedData.category,
+      leaderId: user._id,
+      members: [user._id],
+      status: 'pending'
+    });
 
-      await team.save();
-
-      // Update user's role to leader
-      await User.findByIdAndUpdate(
-        session.user.id,
-        { 
-          $set: { 
-            teamRole: 'leader',
-            status: 'active'
-          },
-          $push: { teams: team._id }
-        },
-        { new: true }
-      );
-
-      // If member emails were provided, store them for invitation processing
-      if (validatedData.memberEmails?.length) {
-        // Here you would typically store the pending invitations
-        // This will be handled by your invitation system
-        console.log('Member emails to invite:', validatedData.memberEmails);
+    // Update user's team status
+    await User.findByIdAndUpdate(
+      user._id,
+      { 
+        $set: { hasActiveTeam: true },
+        $push: { teams: team._id }
       }
+    );
 
-      return NextResponse.json({
-        message: 'Team created successfully',
-        team: {
-          id: team._id,
-          name: team.name,
-          category: team.category,
-          leaderId: team.leaderId,
-          status: team.status
-        }
-      });
-    } catch (saveError) {
-      console.error('Error saving team:', saveError);
-      return NextResponse.json(
-        { error: 'Failed to save team' },
-        { status: 500 }
-      );
+    // Process member invitations if provided
+    if (validatedData.memberEmails?.length) {
+      // Store the pending invitations for processing
+      console.log('Member emails to invite:', validatedData.memberEmails);
     }
+
+    return NextResponse.json({
+      message: 'Team created successfully',
+      team: {
+        id: team._id,
+        name: team.name,
+        category: team.category,
+        leaderId: team.leaderId,
+        status: team.status
+      }
+    });
   } catch (error) {
     console.error('Error creating team:', error);
 
