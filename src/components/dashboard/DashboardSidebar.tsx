@@ -23,21 +23,15 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   {
-    name: 'Dashboard',
-    href: '/dashboard',
-    icon: Squares2X2Icon,
-    adminHref: '/dashboard/admin',
+    name: 'Profile',
+    href: '/dashboard/profile',
+    icon: UserCircleIcon,
   },
   {
     name: 'Team Workspace',
     href: '/resources/team-workspace',
     icon: UserGroupIcon,
     requireAdmin: false,
-  },
-  {
-    name: 'Profile',
-    href: '/dashboard/profile',
-    icon: UserCircleIcon,
   },
   {
     name: 'Tools',

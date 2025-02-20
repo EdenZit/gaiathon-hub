@@ -8,8 +8,7 @@ import {
   FaXTwitter,
   FaInstagram,
   FaLinkedinIn,
-  FaFacebookF,
-  FaTiktok,
+  FaYoutube,
 } from 'react-icons/fa6';
 
 export function Footer() {
@@ -56,11 +55,10 @@ export function Footer() {
   ];
 
   const socialLinks = [
-    { name: 'X (Twitter)', icon: FaXTwitter, href: 'https://twitter.com/GAIAclubs' },
-    { name: 'Instagram', icon: FaInstagram, href: 'https://www.instagram.com/gaiaclubs' },
-    { name: 'LinkedIn', icon: FaLinkedinIn, href: 'https://www.linkedin.com/company/gaiaclubs/?viewAsMember=true' },
-    { name: 'Facebook', icon: FaFacebookF, href: '#' },
-    { name: 'TikTok', icon: FaTiktok, href: '#' },
+    { name: 'X (Twitter)', icon: FaXTwitter, href: 'https://x.com/edenkro' },
+    { name: 'Instagram', icon: FaInstagram, href: 'https://www.instagram.com/edenwayfoundation' },
+    { name: 'LinkedIn', icon: FaLinkedinIn, href: 'https://www.linkedin.com/company/edenwayfoundation/?viewAsMember=true' },
+    { name: 'YouTube', icon: FaYoutube, href: 'https://www.youtube.com/@EdenwayFoundation' },
   ];
 
   return (
