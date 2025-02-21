@@ -244,9 +244,6 @@ function UserManagementPage() {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Gender
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   System Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -260,6 +257,9 @@ function UserManagementPage() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Field of Study
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Gender
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Country
@@ -285,20 +285,11 @@ function UserManagementPage() {
                     <div className="text-sm text-gray-500">{user.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {user.gender ? (
-                        <span className="capitalize">{user.gender}</span>
-                      ) : (
-                        <span className="text-gray-400">Not specified</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
                     <select
                       value={user.role}
                       onChange={(e) => updateUserRole(user._id, e.target.value as 'user' | 'admin')}
                       className="text-sm text-gray-500 border rounded px-2 py-1"
-                      disabled={user._id === session?.user?.id} // Can't change own role
+                      disabled={user._id === session?.user?.id}
                     >
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
@@ -344,13 +335,12 @@ function UserManagementPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
                       value={user.gender || ''}
-                      onChange={(e) => handleProfileUpdate(user._id, { gender: e.target.value as 'male' | 'female' | 'other' })}
+                      onChange={(e) => handleProfileUpdate(user._id, { gender: (e.target.value || undefined) as 'male' | 'female' | undefined })}
                       className="text-sm text-gray-500 border rounded px-2 py-1"
                     >
                       <option value="">Select Gender</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
-                      <option value="other">Other</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
