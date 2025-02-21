@@ -15,6 +15,7 @@ declare module 'next-auth' {
       status: 'active' | 'inactive';
       teamRole: 'leader' | 'member';
       teams?: string[];
+      emailVerified?: boolean;
     } & DefaultSession['user'];
   }
 
@@ -28,6 +29,7 @@ declare module 'next-auth' {
     status: 'active' | 'inactive';
     teamRole: 'leader' | 'member';
     teams?: string[];
+    emailVerified?: boolean;
   }
 }
 

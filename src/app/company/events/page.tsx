@@ -75,7 +75,7 @@ export default function EventsPage() {
           <div className="flex justify-center">
             <Link href="/company/events/participating-countries" className="group">
               <div className="w-full max-w-[250px]">
-                <div className="relative w-full h-[250px] bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform group-hover:scale-105">
+                <div className="relative w-full h-[250px] bg-[#0A192F] rounded-lg shadow-lg overflow-hidden transition-transform transform group-hover:scale-105">
                   <Image
                     src="/images/maps/africa-participants.png"
                     alt="Map of participating African countries"
