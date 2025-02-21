@@ -24,7 +24,8 @@ const teamSchema = new Schema<ITeamDocument>(
       type: String,
       required: [true, 'Team name is required'],
       trim: true,
-      unique: true
+      unique: true,
+      index: true
     },
     category: {
       type: String,
@@ -38,11 +39,11 @@ const teamSchema = new Schema<ITeamDocument>(
     leaderId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: true
     },
     members: [{
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'User'
     }],
     status: {
       type: String,
@@ -52,14 +53,14 @@ const teamSchema = new Schema<ITeamDocument>(
     }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-// Add indexes
-teamSchema.index({ name: 1 });
-teamSchema.index({ leaderId: 1 });
-teamSchema.index({ members: 1 });
+// Optimized compound indexes for common queries
+teamSchema.index({ leaderId: 1, status: 1 });
+teamSchema.index({ members: 1, status: 1 });
+teamSchema.index({ category: 1, status: 1 });
 
 // Add instance methods
 teamSchema.methods.isLeader = function(userId: string): boolean {

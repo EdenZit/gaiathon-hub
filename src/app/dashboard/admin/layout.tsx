@@ -12,7 +12,8 @@ import {
   DocumentChartBarIcon,
   ShieldCheckIcon,
   HomeIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
 
 const adminNavItems = [
@@ -50,7 +51,15 @@ const adminNavItems = [
     name: "Security",
     href: "/dashboard/admin/security",
     icon: ShieldCheckIcon,
-    description: "Security settings and logs"
+    description: "Security settings and logs",
+    children: [
+      {
+        name: "Error Monitoring",
+        href: "/dashboard/admin/security/errors",
+        icon: ExclamationTriangleIcon,
+        description: "Monitor and manage system errors"
+      }
+    ]
   }
 ];
 
@@ -71,24 +80,51 @@ export default function AdminLayout({
           </div>
           <nav className="mt-4">
             {adminNavItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || 
+                (item.children?.some(child => pathname === child.href));
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={clsx(
-                    "flex items-center px-4 py-3 transition-colors",
-                    isActive
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                <div key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={clsx(
+                      "flex items-center px-4 py-3 transition-colors",
+                      isActive
+                        ? "bg-gray-800 text-white"
+                        : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    )}
+                  >
+                    <item.icon className={clsx(
+                      "h-5 w-5 mr-3",
+                      isActive ? "text-white" : "text-gray-400"
+                    )} />
+                    <span>{item.name}</span>
+                  </Link>
+                  {item.children && (
+                    <div className="ml-8 mt-1">
+                      {item.children.map((child) => {
+                        const isChildActive = pathname === child.href;
+                        return (
+                          <Link
+                            key={child.name}
+                            href={child.href}
+                            className={clsx(
+                              "flex items-center px-4 py-2 text-sm transition-colors",
+                              isChildActive
+                                ? "bg-gray-800 text-white"
+                                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                            )}
+                          >
+                            <child.icon className={clsx(
+                              "h-4 w-4 mr-3",
+                              isChildActive ? "text-white" : "text-gray-400"
+                            )} />
+                            <span>{child.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   )}
-                >
-                  <item.icon className={clsx(
-                    "h-5 w-5 mr-3",
-                    isActive ? "text-white" : "text-gray-400"
-                  )} />
-                  <span>{item.name}</span>
-                </Link>
+                </div>
               );
             })}
           </nav>

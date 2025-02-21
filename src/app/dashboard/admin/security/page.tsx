@@ -3,144 +3,117 @@
 import { useState, useEffect } from 'react';
 import { withAdminGuard } from '@/components/auth/AdminGuard';
 import { Spinner } from '@/components/ui/Spinner';
+import { toast } from 'react-hot-toast';
+import Link from 'next/link';
+import {
+  ShieldCheckIcon,
+  ExclamationTriangleIcon,
+  KeyIcon,
+  UserGroupIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline';
 
-interface AdminLog {
-  timestamp: Date;
-  action: string;
-  userId: string;
-  userEmail: string;
-  ipAddress: string;
-  userAgent: string;
-  success: boolean;
-  error?: string;
+interface SecurityStats {
+  totalErrors: number;
+  unresolvedErrors: number;
+  criticalErrors: number;
+  loginAttempts: number;
+  activeUsers: number;
 }
 
-function SecurityLogsPage() {
-  const [logs, setLogs] = useState<AdminLog[]>([]);
+function SecurityPage() {
+  const [stats, setStats] = useState<SecurityStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'success' | 'failed'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchLogs();
-    // Set up real-time updates every 30 seconds
-    const interval = setInterval(fetchLogs, 30000);
-    return () => clearInterval(interval);
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/admin/security/stats');
+        if (!response.ok) throw new Error('Failed to fetch security stats');
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        toast.error('Failed to load security statistics');
+        console.error('Error fetching security stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
   }, []);
 
-  const fetchLogs = async () => {
-    try {
-      const response = await fetch('/api/admin/security/logs');
-      if (!response.ok) throw new Error('Failed to fetch logs');
-      const data = await response.json();
-      setLogs(data.logs.map((log: any) => ({
-        ...log,
-        timestamp: new Date(log.timestamp)
-      })));
-    } catch (error) {
-      console.error('Error fetching logs:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredLogs = logs
-    .filter(log => {
-      if (filter === 'success') return log.success;
-      if (filter === 'failed') return !log.success;
-      return true;
-    })
-    .filter(log => 
-      searchTerm === '' ||
-      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.ipAddress.includes(searchTerm)
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Spinner />
+      </div>
     );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Security Logs</h1>
-        <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="Search logs..."
-            className="px-4 py-2 border rounded-lg"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as any)}
-            className="px-4 py-2 border rounded-lg"
-          >
-            <option value="all">All Logs</option>
-            <option value="success">Successful</option>
-            <option value="failed">Failed</option>
-          </select>
+      <h1 className="text-2xl font-bold text-gray-900">Security Overview</h1>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />
+            <span className="ml-2 text-sm font-medium text-gray-500">Critical Errors</span>
+          </div>
+          <div className="mt-2 text-3xl font-semibold">{stats?.criticalErrors || 0}</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <KeyIcon className="h-6 w-6 text-yellow-500" />
+            <span className="ml-2 text-sm font-medium text-gray-500">Login Attempts</span>
+          </div>
+          <div className="mt-2 text-3xl font-semibold">{stats?.loginAttempts || 0}</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <UserGroupIcon className="h-6 w-6 text-blue-500" />
+            <span className="ml-2 text-sm font-medium text-gray-500">Active Users</span>
+          </div>
+          <div className="mt-2 text-3xl font-semibold">{stats?.activeUsers || 0}</div>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-8">
-          <Spinner />
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Timestamp
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Action
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    IP Address
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredLogs.map((log, index) => (
-                  <tr key={index} className={log.success ? 'bg-white' : 'bg-red-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {log.timestamp.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {log.action}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {log.userEmail}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {log.ipAddress}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        log.success 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {log.success ? 'Success' : 'Failed'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Security Features */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link
+          href="/dashboard/admin/security/errors"
+          className="group bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <ExclamationTriangleIcon className="h-8 w-8 text-red-500" />
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900">Error Monitoring</h3>
+                <p className="text-sm text-gray-500">Monitor and manage system errors</p>
+              </div>
+            </div>
+            <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
           </div>
-        </div>
-      )}
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Errors</p>
+              <p className="mt-1 text-2xl font-semibold">{stats?.totalErrors || 0}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Unresolved</p>
+              <p className="mt-1 text-2xl font-semibold">{stats?.unresolvedErrors || 0}</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Add more security feature cards here */}
+      </div>
     </div>
   );
 }
 
-export default withAdminGuard(SecurityLogsPage); 
+export default withAdminGuard(SecurityPage); 
