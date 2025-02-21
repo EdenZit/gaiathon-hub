@@ -47,12 +47,6 @@ const adminNavItems = [
     description: "View system analytics"
   },
   {
-    name: "Reports",
-    href: "/dashboard/admin/reports",
-    icon: DocumentTextIcon,
-    description: "Generate and view reports"
-  },
-  {
     name: "Security",
     href: "/dashboard/admin/security",
     icon: ShieldCheckIcon,
