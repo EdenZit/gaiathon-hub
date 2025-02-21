@@ -318,7 +318,10 @@ export default function UserProfile() {
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Profile Information</h2>
+          <div>
+            <h2 className="text-2xl font-bold">Profile Information</h2>
+            <p className="text-sm text-red-600 mt-1">To refresh the entries, log out and then log back in.</p>
+          </div>
           <button
             type="submit"
             disabled={isLoading}
