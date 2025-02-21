@@ -128,15 +128,20 @@ export default function TeamWorkspacePage() {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold text-gray-900">{team.name}</h1>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-500">Status:</span>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                ${team.status === 'approved' ? 'bg-green-100 text-green-800' : 
-                  team.status === 'rejected' ? 'bg-red-100 text-red-800' : 
-                  'bg-yellow-100 text-yellow-800'}`}
-              >
-                {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
-              </span>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-500">
+                Created: {new Date(team.createdAt).toLocaleDateString()}
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-500">Status:</span>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                  ${team.status === 'approved' ? 'bg-green-100 text-green-800' : 
+                    team.status === 'rejected' ? 'bg-red-100 text-red-800' : 
+                    'bg-yellow-100 text-yellow-800'}`}
+                >
+                  {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
+                </span>
+              </div>
             </div>
           </div>
           
@@ -146,8 +151,15 @@ export default function TeamWorkspacePage() {
               <p className="text-gray-600">{team.category}</p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Created On</h3>
-              <p className="text-gray-600">{new Date(team.createdAt).toLocaleDateString()}</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Team Leader</h3>
+              {(() => {
+                const leader = team.members.find(member => member._id === team.leaderId);
+                return leader && (
+                  <p className="text-gray-600">
+                    {leader.firstName} {leader.lastName} ({leader.email})
+                  </p>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -156,22 +168,24 @@ export default function TeamWorkspacePage() {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Team Members</h2>
           <div className="space-y-4">
-            {team.members.map((member) => (
-              <div
-                key={member._id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-              >
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {member.firstName} {member.lastName}
-                    {team.leaderId === member._id && (
-                      <span className="ml-2 text-sm text-blue-600">(Team Leader)</span>
-                    )}
-                  </h3>
-                  <p className="text-gray-600">{member.email}</p>
+            {team.members
+              .filter(member => member._id !== team.leaderId)
+              .map((member) => (
+                <div
+                  key={member._id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                >
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {member.firstName} {member.lastName}
+                    </h3>
+                    <p className="text-gray-600">{member.email}</p>
+                  </div>
                 </div>
-              </div>
             ))}
+            {team.members.filter(member => member._id !== team.leaderId).length === 0 && (
+              <p className="text-gray-500 italic">No team members yet</p>
+            )}
           </div>
         </div>
 

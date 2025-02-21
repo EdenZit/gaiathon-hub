@@ -20,6 +20,7 @@ interface PopulatedTeam {
   name: string;
   createdAt: Date;
   members: TeamMember[];
+  category: string;
 }
 
 export async function GET(request: NextRequest) {
@@ -49,6 +50,7 @@ export async function GET(request: NextRequest) {
     const headers = [
       'Team ID',
       'Team Name',
+      'Team Category',
       'Member Name',
       'Member Email',
       'Role',
@@ -62,6 +64,7 @@ export async function GET(request: NextRequest) {
       team.members.map((member: TeamMember) => [
         team._id.toString(),
         team.name,
+        team.category,
         `${member.firstName} ${member.lastName}`,
         member.email,
         member.teamRole,
