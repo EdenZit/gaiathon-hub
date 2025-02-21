@@ -28,13 +28,13 @@ const navigation: NavItem[] = [
     icon: UserCircleIcon,
   },
   {
-    name: 'Team Workspace',
+    name: 'Team',
     href: '/resources/team-workspace',
     icon: UserGroupIcon,
     requireAdmin: false,
   },
   {
-    name: 'Tools',
+    name: 'EO Tools',
     href: '/dashboard/tools',
     icon: WrenchScrewdriverIcon,
   },

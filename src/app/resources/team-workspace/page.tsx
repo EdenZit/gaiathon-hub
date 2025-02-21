@@ -164,31 +164,6 @@ export default function TeamWorkspacePage() {
           </div>
         </div>
 
-        {/* Team Members Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Team Members</h2>
-          <div className="space-y-4">
-            {team.members
-              .filter(member => member._id !== team.leaderId)
-              .map((member) => (
-                <div
-                  key={member._id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                >
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">
-                      {member.firstName} {member.lastName}
-                    </h3>
-                    <p className="text-gray-600">{member.email}</p>
-                  </div>
-                </div>
-            ))}
-            {team.members.filter(member => member._id !== team.leaderId).length === 0 && (
-              <p className="text-gray-500 italic">No team members yet</p>
-            )}
-          </div>
-        </div>
-
         {team.status === 'rejected' && (
           <div className="mt-8 bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800">
