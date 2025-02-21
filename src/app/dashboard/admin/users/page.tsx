@@ -117,6 +117,26 @@ function UserManagementPage() {
     }
   };
 
+  const toggleEmailVerification = async (userId: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/verify-email`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update email verification');
+      }
+      
+      toast.success(`Email ${currentStatus ? 'unverified' : 'verified'} successfully`);
+      fetchUsers(); // Refresh the user list
+    } catch (error) {
+      console.error('Error updating email verification:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update email verification');
+    }
+  };
+
   const handleProfileUpdate = async (userId: string, updateData: Partial<{
     institution: string;
     yearOfStudy: string;
@@ -353,13 +373,25 @@ function UserManagementPage() {
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.emailVerified
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {user.emailVerified ? 'Verified' : 'Unverified'}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.emailVerified
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {user.emailVerified ? 'Verified' : 'Unverified'}
+                      </span>
+                      <button
+                        onClick={() => toggleEmailVerification(user._id, user.emailVerified || false)}
+                        className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                          user.emailVerified
+                            ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
+                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                        }`}
+                      >
+                        {user.emailVerified ? 'Unverify' : 'Verify'}
+                      </button>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(user.createdAt).toLocaleDateString()}
