@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { Categories } from '@/components/home/Categories';
 import { 
   DevicePhoneMobileIcon, 
   CpuChipIcon, 
@@ -20,36 +21,14 @@ const winners = [
   { id: 7, name: 'EarthSense', project: 'Soil Health Monitoring', image: '/images/winners/team7.jpg' },
 ];
 
-const categories = [
-  {
-    title: 'Digital Platforms and Interactive Applications',
-    description: 'Innovative web and mobile applications designed to process, analyse, and visualise Earth observation (EO) data and IoT insights for decision-making and user engagement',
-    icon: DevicePhoneMobileIcon,
-    color: 'from-blue-500 to-cyan-500'
-  },
-  {
-    title: 'IoT-Enabled Smart Systems',
-    description: 'Integrated IoT solutions that leverage sensors and real-time data transmission, complemented by interactive dashboards for monitoring, automation, and actionable insights',
-    icon: CpuChipIcon,
-    color: 'from-emerald-500 to-green-500'
-  },
-  {
-    title: 'Geospatial Intelligence and Policy Innovation',
-    description: 'Solutions that utilise EO data for mapping, spatial analysis, and evidence-based policy recommendations to address environmental and societal challenges',
-    icon: GlobeAltIcon,
-    color: 'from-purple-500 to-indigo-500'
-  }
-];
-
 export function Features() {
   const [currentWinner, setCurrentWinner] = useState(0);
-  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const interval = setInterval(() => {
       setCurrentWinner((prev) => (prev + 1) % winners.length);
-    }, 3000);
-    return () => clearInterval(timer);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -93,36 +72,7 @@ export function Features() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-20"
         >
-          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">GAIAthon'25 Categories</h3>
-          <div className="grid gap-6 md:grid-cols-3">
-            {categories.map((category, index) => {
-              const Icon = category.icon;
-              return (
-                <motion.div
-                  key={index}
-                  onMouseEnter={() => setHoveredCategory(index)}
-                  onMouseLeave={() => setHoveredCategory(null)}
-                  className="relative group"
-                >
-                  <div className="h-full bg-white rounded-xl p-6 shadow-lg transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                    <div className={`absolute inset-0 bg-gradient-to-r ${category.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity duration-300`} />
-                    <div className="relative space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Icon className="h-8 w-8 text-gray-900" />
-                        <ArrowRightIcon className={`h-5 w-5 transform transition-transform duration-300 ${
-                          hoveredCategory === index ? 'translate-x-1 opacity-100' : 'opacity-0'
-                        }`} />
-                      </div>
-                      <h4 className="text-xl font-semibold text-gray-900">{category.title}</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        {category.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+          <Categories />
         </motion.div>
 
         {/* Winners Showcase */}
