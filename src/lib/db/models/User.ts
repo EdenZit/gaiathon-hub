@@ -170,6 +170,11 @@ userSchema.pre('save', async function(this: IUserDocument, next) {
   if (!this.isModified('password')) return next();
   
   try {
+    // Check if the password is already hashed
+    if (this.password.startsWith('$2')) {
+      return next();
+    }
+    
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(this.password, salt);
     this.password = hashedPassword;

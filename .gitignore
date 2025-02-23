@@ -39,6 +39,11 @@ debug.log
 .env.test
 .env.production
 .env*.backup
+.env.*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -54,6 +59,7 @@ next-env.d.ts
 *.sublime-workspace
 *.swp
 *.swo
+.history/
 
 # Secrets and keys
 *.key
@@ -65,24 +71,39 @@ next-env.d.ts
 *secret*
 *password*
 *credential*
+*.key.json
+*auth.json
+*.env.json
+*token*
+*apikey*
+*api_key*
 
 # Logs and databases
 *.log
+logs/
 *.sql
 *.sqlite
 *.sqlite3
 dump.rdb
+*.mongodb
+*.mysql
+*.postgres
+*.redis
 
 # Build and temp files
 dist/
 tmp/
 temp/
 .cache/
+.temp/
+.tmp/
 
 # Docker volumes
 docker-volumes/
 redis-data/
 mongodb-data/
+data/
+volumes/
 
 # System Files
 .env.save
@@ -91,3 +112,5 @@ config.backup
 *.bak
 *backup
 *~
+.history
+.vscode-test

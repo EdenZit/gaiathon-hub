@@ -2,12 +2,20 @@
   "name": "gaiathon-hub",
   "version": "1.1.2",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit && tsc --project scripts/tsconfig.json --noEmit",
+    "security:audit": "npm audit && npm audit fix",
+    "security:outdated": "npm outdated",
+    "preinstall": "node -e \"if(process.env.npm_execpath.indexOf('yarn') !== -1) throw new Error('Please use npm instead of yarn')\"",
+    "postinstall": "npm run security:audit",
     "task:run": "ts-node --project scripts/tsconfig.json scripts/runTasks.ts",
     "task:db": "ts-node --project scripts/tsconfig.json scripts/dockerTaskRunner.ts db",
     "task:api": "ts-node --project scripts/tsconfig.json scripts/dockerTaskRunner.ts api",
@@ -80,7 +88,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/lru-cache": "^7.10.9",
-    "@types/node": "^22.10.6",
+    "@types/node": "^22.13.5",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^18",
     "@types/react-dom": "^18",

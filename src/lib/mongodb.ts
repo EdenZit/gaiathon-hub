@@ -4,10 +4,32 @@ import mongoose from 'mongoose';
 // Load environment variables
 config();
 
-const MONGODB_URI = process.env.MONGODB_URI;
+// Construct MongoDB URI from components
+function constructMongoDBUri(): string {
+  const {
+    MONGODB_USER,
+    MONGODB_PASSWORD,
+    MONGODB_CLUSTER,
+    MONGODB_DATABASE,
+    MONGODB_OPTIONS,
+    MONGODB_URI
+  } = process.env;
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
+  // If MONGODB_URI is provided as a complete URL, use it
+  if (MONGODB_URI?.startsWith('mongodb+srv://') || MONGODB_URI?.startsWith('mongodb://')) {
+    return MONGODB_URI;
+  }
+
+  // Verify all required components are present
+  if (!MONGODB_USER || !MONGODB_PASSWORD || !MONGODB_CLUSTER || !MONGODB_DATABASE) {
+    throw new Error('Missing required MongoDB configuration. Please check your environment variables.');
+  }
+
+  // Construct the connection string
+  const uri = `mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER}/${MONGODB_DATABASE}`;
+  const options = MONGODB_OPTIONS || 'retryWrites=true&w=majority';
+  
+  return `${uri}?${options}`;
 }
 
 interface MongooseCache {
@@ -40,7 +62,13 @@ export async function connectDB(): Promise<mongoose.Connection> {
       family: 4
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!).then((mongoose) => {
+    const uri = constructMongoDBUri();
+    // Log the connection string with credentials masked
+    console.log('Connecting to MongoDB...', 
+      uri.replace(/mongodb\+srv:\/\/([^:]+):([^@]+)@/, 'mongodb+srv://[username]:[password]@')
+    );
+
+    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
       console.log('New MongoDB connection established');
       return mongoose;
     });

@@ -1,22 +1,39 @@
 # Base stage for deps
 FROM node:18-alpine AS deps
+
+# Create app directory and non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 && \
+    mkdir -p /app && \
+    chown -R nextjs:nodejs /app
+
 WORKDIR /app
 
 # Install dependencies only when needed
-COPY package.json package-lock.json ./
+COPY --chown=nextjs:nodejs package.json package-lock.json ./
 RUN npm ci
 
 # Development stage
 FROM node:18-alpine AS dev
+
+# Create app directory and non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 && \
+    mkdir -p /app && \
+    chown -R nextjs:nodejs /app
+
 WORKDIR /app
 
 # Copy deps and source code
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --chown=nextjs:nodejs . .
 
 # Set development environment
 ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Add security headers
+ENV NODE_OPTIONS='--security-revert=CVE-2023-46809'
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
@@ -24,40 +41,71 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 
 EXPOSE 3000
 
-# Install wget for healthcheck
+# Install wget for healthcheck and security packages
 RUN apk add --no-cache wget
 
 # Set up entrypoint
-COPY docker-entrypoint.sh .
+COPY --chown=nextjs:nodejs docker-entrypoint.sh .
 RUN chmod +x docker-entrypoint.sh
+
+# Switch to non-root user
+USER nextjs
+
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["npm", "run", "dev"]
 
 # Production build stage
 FROM node:18-alpine AS builder
+
+# Create app directory and non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 && \
+    mkdir -p /app && \
+    chown -R nextjs:nodejs /app
+
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --chown=nextjs:nodejs . .
+
+# Switch to non-root user for build
+USER nextjs
+
 RUN npm run build
 
 # Production stage
 FROM node:18-alpine AS production
+
+# Create app directory and non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 && \
+    mkdir -p /app && \
+    chown -R nextjs:nodejs /app
+
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS='--security-revert=CVE-2023-46809'
 
 # Copy necessary files
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Install wget for healthcheck
-RUN apk add --no-cache wget
+RUN apk add --no-cache wget && \
+    # Remove unnecessary files
+    rm -rf /var/cache/apk/* && \
+    # Set proper permissions
+    chown -R nextjs:nodejs /app
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --spider http://localhost:3000/api/health || exit 1
+
+# Switch to non-root user
+USER nextjs
 
 EXPOSE 3000
 

@@ -18,19 +18,37 @@ export async function cleanDatabase(collections: CollectionName[], options: Clea
     await connectDB();
     const results: Record<string, number> = {};
 
+    // If preserving admins, verify they exist first
+    if (preserveAdmins) {
+      const adminCount = await User.countDocuments({ role: 'admin' });
+      if (adminCount === 0) {
+        throw new Error('No admin users found to preserve');
+      }
+      console.log(`Found ${adminCount} admin users to preserve`);
+    }
+
     for (const collection of collections) {
       switch (collection) {
         case 'users':
           if (dryRun) {
-            const count = await User.countDocuments(
-              preserveAdmins ? { role: { $ne: 'admin' } } : {}
-            );
+            // For dry run, count non-admin users if preserving admins
+            const query = preserveAdmins ? { role: { $ne: 'admin' } } : {};
+            const count = await User.countDocuments(query);
             results['users'] = count;
           } else {
-            const result = await User.deleteMany(
-              preserveAdmins ? { role: { $ne: 'admin' } } : {}
-            );
+            // For actual deletion, explicitly protect admin users if preserveAdmins is true
+            const query = preserveAdmins ? { role: { $ne: 'admin' } } : {};
+            const result = await User.deleteMany(query);
             results['users'] = result.deletedCount;
+
+            // Verify admins were preserved
+            if (preserveAdmins) {
+              const remainingAdmins = await User.countDocuments({ role: 'admin' });
+              if (remainingAdmins === 0) {
+                throw new Error('Admin users were accidentally deleted');
+              }
+              console.log(`Successfully preserved ${remainingAdmins} admin users`);
+            }
           }
           break;
 
@@ -66,15 +84,16 @@ export async function cleanDatabase(collections: CollectionName[], options: Clea
 
         case 'all':
           if (dryRun) {
-            results['users'] = await User.countDocuments(
-              preserveAdmins ? { role: { $ne: 'admin' } } : {}
-            );
+            const userQuery = preserveAdmins ? { role: { $ne: 'admin' } } : {};
+            results['users'] = await User.countDocuments(userQuery);
             results['blogPosts'] = await BlogPost.countDocuments({});
             results['gallery'] = await Gallery.countDocuments({});
             results['announcements'] = await AnnouncementPage.countDocuments({});
           } else {
+            // For actual deletion, handle users separately to ensure admin preservation
+            const userQuery = preserveAdmins ? { role: { $ne: 'admin' } } : {};
             const [users, blogPosts, gallery, announcements] = await Promise.all([
-              User.deleteMany(preserveAdmins ? { role: { $ne: 'admin' } } : {}),
+              User.deleteMany(userQuery),
               BlogPost.deleteMany({}),
               Gallery.deleteMany({}),
               AnnouncementPage.deleteMany({})
@@ -84,6 +103,15 @@ export async function cleanDatabase(collections: CollectionName[], options: Clea
             results['blogPosts'] = blogPosts.deletedCount;
             results['gallery'] = gallery.deletedCount;
             results['announcements'] = announcements.deletedCount;
+
+            // Verify admins were preserved for 'all' collection cleanup
+            if (preserveAdmins) {
+              const remainingAdmins = await User.countDocuments({ role: 'admin' });
+              if (remainingAdmins === 0) {
+                throw new Error('Admin users were accidentally deleted during full cleanup');
+              }
+              console.log(`Successfully preserved ${remainingAdmins} admin users during full cleanup`);
+            }
           }
           break;
       }

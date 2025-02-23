@@ -29,6 +29,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials): Promise<AuthUser | null> {
         try {
           if (!credentials?.email || !credentials?.password) {
+            console.error('Missing credentials');
             throw new Error('Invalid credentials');
           }
 
@@ -38,23 +39,35 @@ export const authOptions: NextAuthOptions = {
             ...(credentials.role === 'admin' ? { role: 'admin' } : {})
           };
           
+          console.log('Looking for user with query:', { email: query.email });
           const user = await User.findOne(query) as UserDocument | null;
           
           if (!user) {
+            console.error('User not found:', credentials.email);
             throw new Error('Invalid email or password');
           }
 
+          console.log('User found:', { 
+            email: user.email, 
+            role: user.role, 
+            status: user.status 
+          });
+
           if (credentials.role === 'admin' && user.role !== 'admin') {
+            console.error('Unauthorized admin access attempt');
             throw new Error('Unauthorized - Admin access required');
           }
 
           const isValidPassword = await user.comparePassword(credentials.password);
+          console.log('Password validation result:', isValidPassword);
 
           if (!isValidPassword) {
+            console.error('Invalid password for user:', credentials.email);
             throw new Error('Invalid email or password');
           }
 
           if (user.status !== 'active') {
+            console.error('Inactive account:', credentials.email);
             throw new Error('Account is inactive');
           }
 
@@ -69,7 +82,8 @@ export const authOptions: NextAuthOptions = {
             teamRole: user.teamRole
           };
         } catch (error) {
-          return null;
+          console.error('Authorization error:', error);
+          throw error; // Let NextAuth handle the error
         }
       }
     })
