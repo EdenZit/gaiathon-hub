@@ -1,157 +1,147 @@
-import type { Metadata } from 'next';
+import { Metadata } from 'next';
 import Image from 'next/image';
-import { CalendarDaysIcon, MegaphoneIcon, ClockIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { CalendarDaysIcon, MegaphoneIcon, StarIcon } from '@heroicons/react/24/outline';
+import { connectDB } from '@/lib/mongodb';
+import { AnnouncementPage, IUpcomingEvent, IAnnouncement, IImportantDate, IAnnouncementPage } from '@/models/Announcement';
 
 export const metadata: Metadata = {
-  title: "GAIAthon'25 Updates | GAIAthon-Hub",
-  description: 'Stay updated with the latest announcements, events, and important dates for GAIAthon 2025.',
+  title: 'GAIAthon Updates | GAIAthon-Hub',
+  description: 'Stay updated with the latest announcements, events, and important dates for GAIAthon.',
 };
 
-const upcomingEvents = [
-  {
-    title: 'Registration Opens',
-    date: 'March 1, 2025',
-    description: 'Team registration begins for GAIAthon 2025. Form your teams and prepare your documents.',
-    type: 'registration'
-  },
-  {
-    title: 'Orientation Session',
-    date: 'March 15, 2025',
-    description: 'Virtual orientation for all registered teams. Introduction to platforms and resources.',
-    type: 'virtual'
-  },
-  {
-    title: 'Workshop Series Begins',
-    date: 'March 20, 2025',
-    description: 'Weekly technical workshops on Earth Observation tools and methodologies.',
-    type: 'workshop'
-  }
-];
+interface PageData {
+  upcomingEvents: IUpcomingEvent[];
+  announcements: IAnnouncement[];
+  importantDates: IImportantDate[];
+}
 
-const announcements = [
-  {
-    title: 'New Partnership Announcement',
-    date: 'January 15, 2025',
-    content: 'We are excited to announce our new partnership with leading Earth Observation organizations to provide enhanced data access for participants.'
-  },
-  {
-    title: 'Technical Requirements Update',
-    date: 'January 10, 2025',
-    content: 'Updated technical specifications and requirements for GAIAthon 2025 projects have been released.'
-  },
-  {
-    title: 'Mentorship Program Launch',
-    date: 'January 5, 2025',
-    content: 'Applications for our mentorship program are now open. Connect with industry experts throughout your GAIAthon journey.'
-  }
-];
+async function getPageData(): Promise<PageData> {
+  await connectDB();
+  const data = (await AnnouncementPage.findOne().lean()) as IAnnouncementPage | null;
+  return {
+    upcomingEvents: data?.upcomingEvents || [],
+    announcements: data?.announcements || [],
+    importantDates: data?.importantDates || []
+  };
+}
 
-const importantDates = [
-  { date: 'March 1, 2025', event: 'Registration Opens' },
-  { date: 'April 15, 2025', event: 'Registration Closes' },
-  { date: 'May 1, 2025', event: 'Project Development Begins' },
-  { date: 'June 15, 2025', event: 'Project Submissions Due' },
-  { date: 'July 1, 2025', event: 'Finalists Announced' },
-  { date: 'August 18-21, 2025', event: 'GAIAfest Awards Ceremony' }
-];
+export default async function EventsPage() {
+  const pageData = await getPageData();
 
-export default function EventsPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Header with Map */}
-        <div className="relative mb-16">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl mb-4">
-              GAIAthon'25 Updates
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Stay informed about the latest events, announcements, and important dates for GAIAthon 2025
-            </p>
-          </div>
-          
-          {/* Centered Map */}
-          <div className="flex justify-center">
-            <Link href="/company/events/participating-countries" className="group">
-              <div className="w-full max-w-[250px]">
-                <div className="relative w-full h-[250px] bg-[#0A192F] rounded-lg shadow-lg overflow-hidden transition-transform transform group-hover:scale-105">
-                  <Image
-                    src="/images/maps/africa-participants.png"
-                    alt="Map of participating African countries"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-                <p className="mt-2 text-sm text-blue-600 text-center font-medium">
-                  Click to view participating countries and universities
-                </p>
-              </div>
-            </Link>
-          </div>
+    <main className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-4">
+            GAIAthon'25 Updates
+          </h1>
+          <p className="text-xl text-gray-600 text-center max-w-3xl mx-auto">
+            Stay informed about GAIAthon activities, announcements, and important dates
+          </p>
         </div>
+      </div>
 
-        {/* Upcoming Events Section */}
-        <section className="mb-16">
-          <div className="flex items-center mb-8">
-            <CalendarDaysIcon className="h-8 w-8 text-blue-600 mr-3" />
-            <h2 className="text-3xl font-bold text-gray-900">Upcoming Events</h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {upcomingEvents.map((event, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-gray-100"
-              >
-                <div className="text-lg font-semibold text-gray-900 mb-2">{event.title}</div>
-                <div className="text-blue-600 font-medium mb-3">{event.date}</div>
-                <p className="text-gray-600">{event.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Announcements Section */}
-        <section className="mb-16">
-          <div className="flex items-center mb-8">
-            <MegaphoneIcon className="h-8 w-8 text-blue-600 mr-3" />
-            <h2 className="text-3xl font-bold text-gray-900">Latest Announcements</h2>
+      {/* Content Sections */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+        {/* Upcoming Events */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <CalendarDaysIcon className="h-8 w-8 text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
           </div>
           <div className="space-y-6">
-            {announcements.map((announcement, index) => (
+            {pageData.upcomingEvents.map((event, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-gray-100"
+                className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900">{announcement.title}</h3>
-                  <span className="text-sm text-gray-500">{announcement.date}</span>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {event.topic}
+                  </h3>
+                  <p className="text-gray-600 mb-4">{event.description}</p>
+                  <p className="text-sm text-blue-600 font-medium">
+                    {new Date(event.date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric'
+                    })}
+                  </p>
                 </div>
-                <p className="text-gray-600">{announcement.content}</p>
               </div>
             ))}
+            {pageData.upcomingEvents.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No upcoming events at this time.</p>
+            )}
           </div>
         </section>
 
-        {/* Important Dates Section */}
+        {/* Latest Announcements */}
         <section>
-          <div className="flex items-center mb-8">
-            <ClockIcon className="h-8 w-8 text-blue-600 mr-3" />
-            <h2 className="text-3xl font-bold text-gray-900">Important Dates</h2>
+          <div className="flex items-center gap-3 mb-6">
+            <MegaphoneIcon className="h-8 w-8 text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-900">Latest Announcements</h2>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {importantDates.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="min-w-[120px] font-medium text-blue-600">{item.date}</div>
-                  <div className="text-gray-900">{item.event}</div>
+          <div className="space-y-6">
+            {pageData.announcements.map((announcement, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {announcement.topic}
+                  </h3>
+                  <p className="text-gray-600 mb-4">{announcement.description}</p>
+                  <p className="text-sm text-blue-600 font-medium">
+                    {new Date(announcement.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+            {pageData.announcements.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No announcements at this time.</p>
+            )}
+          </div>
+        </section>
+
+        {/* Important Dates */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <StarIcon className="h-8 w-8 text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-900">Important Dates</h2>
+          </div>
+          <div className="space-y-4">
+            {pageData.importantDates.map((date, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4"
+              >
+                <div className="flex-shrink-0 w-16 text-center">
+                  <span className="text-lg font-bold text-blue-600">
+                    {new Date(date.date).getDate()}
+                  </span>
+                  <span className="block text-sm text-blue-600">
+                    {new Date(date.date).toLocaleDateString('en-US', { month: 'short' })}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-gray-900">{date.description}</p>
+                </div>
+              </div>
+            ))}
+            {pageData.importantDates.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No important dates at this time.</p>
+            )}
           </div>
         </section>
       </div>

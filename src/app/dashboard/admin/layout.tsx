@@ -14,7 +14,9 @@ import {
   HomeIcon,
   DocumentTextIcon,
   ExclamationTriangleIcon,
-  PhotoIcon
+  PhotoIcon,
+  CalendarIcon,
+  NewspaperIcon
 } from "@heroicons/react/24/outline";
 
 const adminNavItems = [
@@ -41,6 +43,18 @@ const adminNavItems = [
     href: "/dashboard/admin/gallery",
     icon: PhotoIcon,
     description: "Manage gallery images and content"
+  },
+  {
+    name: "Events",
+    href: "/dashboard/admin/events",
+    icon: CalendarIcon,
+    description: "Manage announcements and important dates"
+  },
+  {
+    name: "Blog",
+    href: "/dashboard/admin/blog",
+    icon: NewspaperIcon,
+    description: "Manage blog posts and content"
   },
   {
     name: "System Settings",
