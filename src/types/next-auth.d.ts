@@ -1,46 +1,30 @@
-import NextAuth from 'next-auth';
-import { DefaultSession } from 'next-auth';
-import { ObjectId } from 'mongoose';
+import type { DefaultSession } from 'next-auth';
+import type { JWT as DefaultJWT } from 'next-auth/jwt';
+
+type UserRole = 'user' | 'admin';
+type UserStatus = 'active' | 'inactive';
+type TeamRole = 'leader' | 'member';
+
+interface ExtendedUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  role: UserRole;
+  status: UserStatus;
+  teamRole: TeamRole;
+}
 
 declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      firstName?: string;
-      lastName?: string;
-      role: 'user' | 'admin';
-      status: 'active' | 'inactive';
-      teamRole: 'leader' | 'member';
-      teams?: string[];
-      emailVerified?: boolean;
-    } & DefaultSession['user'];
-  }
+  interface User extends ExtendedUser {}
 
-  interface User {
-    id: string;
-    name?: string;
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-    role: 'user' | 'admin';
-    status: 'active' | 'inactive';
-    teamRole: 'leader' | 'member';
-    teams?: string[];
-    emailVerified?: boolean;
+  interface Session {
+    user: ExtendedUser;
+    expires: string;
   }
 }
 
 declare module 'next-auth/jwt' {
-  interface JWT {
-    id: string;
-    name?: string;
-    firstName?: string;
-    lastName?: string;
-    role: 'user' | 'admin';
-    status: 'active' | 'inactive';
-    teamRole: 'leader' | 'member';
-  }
+  interface JWT extends DefaultJWT, ExtendedUser {}
 } 

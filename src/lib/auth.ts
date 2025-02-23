@@ -1,49 +1,9 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare } from 'bcryptjs';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/lib/db/models/User';
-import { Document } from 'mongoose';
-
-declare module 'next-auth' {
-  interface User {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    name: string;
-    role: 'user' | 'admin';
-    status: 'active' | 'inactive';
-    teamRole: 'leader' | 'member';
-  }
-
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      name: string;
-      role: 'user' | 'admin';
-      status: 'active' | 'inactive';
-      teamRole: 'leader' | 'member';
-    };
-    expires: string;
-  }
-}
-
-declare module 'next-auth/jwt' {
-  interface JWT {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    name: string;
-    role: 'user' | 'admin';
-    status: 'active' | 'inactive';
-    teamRole: 'leader' | 'member';
-  }
-}
+import type { Document } from 'mongoose';
+import type { User as AuthUser } from 'next-auth';
 
 interface UserDocument extends Document {
   _id: string;
@@ -51,9 +11,9 @@ interface UserDocument extends Document {
   firstName: string;
   lastName: string;
   name?: string;
-  role: 'user' | 'admin';
-  status: 'active' | 'inactive';
-  teamRole: 'leader' | 'member';
+  role: AuthUser['role'];
+  status: AuthUser['status'];
+  teamRole: AuthUser['teamRole'];
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -66,72 +26,50 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
         role: { label: 'Role', type: 'text' }
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<AuthUser | null> {
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.error('DEBUG: Missing credentials');
             throw new Error('Invalid credentials');
           }
 
           await connectDB();
-          console.error('DEBUG: Looking for user with email:', credentials.email.toLowerCase());
-          
           const query = {
             email: credentials.email.toLowerCase(),
             ...(credentials.role === 'admin' ? { role: 'admin' } : {})
           };
           
-          const user = await User.findOne(query) as UserDocument;
+          const user = await User.findOne(query) as UserDocument | null;
           
           if (!user) {
-            console.error('DEBUG: User not found');
             throw new Error('Invalid email or password');
           }
 
-          // If admin login is requested but user is not admin
           if (credentials.role === 'admin' && user.role !== 'admin') {
-            console.error('DEBUG: User is not admin');
             throw new Error('Unauthorized - Admin access required');
           }
 
-          console.error('DEBUG: Found user:', {
-            email: user.email,
-            role: user.role,
-            status: user.status,
-            name: user.name,
-            teamRole: user.teamRole
-          });
-
           const isValidPassword = await user.comparePassword(credentials.password);
-          console.error('DEBUG: Password validation result:', isValidPassword);
 
           if (!isValidPassword) {
-            console.error('DEBUG: Invalid password');
             throw new Error('Invalid email or password');
           }
 
-          // Check if user is active
           if (user.status !== 'active') {
-            console.error('DEBUG: User is inactive');
             throw new Error('Account is inactive');
           }
 
-          const userData = {
-            id: user._id,
+          return {
+            id: user._id.toString(),
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
             name: user.name || `${user.firstName} ${user.lastName}`,
-            role: user.role as 'user' | 'admin',
-            status: user.status as 'active' | 'inactive',
-            teamRole: user.teamRole as 'leader' | 'member'
+            role: user.role,
+            status: user.status,
+            teamRole: user.teamRole
           };
-
-          console.error('DEBUG: Login successful, returning user data:', userData);
-          return userData;
         } catch (error) {
-          console.error('DEBUG: Auth error:', error);
-          throw error;
+          return null;
         }
       }
     })
@@ -139,23 +77,24 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        console.error('DEBUG: JWT callback - user data:', user);
-        token.id = user.id;
-        token.email = user.email;
-        token.firstName = user.firstName;
-        token.lastName = user.lastName;
-        token.name = user.name;
-        token.role = user.role;
-        token.status = user.status;
-        token.teamRole = user.teamRole;
-        console.error('DEBUG: JWT token after update:', token);
+        return {
+          ...token,
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          name: user.name,
+          role: user.role,
+          status: user.status,
+          teamRole: user.teamRole
+        };
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token) {
-        console.error('DEBUG: Session callback - token data:', token);
-        session.user = {
+      return {
+        ...session,
+        user: {
           id: token.id,
           email: token.email,
           firstName: token.firstName,
@@ -164,10 +103,8 @@ export const authOptions: NextAuthOptions = {
           role: token.role,
           status: token.status,
           teamRole: token.teamRole
-        };
-        console.error('DEBUG: Session after update:', session);
-      }
-      return session;
+        }
+      };
     }
   },
   pages: {

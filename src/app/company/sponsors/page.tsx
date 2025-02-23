@@ -15,7 +15,7 @@ export default function PartnersPage() {
       logo: '/images/sponsors/gmes.png',
       description: 'The Global Monitoring for Environment and Security and Africa',
       hasArrow: true,
-      website: 'http://gmes.africa-union.org/',
+      website: 'https://au.int/GMESAfrica',
     },
     {
       name: 'African Union Commission',
