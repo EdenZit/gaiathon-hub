@@ -73,10 +73,15 @@ export async function POST(request: NextRequest) {
       uploadedBy: session.user.id
     });
 
+    // Get a plain object with populated uploadedBy
+    const savedItem = await Gallery.findById(galleryItem._id)
+      .populate('uploadedBy', 'name image')
+      .lean();
+
     // Revalidate the gallery page
     revalidatePath('/gallery');
 
-    return NextResponse.json(galleryItem, { status: 201 });
+    return NextResponse.json(savedItem, { status: 201 });
   } catch (error) {
     console.error('Error creating gallery item:', error);
     return NextResponse.json(

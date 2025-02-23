@@ -83,14 +83,21 @@ const galleryItemSchema = new Schema<IGalleryItem>(
     timestamps: true,
     toJSON: {
       transform: function(doc, ret) {
-        ret._id = ret._id.toString();
-        if (ret.uploadedBy && ret.uploadedBy._id) {
+        // Only transform if the _id exists and is an ObjectId
+        if (ret._id && typeof ret._id.toString === 'function') {
+          ret._id = ret._id.toString();
+        }
+        // Only transform uploadedBy if it exists and has an _id
+        if (ret.uploadedBy && ret.uploadedBy._id && typeof ret.uploadedBy._id.toString === 'function') {
           ret.uploadedBy._id = ret.uploadedBy._id.toString();
         }
-        ret.images = ret.images.map((image: any) => ({
-          ...image,
-          _id: image._id.toString()
-        }));
+        // Transform image _ids if they exist
+        if (Array.isArray(ret.images)) {
+          ret.images = ret.images.map((image: any) => ({
+            ...image,
+            _id: image._id && typeof image._id.toString === 'function' ? image._id.toString() : image._id
+          }));
+        }
         return ret;
       }
     }
