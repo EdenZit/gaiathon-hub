@@ -6,7 +6,10 @@ export interface IBlogPost {
   excerpt: string;
   content: string;
   coverImage: string;
-  author: Types.ObjectId;
+  author: {
+    name: string;
+  };
+  createdBy: Types.ObjectId; // Admin who created the post
   category: string;
   tags: string[];
   readTime: string;
@@ -49,9 +52,15 @@ const blogPostSchema = new Schema<IBlogPost>(
       required: [true, 'Cover image is required']
     },
     author: {
+      name: {
+        type: String,
+        required: [true, 'Author name is required']
+      }
+    },
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'Author is required']
+      required: [true, 'Creator is required']
     },
     category: {
       type: String,
@@ -80,7 +89,8 @@ const blogPostSchema = new Schema<IBlogPost>(
     },
     featuredOrder: {
       type: Number,
-      sparse: true
+      sparse: true,
+      index: true
     },
     seoDescription: {
       type: String,
@@ -100,11 +110,9 @@ const blogPostSchema = new Schema<IBlogPost>(
 );
 
 // Add indexes for better query performance
-blogPostSchema.index({ slug: 1 }, { unique: true });
 blogPostSchema.index({ category: 1, status: 1 });
 blogPostSchema.index({ status: 1, publishedAt: -1 });
 blogPostSchema.index({ tags: 1 });
-blogPostSchema.index({ featuredOrder: 1 }, { sparse: true });
 
 // Create text index for search functionality
 blogPostSchema.index(
