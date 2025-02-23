@@ -16,7 +16,8 @@ import {
   ExclamationTriangleIcon,
   PhotoIcon,
   CalendarIcon,
-  NewspaperIcon
+  NewspaperIcon,
+  CircleStackIcon
 } from "@heroicons/react/24/outline";
 
 const adminNavItems = [
@@ -81,6 +82,12 @@ const adminNavItems = [
         description: "Monitor and manage system errors"
       }
     ]
+  },
+  {
+    name: "Database",
+    href: "/dashboard/admin/db/cleanup",
+    icon: CircleStackIcon,
+    description: "Database maintenance and cleanup"
   }
 ];
 

@@ -63,7 +63,8 @@ export const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
+        role: { label: 'Role', type: 'text' }
       },
       async authorize(credentials) {
         try {
@@ -75,11 +76,22 @@ export const authOptions: NextAuthOptions = {
           await connectDB();
           console.error('DEBUG: Looking for user with email:', credentials.email.toLowerCase());
           
-          const user = await User.findOne({ email: credentials.email.toLowerCase() }) as UserDocument;
+          const query = {
+            email: credentials.email.toLowerCase(),
+            ...(credentials.role === 'admin' ? { role: 'admin' } : {})
+          };
+          
+          const user = await User.findOne(query) as UserDocument;
           
           if (!user) {
             console.error('DEBUG: User not found');
             throw new Error('Invalid email or password');
+          }
+
+          // If admin login is requested but user is not admin
+          if (credentials.role === 'admin' && user.role !== 'admin') {
+            console.error('DEBUG: User is not admin');
+            throw new Error('Unauthorized - Admin access required');
           }
 
           console.error('DEBUG: Found user:', {
@@ -160,12 +172,13 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
-    error: '/auth/error'
+    error: '/auth/error',
+    newUser: '/register'
   },
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true,
+  debug: process.env.NODE_ENV === 'development',
 }; 
