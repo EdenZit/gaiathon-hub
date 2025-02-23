@@ -13,7 +13,8 @@ import {
   ShieldCheckIcon,
   HomeIcon,
   DocumentTextIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  PhotoIcon
 } from "@heroicons/react/24/outline";
 
 const adminNavItems = [
@@ -34,6 +35,12 @@ const adminNavItems = [
     href: "/dashboard/admin/teams",
     icon: UserGroupIcon,
     description: "Manage teams and registrations"
+  },
+  {
+    name: "Gallery",
+    href: "/dashboard/admin/gallery",
+    icon: PhotoIcon,
+    description: "Manage gallery images and content"
   },
   {
     name: "System Settings",
