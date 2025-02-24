@@ -43,8 +43,8 @@ export function Footer() {
 
   const resourceLinks = [
     { name: 'EO Tools', href: '/dashboard/tools', protected: true },
-    { name: 'Blog', href: '/resources/blog' },
-    { name: 'FAQ', href: '/resources/faq' },
+    { name: 'Blog', href: '/resources/blog', protected: false },
+    { name: 'FAQ', href: '/resources/faq', protected: false },
   ];
 
   const legalLinks = [

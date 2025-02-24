@@ -2,7 +2,11 @@
 const nextConfig = {
   output: 'standalone',
   images: {
-    domains: ['localhost'],
+    domains: [
+      'images.unsplash.com',
+      'plus.unsplash.com',
+      'avatars.githubusercontent.com',
+    ],
     unoptimized: process.env.NODE_ENV === 'development',
     remotePatterns: [
       {
@@ -21,6 +25,12 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
   },
+  // Transpile framer-motion
+  transpilePackages: ['framer-motion'],
+  // Enable React strict mode
+  reactStrictMode: true,
+  // Disable x-powered-by header
+  poweredByHeader: false,
   // Add security headers
   async headers() {
     return [

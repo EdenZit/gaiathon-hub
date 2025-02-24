@@ -46,8 +46,8 @@ export function Navbar() {
     ],
     resources: [
       { name: 'EO Tools', href: '/dashboard/tools', protected: true },
-      { name: 'Blog', href: '/resources/blog' },
-      { name: 'FAQ', href: '/resources/faq' },
+      { name: 'Blog', href: '/resources/blog', protected: false },
+      { name: 'FAQ', href: '/resources/faq', protected: false },
     ],
     legal: [
       { name: 'Terms of Service', href: '/legal/terms-of-service' },

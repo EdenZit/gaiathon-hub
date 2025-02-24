@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { FaLaptopCode, FaMicrochip, FaMapLocation } from 'react-icons/fa6';
-import { motion } from 'framer-motion';
+import { MotionDiv } from '@/components/motion';
 
 const categories = [
   {
@@ -12,7 +12,8 @@ const categories = [
     icon: FaLaptopCode,
     description: 'Develop interactive web or mobile applications that process and visualize EO and IoT data.',
     href: '/categories/digital-platforms',
-    gradient: 'from-blue-500/10 to-cyan-500/10'
+    gradient: 'from-blue-500 to-cyan-500',
+    iconBg: 'bg-blue-500',
   },
   {
     id: 'iot-systems',
@@ -20,7 +21,8 @@ const categories = [
     icon: FaMicrochip,
     description: 'Build physical prototypes that collect real-time environmental data using low-cost IoT sensors.',
     href: '/categories/iot-systems',
-    gradient: 'from-emerald-500/10 to-green-500/10'
+    gradient: 'from-emerald-500 to-green-500',
+    iconBg: 'bg-emerald-500',
   },
   {
     id: 'geospatial-intelligence',
@@ -28,7 +30,8 @@ const categories = [
     icon: FaMapLocation,
     description: 'Analyze satellite data to generate maps, reports, and geospatial models for environmental monitoring.',
     href: '/categories/geospatial-intelligence',
-    gradient: 'from-purple-500/10 to-indigo-500/10'
+    gradient: 'from-purple-500 to-indigo-500',
+    iconBg: 'bg-purple-500',
   },
 ];
 
@@ -55,57 +58,85 @@ const itemVariants = {
 
 export function Categories() {
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+    <section id="innovation-tracks" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            GAIAthon&apos;25 Categories
-          </h2>
-          <p className="mt-4 text-lg text-gray-600">
-            Choose your innovation track and make an impact
-          </p>
+        <div className="text-center mb-16">
+          <MotionDiv
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+              Innovation Tracks
+            </h2>
+            <p className="mt-4 text-xl text-gray-600">
+              Choose your path and make a lasting impact on environmental sustainability
+            </p>
+          </MotionDiv>
         </div>
 
-        <motion.div
-          className="grid grid-cols-1 gap-8 lg:grid-cols-3 mt-12"
+        <MotionDiv
+          className="grid grid-cols-1 gap-12 lg:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
-          animate="visible"
+          whileInView="visible"
+          viewport={{ once: true }}
         >
-          {categories.map((category) => (
-            <Link 
-              key={category.id} 
-              href={category.href}
-              className="block transform transition-transform duration-300 hover:scale-[1.02]"
+          {categories.map((category, index) => (
+            <MotionDiv
+              key={category.id}
+              variants={itemVariants}
+              className="relative group"
             >
-              <motion.div
-                variants={itemVariants}
-                className="relative group h-full"
+              <Link 
+                href={category.href}
+                className="block"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} rounded-xl`} />
-                <div className="relative h-full bg-white/90 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl border border-gray-100 overflow-hidden p-6 transition-all duration-300">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg mb-4">
-                    <category.icon className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {category.title}
-                  </h3>
-                  <p className="text-gray-600">
-                    {category.description}
-                  </p>
-                  <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-blue-600 font-medium flex items-center">
-                      Learn more 
-                      <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <div className="relative">
+                  {/* Gradient Background */}
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 blur" />
+                  
+                  {/* Content */}
+                  <div className="relative bg-white p-8 rounded-2xl shadow-lg transition-all duration-300 group-hover:shadow-xl">
+                    {/* Icon */}
+                    <div className={`inline-flex p-3 rounded-lg ${category.iconBg} text-white shadow-lg mb-6`}>
+                      <category.icon className="h-6 w-6" />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-green-600 transition-all duration-300">
+                      {category.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-gray-600 leading-relaxed mb-6">
+                      {category.description}
+                    </p>
+
+                    {/* Learn More Link */}
+                    <div className="inline-flex items-center text-sm font-medium text-blue-600 group-hover:text-green-600 transition-colors duration-300">
+                      Learn more
+                      <svg
+                        className="ml-2 h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
                       </svg>
-                    </span>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
-            </Link>
+              </Link>
+            </MotionDiv>
           ))}
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   );

@@ -55,46 +55,100 @@ const partners = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+    },
+  },
+};
+
 export function Partners() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: 0.6 }}
-      className="mt-20"
-    >
-      <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Our Partners</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {partners.map((partner) => (
-          <Link
-            key={partner.name}
-            href={partner.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block transform transition-all duration-300 hover:-translate-y-1"
-          >
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md p-4 h-full flex flex-col justify-between">
-              <div className="relative h-20 w-full mb-4">
-                <Image
-                  src={partner.logo}
-                  alt={`${partner.name} logo`}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
-                  {partner.name}
-                </h4>
-                {partner.hasArrow && (
-                  <FaArrowRight className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />
-                )}
-              </div>
-            </div>
-          </Link>
-        ))}
+    <section className="py-24 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Our Partners
+          </h2>
+          <p className="mt-4 text-xl text-gray-600">
+            Collaborating with leading organizations to drive innovation in Earth Observation
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
+        >
+          {partners.map((partner) => (
+            <motion.div
+              key={partner.name}
+              variants={itemVariants}
+              className="relative group"
+            >
+              <Link
+                href={partner.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <div className="relative">
+                  {/* Gradient Border */}
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-green-600 rounded-xl opacity-0 group-hover:opacity-100 transition duration-500 blur" />
+                  
+                  {/* Content */}
+                  <div className="relative bg-white rounded-xl p-6 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    {/* Logo Container */}
+                    <div className="relative h-24 mb-4">
+                      <Image
+                        src={partner.logo}
+                        alt={`${partner.name} logo`}
+                        fill
+                        className="object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                      />
+                    </div>
+                    
+                    {/* Partner Info */}
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
+                        {partner.name}
+                      </h3>
+                      {partner.hasArrow && (
+                        <FaArrowRight 
+                          className="h-4 w-4 text-gray-400 group-hover:text-green-600 transform group-hover:translate-x-1 transition-all duration-300" 
+                          aria-hidden="true" 
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
-    </motion.div>
+    </section>
   );
 } 

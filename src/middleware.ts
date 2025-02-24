@@ -11,8 +11,14 @@ export async function middleware(request: NextRequest) {
                     request.nextUrl.pathname.startsWith('/admin-login');
   const isAdminRoute = request.nextUrl.pathname.startsWith('/dashboard/admin') ||
                       request.nextUrl.pathname.startsWith('/admin');
+  
+  // Exclude blog and FAQ from protected routes
+  const isPublicResource = 
+    request.nextUrl.pathname.startsWith('/resources/blog') ||
+    request.nextUrl.pathname.startsWith('/resources/faq');
+  
   const isProtectedRoute = 
-    request.nextUrl.pathname.startsWith('/resources') ||
+    (request.nextUrl.pathname.startsWith('/resources') && !isPublicResource) ||
     request.nextUrl.pathname.startsWith('/dashboard');
 
   // Add response headers for security
