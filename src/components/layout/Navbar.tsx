@@ -41,7 +41,6 @@ export function Navbar() {
     company: [
       { name: 'Home', href: '/' },
       { name: 'About', href: '/company/about' },
-      { name: 'Partners', href: '/company/sponsors' },
       { name: 'Events', href: '/company/events' },
       { name: 'Gallery', href: '/gallery' },
     ],

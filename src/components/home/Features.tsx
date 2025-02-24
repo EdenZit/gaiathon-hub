@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Categories } from '@/components/home/Categories';
+import { Partners } from '@/components/home/Partners';
 import { 
   DevicePhoneMobileIcon, 
   CpuChipIcon, 
@@ -119,6 +120,9 @@ export function Features() {
             </div>
           </div>
         </motion.div>
+
+        {/* Partners Section */}
+        <Partners />
       </div>
     </div>
   );
