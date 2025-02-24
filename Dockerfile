@@ -20,6 +20,7 @@ FROM node:18-alpine AS dev
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001 && \
     mkdir -p /app && \
+    mkdir -p /app/.next && \
     chown -R nextjs:nodejs /app
 
 WORKDIR /app
@@ -32,9 +33,6 @@ COPY --chown=nextjs:nodejs . .
 ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Add security headers
-ENV NODE_OPTIONS='--security-revert=CVE-2023-46809'
-
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --spider http://localhost:3000/api/health || exit 1
@@ -42,7 +40,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 EXPOSE 3000
 
 # Install wget for healthcheck and security packages
-RUN apk add --no-cache wget
+RUN apk add --no-cache wget && \
+    # Ensure proper permissions
+    chown -R nextjs:nodejs /app/.next
 
 # Set up entrypoint
 COPY --chown=nextjs:nodejs docker-entrypoint.sh .
@@ -61,6 +61,7 @@ FROM node:18-alpine AS builder
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001 && \
     mkdir -p /app && \
+    mkdir -p /app/.next && \
     chown -R nextjs:nodejs /app
 
 WORKDIR /app
@@ -86,7 +87,6 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS='--security-revert=CVE-2023-46809'
 
 # Copy necessary files
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
