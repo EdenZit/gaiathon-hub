@@ -4,10 +4,59 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
-interface Country {
+interface University {
   name: string;
-  universities: string[];
+  country: string;
 }
+
+interface Region {
+  name: string;
+  institutions: University[];
+}
+
+const regions: Region[] = [
+  {
+    name: "NORTHERN AFRICA",
+    institutions: [
+      { name: "Higher School of Communication", country: "TUNISIA" },
+      { name: "The British University of Egypt", country: "EGYPT" }
+    ]
+  },
+  {
+    name: "WESTERN AFRICA",
+    institutions: [
+      { name: "Université Félix Houphouët-Boigny", country: "COTE D'VOIRE" },
+      { name: "University of Ghana", country: "GHANA" },
+      { name: "University of Mines and Technology", country: "GHANA" },
+      { name: "Ghana communication Technology University", country: "GHANA" },
+      { name: "Kwame Nkrumah University of Science and Technology", country: "GHANA" },
+      { name: "Obafemi Awolowo University", country: "NIGERIA" },
+      { name: "Université de Lomé", country: "TOGO" },
+      { name: "Universite Cheikh Anta Diop", country: "SENEGAL" },
+      { name: "L'Université Nationale des Sciences, Technologies, Ingénieriecet Mathématiques", country: "BENIN" }
+    ]
+  },
+  {
+    name: "EASTERN AFRICA",
+    institutions: [
+      { name: "Makerere University", country: "UGANDA" },
+      { name: "Addis Ababa Science and Technology University", country: "ETHIOPIA" },
+      { name: "Technical University of Kenya", country: "KENYA" }
+    ]
+  },
+  {
+    name: "CENTRAL AFRICA",
+    institutions: [
+      { name: "University of Kinshasa", country: "DEMOCRATIC REPUBLIC OF CONGO" }
+    ]
+  },
+  {
+    name: "SOUTHERN AFRICA",
+    institutions: [
+      { name: "University of Botswana", country: "BOTSWANA" }
+    ]
+  }
+];
 
 export default function ParticipatingCountriesPage() {
   const [countries, setCountries] = useState<Country[]>([]);
@@ -39,7 +88,7 @@ export default function ParticipatingCountriesPage() {
         <div className="mb-8">
           <Link 
             href="/company/events" 
-            className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -57,43 +106,36 @@ export default function ParticipatingCountriesPage() {
           </p>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : countries.length > 0 ? (
-          <div className="grid gap-8 md:grid-cols-2">
-            {countries.map((country, index) => (
-              <div 
-                key={index}
-                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-gray-100"
-              >
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">{country.name}</h2>
-                <ul className="space-y-2">
-                  {country.universities.map((university, uIndex) => (
-                    <li 
-                      key={uIndex}
-                      className="text-gray-700 flex items-center gap-2"
-                    >
-                      <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
-                      {university}
-                    </li>
-                  ))}
-                </ul>
+        <div className="space-y-12">
+          {regions.map((region, index) => (
+            <div key={index} className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+              <h2 className="text-3xl font-bold text-blue-900 mb-8 pb-4 border-b-2 border-blue-100">
+                {region.name}
+              </h2>
+              <div className="grid gap-6">
+                {region.institutions.map((institution, idx) => (
+                  <div 
+                    key={idx} 
+                    className="group hover:bg-blue-50 p-4 rounded-xl transition-all duration-200"
+                  >
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors duration-200">
+                      {institution.name}
+                    </h3>
+                    <p className="text-gray-600 font-medium">
+                      {institution.country}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-gray-600">
-            <p>No participating countries registered yet.</p>
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
         <div className="mt-16 text-center text-gray-600">
-          <p>More universities and countries will be added as registrations continue.</p>
-          <p className="mt-2">
+          <p className="text-lg">More universities and countries will be added as registrations continue.</p>
+          <p className="mt-4">
             Want your university to participate? {' '}
-            <Link href="/contact" className="text-blue-600 hover:text-blue-800">
+            <Link href="/contact" className="text-blue-600 hover:text-blue-800 font-medium underline decoration-2 underline-offset-2">
               Contact us
             </Link>
           </p>
