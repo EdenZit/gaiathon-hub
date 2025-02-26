@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { Project } from '@/models/Project';
 import { Document } from '@/models/Document';
 import { Team } from '@/models/Team';
-import { connectToDatabase } from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { teamMethods } from '@/lib/services/redis';
 
 export async function GET() {
@@ -14,7 +14,7 @@ export async function GET() {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    await connectToDatabase();
+    const db = await connectDB();
 
     // Get user's team
     const team = await Team.findOne({

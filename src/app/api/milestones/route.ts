@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Project } from '@/models/Project';
-import { connectToDatabase } from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    await connectToDatabase();
+    const db = await connectDB();
     const projects = await Project.find({}, 'milestones')
       .populate('milestones.assignedTo', 'name email');
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { projectId, title, description, dueDate, assignedTo } = body;
 
-    await connectToDatabase();
+    const db = await connectDB();
     const project = await Project.findById(projectId);
     
     if (!project) {
@@ -76,7 +76,7 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { projectId, milestoneId, status } = body;
 
-    await connectToDatabase();
+    const db = await connectDB();
     const project = await Project.findById(projectId);
     
     if (!project) {

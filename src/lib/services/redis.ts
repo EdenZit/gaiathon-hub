@@ -44,4 +44,28 @@ export async function getRateLimitInfo(userId: string) {
     reset: Date.now() + (ttl * 1000),
     limit: MAX_REQUESTS_PER_HOUR
   };
-} 
+}
+
+export const redis = redisClient;
+
+export const teamMethods = {
+  async addTeamMember(teamId: string, userId: string) {
+    const redis = await getRedisClient();
+    return redis.sAdd(`team:${teamId}:members`, userId);
+  },
+
+  async removeTeamMember(teamId: string, userId: string) {
+    const redis = await getRedisClient();
+    return redis.sRem(`team:${teamId}:members`, userId);
+  },
+
+  async getTeamMembers(teamId: string) {
+    const redis = await getRedisClient();
+    return redis.sMembers(`team:${teamId}:members`);
+  },
+
+  async isTeamMember(teamId: string, userId: string) {
+    const redis = await getRedisClient();
+    return redis.sIsMember(`team:${teamId}:members`, userId);
+  }
+}; 

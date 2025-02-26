@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { redis } from '@/lib/redis';
 import { adminMiddleware } from '@/middleware/adminMiddleware';
@@ -11,7 +11,13 @@ interface ServiceHealth {
   lastError?: string;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Apply admin middleware check
+  const isAdmin = await adminMiddleware(request);
+  if (!isAdmin) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
     const startTime = Date.now();
     const services: ServiceHealth[] = [];
@@ -38,8 +44,7 @@ export async function GET() {
     // Check Redis
     try {
       const redisStart = Date.now();
-      const redisClient = redis.getClient();
-      await redisClient.ping();
+      await redis.ping();
       services.push({
         name: 'Redis',
         status: 'healthy',
@@ -60,18 +65,11 @@ export async function GET() {
     const freeMem = os.freemem();
     const uptime = os.uptime();
 
-    // Get application metrics from Redis
-    const [
-      activeUsers,
-      requestsPerMinute,
-      errorRate,
-      avgResponseTime,
-    ] = await Promise.all([
-      redis.getClient().get('metrics:activeUsers').then(val => parseInt(val || '0')),
-      redis.getClient().get('metrics:requestsPerMinute').then(val => parseInt(val || '0')),
-      redis.getClient().get('metrics:errorRate').then(val => parseFloat(val || '0')),
-      redis.getClient().get('metrics:avgResponseTime').then(val => parseFloat(val || '0')),
-    ]);
+    // Get application metrics
+    const activeUsers = 0; // To be implemented with actual Redis metrics
+    const requestsPerMinute = 0;
+    const errorRate = 0;
+    const avgResponseTime = 0;
 
     // Determine overall system status
     const overallStatus = services.every(s => s.status === 'healthy')
@@ -107,7 +105,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
-
-// Apply admin middleware to all routes
-export { adminMiddleware as middleware }; 
+} 

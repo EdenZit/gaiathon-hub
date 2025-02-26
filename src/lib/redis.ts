@@ -1,4 +1,4 @@
-import { Redis } from 'ioredis';
+import Redis from 'ioredis';
 import { EventEmitter } from 'events';
 
 interface CursorPosition {
@@ -33,7 +33,7 @@ class RedisService extends EventEmitter {
 
   private constructor() {
     super();
-    const options = {
+    const redisOptions = {
       host: process.env.REDIS_HOST || 'redis',
       port: parseInt(process.env.REDIS_PORT || '6379', 10),
       retryStrategy: (times: number) => {
@@ -41,14 +41,15 @@ class RedisService extends EventEmitter {
         console.log(`Retrying Redis connection in ${delay}ms...`);
         return delay;
       },
-      maxRetriesPerRequest: null,
+      maxRetriesPerRequest: 3,
       enableReadyCheck: true,
       autoResendUnfulfilledCommands: true,
+      lazyConnect: true,
     };
 
-    this.publisher = new Redis(options);
-    this.subscriber = new Redis(options);
-    this.client = new Redis(options);
+    this.publisher = new Redis(redisOptions);
+    this.subscriber = new Redis(redisOptions);
+    this.client = new Redis(redisOptions);
 
     this.setupEventHandlers();
     this.startHealthCheck();
@@ -202,4 +203,7 @@ class RedisService extends EventEmitter {
 }
 
 // Export singleton instance
-export const redis = RedisService.getInstance(); 
+export const redis = RedisService.getInstance();
+
+// Export Redis client type
+export type RedisClient = Redis; 

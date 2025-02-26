@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Project } from '@/models/Project';
-import { connectToDatabase } from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    await connectToDatabase();
+    const db = await connectDB();
     const projects = await Project.find()
       .populate('team', 'name')
       .populate('createdBy', 'name email')
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, description, team, startDate, endDate } = body;
 
-    await connectToDatabase();
+    const db = await connectDB();
     const project = await Project.create({
       name,
       description,

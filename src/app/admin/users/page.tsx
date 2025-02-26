@@ -9,7 +9,6 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
-import { Metadata } from 'next';
 import { Container } from '@/components/ui/layout/container';
 import { ExportUsersButton } from '@/components/admin/ExportUsersButton';
 
@@ -30,11 +29,6 @@ interface FilterState {
   status: 'all' | 'active' | 'inactive';
   team?: string;
 }
-
-export const metadata: Metadata = {
-  title: 'User Management - Admin Dashboard',
-  description: 'Manage users and their permissions',
-};
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);

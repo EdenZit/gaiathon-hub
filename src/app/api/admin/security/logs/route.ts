@@ -3,11 +3,16 @@ import { adminGuard } from "@/lib/auth/adminGuard";
 import { getAdminLogs } from "@/lib/auth/adminGuard";
 
 export async function GET(req: NextRequest) {
-  // Check admin access and log the action
-  const guardResponse = await adminGuard(req, "fetch_security_logs");
-  if (guardResponse) return guardResponse;
-
   try {
+    // Check admin access and log the action
+    const guardResponse = await adminGuard(req, "fetch_security_logs");
+    if (guardResponse !== true) {
+      return NextResponse.json(
+        { error: "Unauthorized", message: "Admin access required" },
+        { status: 401 }
+      );
+    }
+
     // Get query parameters
     const url = new URL(req.url);
     const limit = parseInt(url.searchParams.get("limit") || "100");

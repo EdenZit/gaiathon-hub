@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { adminMiddleware } from '@/middleware/adminMiddleware';
 import { z } from 'zod';
@@ -25,7 +25,13 @@ const settingsSchema = z.object({
   }),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Apply admin middleware check
+  const isAdmin = await adminMiddleware(request);
+  if (!isAdmin) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
     const db = await connectDB();
     const settings = await db.collection('settings').findOne({ type: 'system' });
@@ -76,58 +82,64 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
+  // Apply admin middleware check
+  const isAdmin = await adminMiddleware(request);
+  if (!isAdmin) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
     const body = await request.json();
     
     // Validate request body
-    const validatedData = settingsSchema.parse(body);
-
-    const db = await connectDB();
-    
-    // Update settings
-    const result = await db.collection('settings').updateOne(
-      { type: 'system' },
-      {
-        $set: {
-          ...validatedData,
-          updatedAt: new Date(),
+    try {
+      const validatedData = settingsSchema.parse(body);
+      const db = await connectDB();
+      
+      // Update settings
+      const result = await db.collection('settings').updateOne(
+        { type: 'system' },
+        {
+          $set: {
+            ...validatedData,
+            updatedAt: new Date(),
+          },
         },
-      },
-      { upsert: true }
-    );
+        { upsert: true }
+      );
 
-    if (!result.acknowledged) {
-      throw new Error('Failed to update settings');
+      if (!result.acknowledged) {
+        return NextResponse.json(
+          { error: 'Failed to update settings' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(
+        { message: 'Settings updated successfully' },
+        { status: 200 }
+      );
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return NextResponse.json(
+          {
+            error: 'Validation error',
+            details: validationError.errors.map(e => ({
+              path: e.path.join('.'),
+              message: e.message,
+            })),
+          },
+          { status: 400 }
+        );
+      }
+      throw validationError;
     }
-
-    return NextResponse.json(
-      { message: 'Settings updated successfully' },
-      { status: 200 }
-    );
-
   } catch (error) {
     console.error('Error updating settings:', error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation error',
-          details: error.errors.map(e => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Failed to update settings' },
       { status: 500 }
     );
   }
-}
-
-// Apply admin middleware to all routes
-export { adminMiddleware as middleware }; 
+} 
