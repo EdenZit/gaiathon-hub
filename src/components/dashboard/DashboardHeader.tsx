@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,6 +9,20 @@ import { UserCircleIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/ou
 export function DashboardHeader() {
   const { data: session } = useSession();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const closeTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    setIsUserMenuOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsUserMenuOpen(false);
+    }, 150);
+  };
 
   return (
     <header className="bg-white shadow">
@@ -32,7 +46,11 @@ export function DashboardHeader() {
           </div>
 
           <div className="flex items-center">
-            <div className="relative ml-3">
+            <div 
+              className="relative ml-3"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
               <div>
                 <button
                   type="button"

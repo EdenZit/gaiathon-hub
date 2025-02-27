@@ -9,7 +9,11 @@ interface ITeamDocument extends Document {
   name: string;
   category: TeamCategory;
   leaderId: Types.ObjectId;
-  members: Types.ObjectId[];
+  members: {
+    user: Types.ObjectId;
+    teamRole: 'leader' | 'member';
+    joinedAt: Date;
+  }[];
   status: 'pending' | 'approved' | 'rejected';
   isLeader: (userId: string) => boolean;
 }
@@ -42,8 +46,21 @@ const teamSchema = new Schema<ITeamDocument>(
       required: true
     },
     members: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User'
+      user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+      },
+      teamRole: {
+        type: String,
+        enum: ['leader', 'member'],
+        default: 'member',
+        required: true
+      },
+      joinedAt: {
+        type: Date,
+        default: Date.now
+      }
     }],
     status: {
       type: String,
@@ -59,7 +76,7 @@ const teamSchema = new Schema<ITeamDocument>(
 
 // Optimized compound indexes for common queries
 teamSchema.index({ leaderId: 1, status: 1 });
-teamSchema.index({ members: 1, status: 1 });
+teamSchema.index({ 'members.user': 1, status: 1 });
 teamSchema.index({ category: 1, status: 1 });
 
 // Add instance methods
@@ -72,7 +89,7 @@ teamSchema.statics.findByMember = function(userId: string): Promise<ITeamDocumen
   return this.find({ 
     $or: [
       { leaderId: new Types.ObjectId(userId) },
-      { members: new Types.ObjectId(userId) }
+      { 'members.user': new Types.ObjectId(userId) }
     ]
   });
 };

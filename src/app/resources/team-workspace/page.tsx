@@ -7,11 +7,14 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 
 interface TeamMember {
-  _id: string;
-  email: string;
-  name: string;
-  firstName: string;
-  lastName: string;
+  user: {
+    _id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
+  teamRole: 'leader' | 'member';
+  joinedAt: string;
 }
 
 interface Team {
@@ -20,8 +23,23 @@ interface Team {
   category: string;
   status: 'pending' | 'approved' | 'rejected';
   leaderId: string;
+  isLeader: boolean;
   members: TeamMember[];
   createdAt: string;
+}
+
+function StatusBadge({ status }: { status: Team['status'] }) {
+  const statusStyles = {
+    pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    approved: 'bg-green-100 text-green-800 border-green-200',
+    rejected: 'bg-red-100 text-red-800 border-red-200'
+  };
+
+  return (
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusStyles[status]}`}>
+      Status: {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
+  );
 }
 
 export default function TeamWorkspacePage() {
@@ -43,15 +61,10 @@ export default function TeamWorkspacePage() {
     try {
       const response = await fetch('/api/teams/my-team');
       if (!response.ok) {
-        if (response.status === 404) {
-          setTeam(null);
-        } else {
-          throw new Error('Failed to fetch team');
-        }
-      } else {
-        const data = await response.json();
-        setTeam(data.team);
+        throw new Error('Failed to fetch team');
       }
+      const data = await response.json();
+      setTeam(data.team);
     } catch (error) {
       console.error('Error fetching team:', error);
       toast.error('Failed to load team data');
@@ -79,42 +92,6 @@ export default function TeamWorkspacePage() {
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!team) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Welcome to Team Workspace</h2>
-            <p className="mt-4 text-lg text-gray-600">
-              You are not part of any team yet.
-              {session?.user?.teamRole === 'leader' ? (
-                ' Create a new team to get started.'
-              ) : (
-                ' Join a team to get started or update your profile as Team Leader to create a new team.'
-              )}
-            </p>
-            {session?.user?.teamRole === 'leader' ? (
-              <button
-                onClick={handleCreateTeam}
-                className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Create New Team
-              </button>
-            ) : (
-              <Link
-                href="/dashboard/profile"
-                className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 hover:text-blue-700 focus:outline-none"
-              >
-                Update Profile Settings
-              </Link>
-            )}
           </div>
         </div>
       </div>
@@ -124,61 +101,64 @@ export default function TeamWorkspacePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Team Profile Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">{team.name}</h1>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                Created: {new Date(team.createdAt).toLocaleDateString()}
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-500">Status:</span>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                  ${team.status === 'approved' ? 'bg-green-100 text-green-800' : 
-                    team.status === 'rejected' ? 'bg-red-100 text-red-800' : 
-                    'bg-yellow-100 text-yellow-800'}`}
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900">Welcome to Team Workspace</h2>
+          {!team ? (
+            <>
+              <p className="mt-4 text-lg text-gray-600">
+                {session?.user?.teamRole === 'leader' ? (
+                  'Create a new team to get started.'
+                ) : (
+                  'Update your profile as Team Leader to create a new team.'
+                )}
+              </p>
+              {session?.user?.teamRole === 'leader' ? (
+                <button
+                  onClick={handleCreateTeam}
+                  className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
-                </span>
+                  Create New Team
+                </button>
+              ) : (
+                <Link
+                  href="/dashboard/profile"
+                  className="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 hover:text-blue-700 focus:outline-none"
+                >
+                  Update Profile Settings
+                </Link>
+              )}
+            </>
+          ) : (
+            <div className="mt-4">
+              <p className="text-lg text-gray-600">
+                You are a member of team: <span className="font-semibold">{team.name}</span>
+              </p>
+              <div className="mt-2 flex justify-center">
+                <StatusBadge status={team.status} />
+              </div>
+              <div className="mt-6">
+                <h3 className="text-lg font-medium text-gray-900">Team Members</h3>
+                <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {team.members.map((member) => (
+                    <div key={member.user._id} className="bg-white p-4 rounded-lg shadow">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {member.user.firstName} {member.user.lastName}
+                          </p>
+                          <p className="text-sm text-gray-500">{member.user.email}</p>
+                        </div>
+                        <span className={`text-sm ${member.teamRole === 'leader' ? 'text-blue-600' : 'text-gray-500'}`}>
+                          {member.teamRole}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Team Category</h3>
-              <p className="text-gray-600">{team.category}</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Team Leader</h3>
-              {(() => {
-                const leader = team.members.find(member => member._id === team.leaderId);
-                return leader && (
-                  <p className="text-gray-600">
-                    {leader.firstName} {leader.lastName} ({leader.email})
-                  </p>
-                );
-              })()}
-            </div>
-          </div>
+          )}
         </div>
-
-        {team.status === 'rejected' && (
-          <div className="mt-8 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">
-              Your team registration has been rejected. Please contact the administrator for more information.
-            </p>
-          </div>
-        )}
-
-        {team.status === 'pending' && (
-          <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-800">
-              Your team registration is pending approval from the administrator. You will be notified once it's approved.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
