@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import {
+  UsersIcon,
+  ChatBubbleLeftRightIcon,
+  DocumentTextIcon,
+  CalendarIcon,
+  ChartBarIcon,
+  PlusCircleIcon,
+} from '@heroicons/react/24/outline';
 
 interface TeamMember {
   user: {
@@ -12,6 +20,8 @@ interface TeamMember {
     firstName?: string;
     lastName?: string;
     email: string;
+    institution?: string;
+    country?: string;
   };
   teamRole: 'leader' | 'member';
   joinedAt: string;
@@ -37,8 +47,30 @@ function StatusBadge({ status }: { status: Team['status'] }) {
 
   return (
     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusStyles[status]}`}>
-      Status: {status.charAt(0).toUpperCase() + status.slice(1)}
+      {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
+  );
+}
+
+function QuickActionCard({ icon: Icon, title, description, onClick, disabled = false }: {
+  icon: any;
+  title: string;
+  description: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`p-4 rounded-lg border border-gray-200 hover:border-navy-300 hover:shadow-md transition-all ${
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+      }`}
+    >
+      <Icon className="h-6 w-6 text-navy-600 mb-2" />
+      <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+      <p className="text-xs text-gray-500 mt-1">{description}</p>
+    </button>
   );
 }
 
@@ -83,6 +115,10 @@ export default function TeamWorkspacePage() {
       return;
     }
     router.push('/resources/team-workspace/create');
+  };
+
+  const navigateToTeamSection = (teamId: string, section: string) => {
+    router.push(`/resources/team-workspace/${teamId}/${section}`);
   };
 
   if (loading) {
