@@ -5,6 +5,7 @@ import { Team } from '@/lib/db/models/Team';
 import { adminGuard } from '@/lib/auth/adminGuard';
 import { Types, Document } from 'mongoose';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { User } from '@/lib/db/models/User';
 
 type TeamCategory = 
   | 'Digital Platforms and Interactive Applications'
@@ -32,13 +33,16 @@ interface ITeam extends Document {
 }
 
 interface TeamMember {
-  _id: Types.ObjectId;
-  firstName: string;
-  lastName: string;
-  email: string;
-  teamRole: 'leader' | 'member';
-  institution?: string;
-  country?: string;
+  user: {
+    _id: Types.ObjectId;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
+  teamRole: string;
+  joinedAt: Date;
 }
 
 interface RawTeamMember {
@@ -94,50 +98,76 @@ interface TeamDocument {
   createdAt: Date;
 }
 
-export async function GET(request: NextRequest) {
+interface PopulatedTeam {
+  _id: Types.ObjectId;
+  name: string;
+  category: string;
+  status: string;
+  leaderId: {
+    _id: Types.ObjectId;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
+  members: TeamMember[];
+  createdAt: Date;
+}
+
+export async function GET() {
   try {
-    // Verify admin access
-    const isAdmin = await adminGuard(request, 'fetch_teams');
-    if (!isAdmin) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Connect to MongoDB Atlas
     await connectDB();
-    console.log('Connected to MongoDB Atlas for team fetch');
 
-    // Fetch all teams with populated member data
-    const teamsData = await Team.find({})
-      .populate('members', 'firstName lastName email teamRole institution country')
-      .sort({ createdAt: -1 })
+    // Verify admin status
+    const user = await User.findOne({ email: session.user.email });
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get all teams with populated leader and member details
+    const rawTeams = await Team.find({})
+      .populate('leaderId', 'firstName lastName email institution country')
+      .populate('members.user', 'firstName lastName email institution country')
       .lean();
 
-    // Type assertion after fetching
-    const teams = teamsData as unknown as DBTeam[];
+    // Type assertion after validation
+    const teams = rawTeams as unknown as PopulatedTeam[];
 
-    if (!teams || teams.length === 0) {
-      return NextResponse.json({ teams: [] });
-    }
-
-    // Transform the teams data for the frontend
-    const transformedTeams: TransformedTeam[] = teams.map(team => ({
-      _id: team._id.toString(),
+    // Transform teams to include full member details
+    const transformedTeams = teams.map(team => ({
+      _id: team._id,
       name: team.name,
       category: team.category,
       status: team.status,
-      members: team.members.map(member => ({
-        _id: member._id.toString(),
-        firstName: member.firstName || '',
-        lastName: member.lastName || '',
-        email: member.email,
-        teamRole: member.teamRole || 'member',
-        institution: member.institution || '',
-        country: member.country || ''
+      leaderId: team.leaderId._id,
+      leader: {
+        _id: team.leaderId._id,
+        firstName: team.leaderId.firstName || '',
+        lastName: team.leaderId.lastName || '',
+        email: team.leaderId.email,
+        institution: team.leaderId.institution || '',
+        country: team.leaderId.country || ''
+      },
+      members: team.members.map((member: TeamMember) => ({
+        userId: member.user._id,
+        firstName: member.user.firstName || '',
+        lastName: member.user.lastName || '',
+        email: member.user.email,
+        teamRole: member.teamRole,
+        institution: member.user.institution || '',
+        country: member.user.country || '',
+        joinedAt: member.joinedAt
       })),
-      createdAt: team.createdAt.toISOString()
+      createdAt: team.createdAt
     }));
 
-    return NextResponse.json({ teams: transformedTeams });
+    return NextResponse.json(transformedTeams);
   } catch (error) {
     console.error('Error fetching teams:', error);
     return NextResponse.json(
@@ -181,28 +211,40 @@ export async function POST(request: NextRequest) {
       name,
       description,
       leaderId: new Types.ObjectId(leaderId),
-      members: [new Types.ObjectId(leaderId)],
+      members: [{
+        user: new Types.ObjectId(leaderId),
+        teamRole: 'leader',
+        joinedAt: new Date()
+      }],
       status: 'pending'
     });
 
     await team.save();
-    await team.populate('members', 'firstName lastName email institution country');
-    await team.populate('leaderId', 'firstName lastName email');
+    await team.populate('members.user', 'firstName lastName email institution country');
+    await team.populate('leaderId', 'firstName lastName email institution country');
 
     const transformedTeam = {
       _id: team._id.toString(),
       name: team.name,
       status: team.status,
       leaderId: team.leaderId._id.toString(),
-      members: team.members.map(member => ({
-        _id: member._id.toString(),
-        firstName: member.firstName || '',
-        lastName: member.lastName || '',
-        email: member.email,
-        teamRole: member.teamRole || 'member',
-        institution: member.institution,
-        country: member.country,
-        teamRole: member.teamRole
+      leader: {
+        _id: team.leaderId._id.toString(),
+        firstName: team.leaderId.firstName || '',
+        lastName: team.leaderId.lastName || '',
+        email: team.leaderId.email,
+        institution: team.leaderId.institution || '',
+        country: team.leaderId.country || ''
+      },
+      members: team.members.map((member: TeamMember) => ({
+        userId: member.user._id.toString(),
+        firstName: member.user.firstName || '',
+        lastName: member.user.lastName || '',
+        email: member.user.email,
+        teamRole: member.teamRole,
+        institution: member.user.institution || '',
+        country: member.user.country || '',
+        joinedAt: member.joinedAt
       })),
       createdAt: team.createdAt.toISOString()
     };

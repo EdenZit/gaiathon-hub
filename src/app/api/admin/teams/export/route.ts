@@ -6,21 +6,33 @@ import { adminGuard } from '@/lib/auth/adminGuard';
 import { Types } from 'mongoose';
 
 interface TeamMember {
-  _id: Types.ObjectId;
-  firstName: string;
-  lastName: string;
-  email: string;
+  user: {
+    _id: Types.ObjectId;
+    firstName: string;
+    lastName: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
   teamRole: 'leader' | 'member';
-  institution?: string;
-  country?: string;
+  joinedAt: Date;
 }
 
 interface PopulatedTeam {
   _id: Types.ObjectId;
   name: string;
-  createdAt: Date;
-  members: TeamMember[];
   category: string;
+  status: string;
+  leaderId: {
+    _id: Types.ObjectId;
+    firstName: string;
+    lastName: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
+  members: TeamMember[];
+  createdAt: Date;
 }
 
 export async function GET(request: NextRequest) {
@@ -35,7 +47,8 @@ export async function GET(request: NextRequest) {
 
     // Fetch all teams with populated member data
     const teamsData = await Team.find({})
-      .populate('members', 'firstName lastName email teamRole institution country')
+      .populate('leaderId', 'firstName lastName email institution country')
+      .populate('members.user', 'firstName lastName email institution country')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -51,27 +64,48 @@ export async function GET(request: NextRequest) {
       'Team ID',
       'Team Name',
       'Team Category',
+      'Team Status',
       'Member Name',
       'Member Email',
       'Role',
       'Institution',
       'Country',
+      'Joined At',
       'Created At'
     ].join(',');
 
     // Convert teams to CSV rows
     const rows = teams.flatMap(team => 
-      team.members.map((member: TeamMember) => [
-        team._id.toString(),
-        team.name,
-        team.category,
-        `${member.firstName} ${member.lastName}`,
-        member.email,
-        member.teamRole,
-        member.institution || 'Not specified',
-        member.country || 'Not specified',
-        new Date(team.createdAt).toISOString()
-      ].map(field => `"${field}"`).join(','))
+      // Add leader first
+      [
+        [
+          team._id.toString(),
+          team.name,
+          team.category,
+          team.status,
+          `${team.leaderId.firstName || ''} ${team.leaderId.lastName || ''}`.trim(),
+          team.leaderId.email,
+          'leader',
+          team.leaderId.institution || 'Not specified',
+          team.leaderId.country || 'Not specified',
+          new Date(team.createdAt).toISOString(),
+          new Date(team.createdAt).toISOString()
+        ].map(field => `"${field}"`).join(','),
+        // Then add other members
+        ...team.members.filter(member => member.teamRole !== 'leader').map((member: TeamMember) => [
+          team._id.toString(),
+          team.name,
+          team.category,
+          team.status,
+          `${member.user.firstName || ''} ${member.user.lastName || ''}`.trim(),
+          member.user.email,
+          member.teamRole,
+          member.user.institution || 'Not specified',
+          member.user.country || 'Not specified',
+          new Date(member.joinedAt).toISOString(),
+          new Date(team.createdAt).toISOString()
+        ].map(field => `"${field}"`).join(','))
+      ]
     );
 
     // Combine headers and rows
