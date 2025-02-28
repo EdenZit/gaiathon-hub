@@ -6,6 +6,8 @@ import { Team } from '@/lib/db/models/Team';
 import { User } from '@/lib/db/models/User';
 import { z } from 'zod';
 import { Types } from 'mongoose';
+import { createInitialTeamMembers, createTeamMemberObject, transformTeamMemberForResponse } from '@/lib/utils/team-utils';
+import { IUser } from '@/types/models';
 
 const TEAM_CATEGORIES = [
   'Digital Platforms and Interactive Applications',
@@ -32,6 +34,36 @@ interface UpdatedUser {
   status: 'active' | 'inactive';
 }
 
+interface TeamMember {
+  user: {
+    _id: Types.ObjectId;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
+  teamRole: string;
+  joinedAt: Date;
+}
+
+interface PopulatedTeam {
+  _id: Types.ObjectId;
+  name: string;
+  category: string;
+  status: string;
+  leaderId: {
+    _id: Types.ObjectId;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
+  members: TeamMember[];
+  createdAt: Date;
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -52,12 +84,50 @@ export async function GET() {
       );
     }
 
-    // Get all teams the user is a member of
-    const teams = await Team.find({
-      members: user._id
-    }).populate('leaderId members', 'firstName lastName email');
+    // Get all teams where the user is either a leader or a member
+    const rawTeams = await Team.find({
+      $or: [
+        { leaderId: user._id },
+        { 'members.user': user._id }
+      ]
+    })
+    .populate('leaderId', 'firstName lastName email institution country')
+    .populate('members.user', 'firstName lastName email institution country')
+    .sort({ createdAt: -1 })
+    .lean();
 
-    return NextResponse.json(teams);
+    // Type assertion after validation
+    const teams = rawTeams as unknown as PopulatedTeam[];
+
+    // Transform teams to include full member details
+    const transformedTeams = teams.map(team => ({
+      _id: team._id,
+      name: team.name,
+      category: team.category,
+      status: team.status,
+      leaderId: team.leaderId._id,
+      leader: {
+        _id: team.leaderId._id,
+        firstName: team.leaderId.firstName || '',
+        lastName: team.leaderId.lastName || '',
+        email: team.leaderId.email,
+        institution: team.leaderId.institution || '',
+        country: team.leaderId.country || ''
+      },
+      members: team.members.map((member: TeamMember) => ({
+        userId: member.user._id,
+        firstName: member.user.firstName || '',
+        lastName: member.user.lastName || '',
+        email: member.user.email,
+        teamRole: member.teamRole,
+        institution: member.user.institution || '',
+        country: member.user.country || '',
+        joinedAt: member.joinedAt
+      })),
+      createdAt: team.createdAt
+    }));
+
+    return NextResponse.json(transformedTeams);
   } catch (error) {
     console.error('Error fetching teams:', error);
     return NextResponse.json(
@@ -67,115 +137,80 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectDB();
 
-    // Verify user and their role
-    const user = await User.findOne({ email: session.user.email });
+    const user = await User.findOne({ email: session.user.email }).lean() as IUser | null;
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user is a team leader
-    if (user.teamRole !== 'leader') {
-      return NextResponse.json(
-        { error: 'Only team leaders can create teams' },
-        { status: 403 }
-      );
-    }
-    
-    // Check if user is already in a team
-    const existingTeam = await Team.findOne({
-      $or: [
-        { leaderId: user._id },
-        { members: user._id }
-      ]
-    });
+    const data = await req.json();
+    const { name, category, memberEmails = [] } = data;
 
-    if (existingTeam) {
+    // Validate the data
+    const validationResult = createTeamSchema.safeParse(data);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'You are already a member of a team' },
+        { error: 'Invalid team data', details: validationResult.error.errors },
         { status: 400 }
       );
     }
 
-    const body = await request.json();
-    const validatedData = createTeamSchema.parse(body);
-
-    // Check if team name already exists (case-insensitive)
-    const existingTeamName = await Team.findOne({ 
-      name: { $regex: new RegExp(`^${validatedData.name}$`, 'i') } 
-    });
-    
-    if (existingTeamName) {
-      return NextResponse.json(
-        { error: 'Team name already exists' },
-        { status: 400 }
-      );
-    }
+    // Create initial team with leader
+    const members = await createInitialTeamMembers(user._id.toString());
 
     // Create the team
     const team = await Team.create({
-      name: validatedData.name,
-      category: validatedData.category,
+      name,
+      category,
       leaderId: user._id,
-      members: [user._id],
-      status: 'pending'
+      members
     });
 
-    // Update user's team status
-    await User.findByIdAndUpdate(
-      user._id,
-      { 
-        $set: { hasActiveTeam: true },
-        $push: { teams: team._id }
+    // Process additional members if any
+    if (memberEmails.length > 0) {
+      console.log('Member emails to invite:', memberEmails);
+      
+      for (const email of memberEmails) {
+        try {
+          const memberObj = await createTeamMemberObject({
+            email,
+            teamRole: 'member'
+          });
+          
+          await Team.findByIdAndUpdate(team._id, {
+            $push: { members: memberObj }
+          });
+        } catch (error) {
+          console.warn(`Failed to add member ${email}:`, error);
+          // Continue with other members even if one fails
+        }
       }
-    );
+    }
 
-    // Process member invitations if provided
-    if (validatedData.memberEmails?.length) {
-      // Store the pending invitations for processing
-      console.log('Member emails to invite:', validatedData.memberEmails);
+    // Fetch the updated team with populated members
+    const updatedTeam = await Team.findById(team._id)
+      .populate('leaderId', 'firstName lastName email institution country')
+      .populate('members.user', 'firstName lastName email institution country');
+
+    if (!updatedTeam) {
+      throw new Error('Failed to fetch updated team');
     }
 
     return NextResponse.json({
-      message: 'Team created successfully',
-      team: {
-        id: team._id,
-        name: team.name,
-        category: team.category,
-        leaderId: team.leaderId,
-        status: team.status
-      }
+      ...updatedTeam.toObject(),
+      members: updatedTeam.members.map(transformTeamMemberForResponse)
     });
+
   } catch (error) {
-    console.error('Error creating team:', error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation error',
-          details: error.errors.map(e => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        },
-        { status: 400 }
-      );
-    }
-
+    console.warn('Error creating team:', error);
     return NextResponse.json(
       { error: 'Failed to create team' },
       { status: 500 }
