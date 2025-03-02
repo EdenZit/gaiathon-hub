@@ -114,3 +114,10 @@ config.backup
 *~
 .history
 .vscode-test
+
+# Backup files
+*.original.*
+*.original
+*.orig
+*_backup.*
+*_bak.*
