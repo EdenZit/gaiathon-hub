@@ -7,39 +7,20 @@ import Link from 'next/link';
 import { Spinner } from '@/components/ui/Spinner';
 import {
   UsersIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-  CalendarIcon,
-  ChartBarIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 
 const navigation = [
   {
-    name: 'Chat',
-    href: 'chat',
-    icon: ChatBubbleLeftRightIcon,
-  },
-  {
-    name: 'Documents',
-    href: 'documents',
-    icon: DocumentTextIcon,
+    name: 'Overview',
+    href: 'overview',
+    icon: UsersIcon,
   },
   {
     name: 'Members',
     href: 'members',
     icon: UsersIcon,
-  },
-  {
-    name: 'Calendar',
-    href: 'calendar',
-    icon: CalendarIcon,
-  },
-  {
-    name: 'Progress',
-    href: 'progress',
-    icon: ChartBarIcon,
   },
 ];
 
