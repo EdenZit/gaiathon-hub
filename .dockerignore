@@ -49,4 +49,7 @@ docs/
 
 # Build artifacts
 dist/
-build/ 
+build/
+
+# TypeScript config files
+next.config.ts 
