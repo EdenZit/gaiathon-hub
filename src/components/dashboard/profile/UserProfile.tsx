@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { VerificationBanner } from '@/components/auth/VerificationBanner';
 
 interface TechSkills {
   coding: boolean;
@@ -317,10 +316,6 @@ export default function UserProfile() {
         Welcome {session?.user?.firstName || session?.user?.name?.split(' ')[0] || 'User'}!
       </div>
 
-      {session?.user?.email && !session?.user?.emailVerified && (
-        <VerificationBanner email={session.user.email} />
-      )}
-      
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex justify-between items-center mb-6">
           <div>
