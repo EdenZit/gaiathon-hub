@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { VerificationBanner } from '@/components/auth/VerificationBanner';
+import { useRouter } from 'next/navigation';
 
 interface TechSkills {
   coding: boolean;
@@ -312,14 +312,12 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto p-6">
-      <div className="text-2xl font-semibold text-gray-900">
-        Welcome {session?.user?.firstName || session?.user?.name?.split(' ')[0] || 'User'}!
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <div className="text-2xl font-semibold text-gray-900">
+          Welcome {session?.user?.firstName || session?.user?.name?.split(' ')[0] || 'User'}!
+        </div>
       </div>
-
-      {session?.user?.email && !session?.user?.emailVerified && (
-        <VerificationBanner email={session.user.email} />
-      )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex justify-between items-center mb-6">

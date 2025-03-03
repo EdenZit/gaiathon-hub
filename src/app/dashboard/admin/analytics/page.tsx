@@ -35,7 +35,6 @@ interface Analytics {
     active: number;
     newToday: number;
     newThisWeek: number;
-    verificationRate: number;
   };
   teamStats: {
     total: number;
@@ -141,21 +140,12 @@ function AnalyticsPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-sm font-medium text-gray-500">Active Users</h3>
           <p className="mt-2 text-3xl font-semibold">{analytics.userStats.active}</p>
-          <p className="mt-2 text-sm text-gray-600">
-            {((analytics.userStats.active / analytics.userStats.total) * 100).toFixed(1)}% of total
-          </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-sm font-medium text-gray-500">Total Teams</h3>
           <p className="mt-2 text-3xl font-semibold">{analytics.teamStats.total}</p>
           <p className="mt-2 text-sm text-gray-600">
             Avg. {analytics.teamStats.averageSize} members
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500">Verification Rate</h3>
-          <p className="mt-2 text-3xl font-semibold">
-            {(analytics.userStats.verificationRate * 100).toFixed(1)}%
           </p>
         </div>
       </div>

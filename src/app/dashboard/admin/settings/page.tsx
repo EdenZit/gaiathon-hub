@@ -12,7 +12,6 @@ interface SystemSettings {
   };
   registration: {
     enabled: boolean;
-    requireEmailVerification: boolean;
     allowedDomains: string[];
   };
   security: {
@@ -138,18 +137,6 @@ function SettingsPage() {
                 onChange={(e) => setSettings({
                   ...settings,
                   registration: { ...settings.registration, enabled: e.target.checked }
-                })}
-                className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Require Email Verification</label>
-              <input
-                type="checkbox"
-                checked={settings.registration.requireEmailVerification}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  registration: { ...settings.registration, requireEmailVerification: e.target.checked }
                 })}
                 className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
               />
