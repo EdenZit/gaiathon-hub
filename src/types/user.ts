@@ -1,28 +1,12 @@
 import { Types } from 'mongoose';
+import { IBaseEntity, IUserBase, UserRole } from './common';
 
-export type UserRole = 'user' | 'admin' | 'team_leader';
 export type TeamRole = 'leader' | 'member';
 
-export interface IUserBase {
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  institution?: string;
-  fieldOfStudy?: string;
-  yearOfStudy?: string;
-  country?: string;
-  gender?: 'male' | 'female' | null;
-  profileCompleted: boolean;
-}
-
-export interface IUser extends IUserBase {
-  _id: Types.ObjectId;
+export interface IUser extends IUserBase, IBaseEntity {
   password: string;
   teams: Types.ObjectId[];
   hasActiveTeam: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 // API Response Types

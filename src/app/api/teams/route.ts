@@ -152,7 +152,7 @@ export async function POST(req: Request) {
     }
 
     // Check if user has the team_leader role
-    if ((user as any).role !== 'team_leader') {
+    if (user.teamRole !== 'leader') {
       return NextResponse.json(
         { error: 'Only Team Leaders can create teams' },
         { status: 403 }

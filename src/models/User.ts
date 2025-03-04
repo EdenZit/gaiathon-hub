@@ -1,8 +1,11 @@
 import mongoose, { Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUserBase, UserRole } from '@/types/user';
+import type { IUserBase, UserRole } from '@/types/common';
 
 interface IUserDocument extends Omit<IUserBase, '_id'>, Document {
+  password: string;
+  teams: mongoose.Types.ObjectId[];
+  hasActiveTeam: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
   checkProfileCompletion(): boolean;
   isTeamLeader(): Promise<boolean>;
@@ -35,7 +38,7 @@ const userSchema = new mongoose.Schema<IUserDocument>({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'team_leader'],
+    enum: ['user', 'admin', 'leader'],
     default: 'user'
   },
   teams: [{
@@ -110,13 +113,13 @@ userSchema.pre('save', function(next) {
 
 // Method to check if user is a team leader
 userSchema.methods.isTeamLeader = async function(): Promise<boolean> {
-  return this.role === 'team_leader';
+  return this.role === 'leader';
 };
 
 // Method to check if user can create a team
 userSchema.methods.canCreateTeam = async function(): Promise<boolean> {
   // Must be a team leader
-  if (this.role !== 'team_leader') {
+  if (this.role !== 'leader') {
     return false;
   }
 
@@ -137,7 +140,7 @@ userSchema.methods.getActiveTeam = async function() {
     members: {
       $elemMatch: {
         userId: this._id,
-        role: 'leader'
+        teamRole: 'leader'
       }
     },
     status: 'approved'
@@ -170,7 +173,7 @@ userSchema.methods.leaveTeam = async function(teamId: mongoose.Types.ObjectId): 
     throw new Error('Team leader cannot leave the team');
   }
   
-  this.teams = this.teams.filter(id => !id.equals(teamId));
+  this.teams = this.teams.filter((id: mongoose.Types.ObjectId) => !id.equals(teamId));
   await this.save();
 };
 

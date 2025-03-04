@@ -1,13 +1,20 @@
 import mongoose from 'mongoose';
-import { ITeam, ITeamBase, TeamStatus, TeamCategory, TeamRole } from '@/types/team';
+import type { ITeamBase, TeamStatus, TeamCategory, TeamRole, ITeamMemberBase } from '@/types/common';
 
-const teamMemberSchema = new mongoose.Schema({
+interface ITeamDocument extends Omit<ITeamBase, 'members'>, mongoose.Document {
+  members: ITeamMemberBase[];
+  isMember(userId: mongoose.Types.ObjectId): boolean;
+  isLeader(userId: mongoose.Types.ObjectId): boolean;
+  addMember(userId: mongoose.Types.ObjectId, role: TeamRole): Promise<void>;
+}
+
+const teamMemberSchema = new mongoose.Schema<ITeamMemberBase>({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  role: {
+  teamRole: {
     type: String,
     enum: ['leader', 'member'],
     required: true
@@ -18,7 +25,7 @@ const teamMemberSchema = new mongoose.Schema({
   }
 });
 
-const teamSchema = new mongoose.Schema<ITeamBase>({
+const teamSchema = new mongoose.Schema<ITeamDocument>({
   name: {
     type: String,
     required: [true, 'Team name is required'],
@@ -62,7 +69,7 @@ teamSchema.index({ category: 1 });
 
 // Pre-save middleware to ensure team has exactly one leader
 teamSchema.pre('save', function(next) {
-  const leaderCount = this.members.filter(member => member.role === 'leader').length;
+  const leaderCount = this.members.filter((member: ITeamMemberBase) => member.teamRole === 'leader').length;
   if (leaderCount !== 1) {
     next(new Error('Team must have exactly one leader'));
   }
@@ -71,7 +78,7 @@ teamSchema.pre('save', function(next) {
 
 // Method to check if a user is a member of the team
 teamSchema.methods.isMember = function(userId: mongoose.Types.ObjectId): boolean {
-  return this.members.some(member => member.userId.equals(userId));
+  return this.members.some((member: ITeamMemberBase) => member.userId.equals(userId));
 };
 
 // Method to check if a user is the team leader
@@ -87,7 +94,7 @@ teamSchema.methods.addMember = async function(userId: mongoose.Types.ObjectId, r
   
   this.members.push({
     userId,
-    role,
+    teamRole: role,
     joinedAt: new Date()
   });
   
@@ -122,8 +129,8 @@ teamSchema.methods.updateMemberRole = async function(
     throw new Error('Member not found');
   }
   
-  member.role = newRole;
+  member.teamRole = newRole;
   await this.save();
 };
 
-export const Team = mongoose.models.Team || mongoose.model<ITeam>('Team', teamSchema); 
+export const Team = mongoose.models.Team || mongoose.model<ITeamDocument>('Team', teamSchema); 

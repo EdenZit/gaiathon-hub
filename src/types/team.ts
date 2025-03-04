@@ -1,33 +1,18 @@
 import { Types } from 'mongoose';
+import { IBaseEntity, ITeamBase, ITeamMemberBase, TeamCategory, TeamRole, TeamStatus } from './common';
 
-export type TeamStatus = 'pending' | 'approved' | 'rejected';
-export type TeamCategory = 
-  | 'Digital Platforms and Interactive Applications'
-  | 'IoT-Enabled Smart Systems'
-  | 'Geospatial Intelligence and Policy Innovation';
-
-export type TeamRole = 'leader' | 'member';
-
-export interface ITeamMember {
-  userId: Types.ObjectId;
-  role: TeamRole;
-  joinedAt: Date;
+export interface ITeamMember extends ITeamMemberBase {
+  user: {
+    _id: Types.ObjectId;
+    firstName: string;
+    lastName: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
 }
 
-export interface ITeamBase {
-  name: string;
-  category: TeamCategory;
-  description?: string;
-  status: TeamStatus;
-  leaderId: Types.ObjectId;
-  members: ITeamMember[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ITeam extends ITeamBase {
-  _id: Types.ObjectId;
-}
+export interface ITeam extends ITeamBase, IBaseEntity {}
 
 // API Response Types
 export interface TeamResponse {
@@ -47,7 +32,7 @@ export interface TeamMemberResponse {
   firstName: string;
   lastName: string;
   email: string;
-  role: TeamRole;
+  teamRole: TeamRole;
   institution?: string;
   country?: string;
   joinedAt: string;
@@ -62,7 +47,7 @@ export interface CreateTeamRequest {
 
 export interface AddTeamMemberRequest {
   email: string;
-  role?: TeamRole;
+  teamRole?: TeamRole;
 }
 
 export interface UpdateTeamStatusRequest {
