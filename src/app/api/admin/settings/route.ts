@@ -10,7 +10,6 @@ const settingsSchema = z.object({
   }),
   registration: z.object({
     enabled: z.boolean(),
-    requireEmailVerification: z.boolean(),
     allowedDomains: z.array(z.string()),
   }),
   security: z.object({
@@ -45,7 +44,6 @@ export async function GET(request: NextRequest) {
         },
         registration: {
           enabled: true,
-          requireEmailVerification: true,
           allowedDomains: [],
         },
         security: {
