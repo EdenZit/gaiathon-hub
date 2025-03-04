@@ -115,8 +115,8 @@ userSchema.methods.isTeamLeader = async function(): Promise<boolean> {
 
 // Method to check if user can create a team
 userSchema.methods.canCreateTeam = async function(): Promise<boolean> {
-  // Must be a team leader and have completed profile
-  if (this.role !== 'team_leader' || !this.profileCompleted) {
+  // Must be a team leader
+  if (this.role !== 'team_leader') {
     return false;
   }
 

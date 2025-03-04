@@ -45,9 +45,9 @@ export const getTeams = cache(async (): Promise<Team[]> => {
     name: team.name || '',
     category: team.category || 'Digital Platforms and Interactive Applications',
     status: team.status || 'pending',
-    leaderId: team.leaderId?._id.toString(),
+    leaderId: team.leaderId?._id?.toString(),
     leader: team.leaderId ? {
-      _id: team.leaderId._id.toString(),
+      _id: team.leaderId._id?.toString() || '',
       firstName: team.leaderId.firstName || '',
       lastName: team.leaderId.lastName || '',
       email: team.leaderId.email || '',
@@ -55,13 +55,13 @@ export const getTeams = cache(async (): Promise<Team[]> => {
       country: team.leaderId.country || ''
     } : null,
     members: (team.members || []).map((member: any) => ({
-      _id: member.user._id.toString(),
-      firstName: member.user.firstName || '',
-      lastName: member.user.lastName || '',
-      email: member.user.email || '',
+      _id: member.user?._id?.toString() || '',
+      firstName: member.user?.firstName || 'Deleted User',
+      lastName: member.user?.lastName || '',
+      email: member.user?.email || 'deleted@example.com',
       teamRole: member.teamRole || 'member',
-      institution: member.user.institution || '',
-      country: member.user.country || '',
+      institution: member.user?.institution || '',
+      country: member.user?.country || '',
       joinedAt: member.joinedAt ? new Date(member.joinedAt).toISOString() : new Date().toISOString()
     })),
     createdAt: team.createdAt ? new Date(team.createdAt).toISOString() : new Date().toISOString()

@@ -1,7 +1,7 @@
 import type { DefaultSession } from 'next-auth';
 import type { JWT as DefaultJWT } from 'next-auth/jwt';
 
-type UserRole = 'user' | 'admin';
+type UserRole = 'user' | 'admin' | 'team_leader';
 type UserStatus = 'active' | 'inactive';
 type TeamRole = 'leader' | 'member';
 

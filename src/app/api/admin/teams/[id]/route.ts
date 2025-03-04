@@ -4,10 +4,18 @@ import { connectDB } from '@/lib/mongodb';
 import { Team } from '@/lib/db/models/Team';
 import { User } from '@/lib/db/models/User';
 import { adminGuard } from '@/lib/auth/adminGuard';
+import { Types } from 'mongoose';
+import { authOptions } from '@/lib/auth';
+
+interface TeamMember {
+  user: Types.ObjectId;
+  teamRole: 'leader' | 'member';
+  joinedAt: Date;
+}
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -40,8 +48,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== 'admin') {
+      console.error('Unauthorized team deletion attempt:', {
+        userId: session?.user?.id,
+        role: session?.user?.role,
+        teamId: params.id
+      });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -58,16 +71,32 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       // Remove team from leader's teams array
       if (teamLeader.teams) {
         teamLeader.teams = teamLeader.teams.filter(id => !id.equals(team._id));
+        await teamLeader.save();
       }
-      await teamLeader.save();
     }
+
+    // Remove team from all members' teams arrays
+    const memberIds = team.members.map((member: TeamMember) => member.user);
+    await User.updateMany(
+      { _id: { $in: memberIds } },
+      { $pull: { teams: team._id } }
+    );
 
     // Delete the team
     await Team.findByIdAndDelete(params.id);
 
+    console.log('Team deleted successfully:', {
+      teamId: params.id,
+      deletedBy: session.user.id
+    });
+
     return NextResponse.json({ message: 'Team deleted successfully' });
   } catch (error: any) {
-    console.error('Error deleting team:', error);
+    console.error('Error deleting team:', {
+      error: error.message,
+      teamId: params.id,
+      stack: error.stack
+    });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

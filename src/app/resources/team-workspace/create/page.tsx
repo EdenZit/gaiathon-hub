@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -35,6 +35,20 @@ export default function CreateTeamPage() {
     category: 'Digital Platforms and Interactive Applications',
     memberEmails: '',
   });
+
+  useEffect(() => {
+    if (!session?.user) {
+      router.push('/register');
+      return;
+    }
+
+    // Check if user is a team leader
+    if (session.user.teamRole !== 'leader') {
+      toast.error('Only team leaders can create teams');
+      router.push('/resources/team-workspace');
+      return;
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

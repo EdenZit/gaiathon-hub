@@ -1,13 +1,28 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { authOptions } from '@/lib/auth';
 
 export async function adminMiddleware(request: NextRequest): Promise<boolean> {
   try {
-    // JWT verification only for now
-    // We'll add rate limiting back once Redis is properly configured
-    const token = await getToken({ req: request });
+    // Skip middleware for OPTIONS requests (CORS preflight)
+    if (request.method === 'OPTIONS') {
+      return true;
+    }
+
+    // JWT verification with auth options
+    const token = await getToken({ 
+      req: request,
+      secret: authOptions.secret
+    });
+
     if (!token || token.role !== 'admin') {
+      console.error('Admin middleware: Unauthorized access attempt', {
+        method: request.method,
+        path: request.nextUrl.pathname,
+        role: token?.role,
+        token: token ? 'present' : 'missing'
+      });
       return false;
     }
 
@@ -19,5 +34,8 @@ export async function adminMiddleware(request: NextRequest): Promise<boolean> {
 }
 
 export const config = {
-  matcher: '/api/admin/:path*',
+  matcher: [
+    '/api/admin/:path*',
+    '/dashboard/admin/:path*'
+  ]
 }; 

@@ -151,14 +151,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user has completed their profile
-    if (!user.profileCompleted) {
-      return NextResponse.json(
-        { error: 'You must complete your profile before creating a team' },
-        { status: 400 }
-      );
-    }
-
     // Check if user has the team_leader role
     if ((user as any).role !== 'team_leader') {
       return NextResponse.json(

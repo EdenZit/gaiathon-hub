@@ -25,6 +25,12 @@ export async function GET(request: NextRequest) {
     // Get user statistics
     const userStats = await db.collection('users').aggregate([
       {
+        $match: {
+          role: 'user',
+          status: 'active'
+        }
+      },
+      {
         $facet: {
           total: [{ $count: 'count' }],
           active: [
@@ -43,12 +49,6 @@ export async function GET(request: NextRequest) {
             { $match: { emailVerified: true } },
             { $count: 'count' }
           ]
-        }
-      },
-      {
-        $match: {
-          role: 'user',
-          status: 'active'
         }
       }
     ]).toArray();
@@ -94,9 +94,20 @@ export async function GET(request: NextRequest) {
       Number((Math.random() * 2).toFixed(2))
     );
 
-    // Format response
-    const stats = userStats[0];
-    const tStats = teamStats[0];
+    // Format response with null checks
+    const stats = userStats[0] || {
+      total: [{ count: 0 }],
+      active: [{ count: 0 }],
+      newToday: [{ count: 0 }],
+      newThisWeek: [{ count: 0 }],
+      verified: [{ count: 0 }]
+    };
+
+    const tStats = teamStats[0] || {
+      total: [{ count: 0 }],
+      active: [{ count: 0 }],
+      memberCounts: [{ average: 0 }]
+    };
 
     const analyticsData = {
       userStats: {
@@ -104,7 +115,7 @@ export async function GET(request: NextRequest) {
         active: stats.active[0]?.count || 0,
         newToday: stats.newToday[0]?.count || 0,
         newThisWeek: stats.newThisWeek[0]?.count || 0,
-        verificationRate: stats.verified[0]?.count / stats.total[0]?.count || 0,
+        verificationRate: stats.total[0]?.count ? (stats.verified[0]?.count / stats.total[0]?.count) : 0,
       },
       teamStats: {
         total: tStats.total[0]?.count || 0,
