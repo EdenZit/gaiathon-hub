@@ -44,6 +44,12 @@ export async function GET(request: NextRequest) {
             { $count: 'count' }
           ]
         }
+      },
+      {
+        $match: {
+          role: 'user',
+          status: 'active'
+        }
       }
     ]).toArray();
 

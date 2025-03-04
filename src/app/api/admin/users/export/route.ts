@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
       'Field of Study',
       'Gender',
       'Country',
-      'Email Verified',
       'Last Active',
       'Created At'
     ].join(',');
@@ -55,7 +54,6 @@ export async function GET(request: NextRequest) {
       user.fieldOfStudy || '',
       user.gender || '',
       user.country || '',
-      user.emailVerified ? 'Yes' : 'No',
       user.lastActive ? new Date(user.lastActive).toISOString() : '',
       new Date(user.createdAt).toISOString()
     ].map(field => `"${field}"`).join(','));

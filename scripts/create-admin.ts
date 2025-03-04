@@ -39,7 +39,6 @@ async function createAdminUser() {
       role: 'admin',
       status: 'active',
       teamRole: 'leader',
-      emailVerified: true,
       profileCompleted: true
     });
 

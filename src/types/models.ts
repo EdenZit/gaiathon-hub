@@ -17,11 +17,10 @@ export interface IUser {
   lastName?: string;
   role: 'user' | 'admin';
   teamRole: 'leader' | 'member';
-  status: 'active' | 'inactive';
+  status?: 'active' | 'inactive';
   gender?: 'male' | 'female' | 'other';
-  emailVerified?: boolean;
   lastActive?: Date;
-  teams?: string[];
+  teams?: Types.ObjectId[];
   institution?: string;
   yearOfStudy?: string;
   fieldOfStudy?: string;

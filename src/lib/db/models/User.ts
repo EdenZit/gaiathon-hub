@@ -57,10 +57,6 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
       enum: ['male', 'female', 'other'],
     },
-    emailVerified: {
-      type: Boolean,
-      default: false,
-    },
     lastActive: {
       type: Date,
     },
