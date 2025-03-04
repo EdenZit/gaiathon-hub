@@ -1,68 +1,54 @@
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { IUserBase, UserRole } from '@/types/user';
 
-export interface IUser extends mongoose.Document {
-  email: string;
-  password: string;
-  name: string;
-  firstName?: string;
-  lastName?: string;
-  role: 'user' | 'admin';
-  teamRole: 'leader' | 'member';
-  teams?: mongoose.Types.ObjectId[];
-  hasActiveTeam: boolean;
-  profileCompleted: boolean;
-  institution?: string;
-  fieldOfStudy?: string;
-  yearOfStudy?: string;
-  country?: string;
-  gender?: 'male' | 'female' | null;
+interface IUserDocument extends Omit<IUserBase, '_id'>, Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
   checkProfileCompletion(): boolean;
+  isTeamLeader(): Promise<boolean>;
+  getActiveTeam(): Promise<any>;
+  leaveTeam(teamId: mongoose.Types.ObjectId): Promise<void>;
 }
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<IUserDocument>({
   email: {
     type: String,
     required: [true, 'Email is required'],
     unique: true,
     lowercase: true,
-    trim: true,
+    trim: true
   },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [8, 'Password must be at least 8 characters'],
+    minlength: [8, 'Password must be at least 8 characters']
   },
-  name: {
+  firstName: {
     type: String,
-    required: [true, 'Name is required'],
-    trim: true,
+    required: true,
+    trim: true
   },
-  firstName: String,
-  lastName: String,
+  lastName: {
+    type: String,
+    required: true,
+    trim: true
+  },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
-  },
-  teamRole: {
-    type: String,
-    enum: ['leader', 'member'],
-    default: 'member',
-    required: true,
-  },
-  hasActiveTeam: {
-    type: Boolean,
-    default: false,
+    enum: ['user', 'admin', 'team_leader'],
+    default: 'user'
   },
   teams: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
+    ref: 'Team'
   }],
+  hasActiveTeam: {
+    type: Boolean,
+    default: false
+  },
   profileCompleted: {
     type: Boolean,
-    default: false,
+    default: false
   },
   institution: String,
   fieldOfStudy: String,
@@ -71,20 +57,10 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: ['male', 'female', null],
-    default: null,
-  },
-}, {
-  timestamps: true,
-});
-
-// Split fullName into firstName and lastName before saving
-userSchema.pre('save', function(next) {
-  if (this.isModified('name')) {
-    const nameParts = this.name.trim().split(/\s+/);
-    this.firstName = nameParts[0];
-    this.lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    default: null
   }
-  next();
+}, {
+  timestamps: true
 });
 
 // Hash password before saving
@@ -132,25 +108,70 @@ userSchema.pre('save', function(next) {
   next();
 });
 
-// Handle profileCompleted updates for findOneAndUpdate
-userSchema.pre('findOneAndUpdate', function(next) {
-  const update = this.getUpdate() as any;
-  if (update?.$set) {
-    const doc = update.$set;
-    const requiredProfileFields = [
-      'institution',
-      'fieldOfStudy',
-      'yearOfStudy',
-      'country'
-    ];
-    const isProfileComplete = requiredProfileFields.every(field => {
-      const value = doc[field];
-      return value && value.trim().length > 0;
-    });
-    update.$set.profileCompleted = isProfileComplete;
-  }
-  next();
-});
+// Method to check if user is a team leader
+userSchema.methods.isTeamLeader = async function(): Promise<boolean> {
+  return this.role === 'team_leader';
+};
 
-// Ensure mongoose.models.User exists before creating a new model
-export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema); 
+// Method to check if user can create a team
+userSchema.methods.canCreateTeam = async function(): Promise<boolean> {
+  // Must be a team leader and have completed profile
+  if (this.role !== 'team_leader' || !this.profileCompleted) {
+    return false;
+  }
+
+  // Check if user already has an active team
+  const existingTeam = await mongoose.model('Team').findOne({
+    leaderId: this._id,
+    status: { $ne: 'rejected' }
+  });
+
+  return !existingTeam;
+};
+
+// Method to get user's active team
+userSchema.methods.getActiveTeam = async function() {
+  if (!this.hasActiveTeam) return null;
+  
+  const team = await mongoose.model('Team').findOne({
+    members: {
+      $elemMatch: {
+        userId: this._id,
+        role: 'leader'
+      }
+    },
+    status: 'approved'
+  }).populate('members.userId', 'firstName lastName email institution country');
+  
+  return team;
+};
+
+// Method to check if user is already a team leader
+userSchema.methods.isAlreadyTeamLeader = async function(): Promise<boolean> {
+  const existingTeam = await mongoose.model('Team').findOne({
+    leaderId: this._id,
+    status: { $ne: 'rejected' }
+  });
+  return !!existingTeam;
+};
+
+// Method to leave a team
+userSchema.methods.leaveTeam = async function(teamId: mongoose.Types.ObjectId): Promise<void> {
+  const team = await mongoose.model('Team').findOne({
+    _id: teamId,
+    'members.userId': this._id
+  });
+  
+  if (!team) {
+    throw new Error('User is not a member of this team');
+  }
+  
+  if (team.leaderId.equals(this._id)) {
+    throw new Error('Team leader cannot leave the team');
+  }
+  
+  this.teams = this.teams.filter(id => !id.equals(teamId));
+  await this.save();
+};
+
+export const User = mongoose.models.User || mongoose.model<IUserDocument>('User', userSchema); 

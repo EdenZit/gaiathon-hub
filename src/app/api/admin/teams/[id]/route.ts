@@ -38,39 +38,37 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // Verify admin access
-    const isAdmin = await adminGuard(request, 'delete_team');
-    if (!isAdmin) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    const session = await getServerSession();
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectDB();
 
     const team = await Team.findById(params.id);
     if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
 
+    // Get the team leader
+    const teamLeader = await User.findById(team.leaderId);
+    if (teamLeader) {
+      // Remove team from leader's teams array
+      if (teamLeader.teams) {
+        teamLeader.teams = teamLeader.teams.filter(id => !id.equals(team._id));
+      }
+      await teamLeader.save();
+    }
+
+    // Delete the team
     await Team.findByIdAndDelete(params.id);
 
-    return NextResponse.json({
-      message: 'Team deleted successfully'
-    });
-
-  } catch (error) {
+    return NextResponse.json({ message: 'Team deleted successfully' });
+  } catch (error: any) {
     console.error('Error deleting team:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete team' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 

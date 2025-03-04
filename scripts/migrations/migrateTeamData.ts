@@ -95,23 +95,6 @@ export const migrateTeamData = async (): Promise<void> => {
       }
     );
 
-    // 4. Update team invites
-    console.log('Updating team invites...');
-    await db.collection('team_invites').updateMany(
-      {},
-      [{
-        $set: {
-          inviteUrl: {
-            $replaceOne: {
-              input: '$inviteUrl',
-              find: '/resources/team-workspace',
-              replacement: '/teams'
-            }
-          }
-        }
-      }]
-    );
-
     // Log successful completion
     await MigrationLog.create({
       step: 'complete',

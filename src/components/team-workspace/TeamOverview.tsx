@@ -1,26 +1,26 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTeam } from '@/contexts/TeamContext';
-import { UserPlusIcon, UserIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'react-hot-toast';
 
 export default function TeamOverview() {
   const { data: session } = useSession();
   const { currentTeam, isLoading } = useTeam();
-  const [isInviting, setIsInviting] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const isTeamLeader = session?.user?.teamRole === 'leader';
 
-  const handleInviteMember = async () => {
-    setIsInviting(true);
+  const handleAddMember = async () => {
+    setIsAdding(true);
     try {
-      const email = window.prompt('Enter the email address of the user you want to invite:');
+      const email = window.prompt('Enter the email address of the user you want to add:');
       if (!email) {
-        setIsInviting(false);
+        setIsAdding(false);
         return;
       }
 
-      const response = await fetch(`/api/teams/${currentTeam?._id}/invite`, {
+      const response = await fetch(`/api/teams/${currentTeam?._id}/members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,15 +30,15 @@ export default function TeamOverview() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to send invitation');
+        throw new Error(data.error || 'Failed to add member');
       }
 
-      toast.success('Invitation sent successfully');
+      toast.success('Member added successfully');
     } catch (error) {
-      console.error('Error sending invitation:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to send invitation');
+      console.error('Error adding member:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add member');
     } finally {
-      setIsInviting(false);
+      setIsAdding(false);
     }
   };
 
@@ -57,19 +57,19 @@ export default function TeamOverview() {
           <h3 className="text-lg leading-6 font-medium text-gray-900">Team Profile</h3>
           {isTeamLeader && (
             <button
-              onClick={handleInviteMember}
-              disabled={isInviting}
+              onClick={handleAddMember}
+              disabled={isAdding}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-navy-600 hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50"
             >
-              {isInviting ? (
+              {isAdding ? (
                 <>
                   <Spinner className="h-4 w-4 mr-2" />
-                  Inviting...
+                  Adding...
                 </>
               ) : (
                 <>
                   <UserPlusIcon className="h-4 w-4 mr-2" />
-                  Invite Member
+                  Add Member
                 </>
               )}
             </button>
@@ -84,24 +84,6 @@ export default function TeamOverview() {
               Team Name
             </dt>
             <dd className="mt-1 text-sm text-gray-900">{currentTeam.name}</dd>
-          </div>
-          <div className="sm:col-span-1">
-            <dt className="text-sm font-medium text-gray-500 flex items-center">
-              <EnvelopeIcon className="h-5 w-5 mr-2 text-gray-400" />
-              Contact Email
-            </dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {currentTeam.contactInfo?.email || 'Not specified'}
-            </dd>
-          </div>
-          <div className="sm:col-span-1">
-            <dt className="text-sm font-medium text-gray-500 flex items-center">
-              <PhoneIcon className="h-5 w-5 mr-2 text-gray-400" />
-              Contact Phone
-            </dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {currentTeam.contactInfo?.phone || 'Not specified'}
-            </dd>
           </div>
           <div className="sm:col-span-1">
             <dt className="text-sm font-medium text-gray-500">Team Size</dt>

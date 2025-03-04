@@ -151,6 +151,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Check if user has completed their profile
+    if (!user.profileCompleted) {
+      return NextResponse.json(
+        { error: 'You must complete your profile before creating a team' },
+        { status: 400 }
+      );
+    }
+
+    // Check if user has the team_leader role
+    if ((user as any).role !== 'team_leader') {
+      return NextResponse.json(
+        { error: 'Only Team Leaders can create teams' },
+        { status: 403 }
+      );
+    }
+
+    // Check if user is already a team leader of an active team
+    const existingTeam = await Team.findOne({
+      leaderId: user._id,
+      status: { $ne: 'rejected' }
+    });
+
+    if (existingTeam) {
+      return NextResponse.json(
+        { error: 'You cannot create another team while you are a team leader' },
+        { status: 400 }
+      );
+    }
+
     const data = await req.json();
     const { name, category, memberEmails = [] } = data;
 
@@ -176,7 +205,7 @@ export async function POST(req: Request) {
 
     // Process additional members if any
     if (memberEmails.length > 0) {
-      console.log('Member emails to invite:', memberEmails);
+      console.log('Member emails to add:', memberEmails);
       
       for (const email of memberEmails) {
         try {

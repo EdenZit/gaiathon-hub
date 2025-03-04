@@ -42,9 +42,9 @@ interface Milestone {
 export function TeamManagement() {
   const { data: session } = useSession();
   const router = useRouter();
+  const [showAddForm, setShowAddForm] = useState(false);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
-  const [showInviteForm, setShowInviteForm] = useState(false);
   const [showPermissionsForm, setShowPermissionsForm] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isLeader, setIsLeader] = useState(false);
@@ -83,16 +83,16 @@ export function TeamManagement() {
     }
   }, [session?.user?.id]);
 
-  const handleInviteMember = async (email: string) => {
+  const handleAddMember = async (email: string) => {
     try {
-      const response = await fetch('/api/team/invite', {
+      const response = await fetch('/api/team/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
       if (response.ok) {
-        setShowInviteForm(false);
+        setShowAddForm(false);
         // Refresh member list
         const membersResponse = await fetch('/api/team/members');
         if (membersResponse.ok) {
@@ -101,7 +101,7 @@ export function TeamManagement() {
         }
       }
     } catch (error) {
-      console.error('Error inviting member:', error);
+      console.error('Error adding member:', error);
     }
   };
 
@@ -153,11 +153,11 @@ export function TeamManagement() {
             <h2 className="text-2xl font-bold text-gray-900">Team Management</h2>
             {isLeader && (
               <button
-                onClick={() => router.push('/dashboard/invite')}
+                onClick={() => setShowAddForm(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
               >
                 <UserPlusIcon className="h-5 w-5 mr-2" />
-                Invite Member
+                Add Member
               </button>
             )}
           </div>
@@ -305,20 +305,46 @@ export function TeamManagement() {
         </div>
       </div>
 
-      {/* Invite Form Modal */}
-      {showInviteForm && (
+      {/* Add Member Form Modal */}
+      {showAddForm && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Invite Team Member
+              Add Team Member
             </h3>
-            {/* Invite form implementation */}
-            <button
-              onClick={() => setShowInviteForm(false)}
-              className="mt-4 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
-            >
-              Send Invitation
-            </button>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              handleAddMember(formData.get('email') as string);
+            }}>
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Add Member
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

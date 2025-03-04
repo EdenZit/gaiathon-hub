@@ -5,80 +5,85 @@ services:
     build:
       context: .
       target: production
+    image: gaiathon-hub:latest
+    container_name: gaiathon-hub-web
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
       - MONGODB_URI=${MONGODB_URI}
       - REDIS_URL=redis://redis:6379
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - JWT_SECRET=${JWT_SECRET}
-      - AWS_SES_ACCESS_KEY_ID=${AWS_SES_ACCESS_KEY_ID}
-      - AWS_SES_SECRET_ACCESS_KEY=${AWS_SES_SECRET_ACCESS_KEY}
-      - AWS_SES_REGION=${AWS_SES_REGION}
-    networks:
-      - app-network
     depends_on:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:3000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    restart: always
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 4G
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
+    container_name: gaiathon-hub-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --protected-mode no
-    networks:
-      - app-network
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
-    restart: always
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
 
   nginx:
     image: nginx:alpine
+    container_name: gaiathon-hub-nginx
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./ssl:/etc/nginx/ssl:ro
-      - ./public:/var/www/public:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/conf.d/rate-limit.conf:/etc/nginx/conf.d/rate-limit.conf:ro
     depends_on:
-      - web
-    networks:
-      - app-network
-    restart: always
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
-
-networks:
-  app-network:
-    driver: bridge
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
 
 volumes:
-  redis_data:
-    driver: local 
+  redis_data: 

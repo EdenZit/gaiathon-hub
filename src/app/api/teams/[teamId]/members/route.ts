@@ -66,10 +66,10 @@ export async function POST(
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
 
-    // Only team leader can invite members
+    // Only team leader can add members
     if (team.leaderId.toString() !== session.user.id) {
       return NextResponse.json(
-        { error: 'Only team leader can invite members' },
+        { error: 'Only team leader can add members' },
         { status: 403 }
       );
     }
@@ -107,9 +107,7 @@ export async function POST(
     user.teams.push(team._id);
     await user.save();
 
-    // TODO: Send email notification to invited user
-
-    return NextResponse.json({ message: 'Member invited successfully' });
+    return NextResponse.json({ message: 'Member added successfully' });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -118,7 +116,7 @@ export async function POST(
       );
     }
 
-    console.error('Error inviting team member:', error);
+    console.error('Error adding team member:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
