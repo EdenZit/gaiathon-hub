@@ -5,10 +5,6 @@ import { useSession } from 'next-auth/react';
 import { Tab } from '@headlessui/react';
 import {
   UsersIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-  CalendarIcon,
-  ChartBarIcon,
   FolderIcon,
   PlusCircleIcon,
 } from '@heroicons/react/24/outline';
@@ -16,8 +12,6 @@ import TeamSelector from './TeamSelector';
 import TeamDirectory from './TeamDirectory';
 import TeamMembers from './TeamMembers';
 import TeamCreation from './TeamCreation';
-import TeamChat from './TeamChat';
-import TeamDocuments from './TeamDocuments';
 
 interface TeamComponentProps {
   selectedTeam: string | null;
@@ -41,16 +35,6 @@ interface TeamWorkspaceLayoutProps {
   children?: React.ReactNode;
 }
 
-const TeamChatWrapper: TeamComponent = ({ selectedTeam }) => {
-  if (!selectedTeam) return null;
-  return <TeamChat selectedTeam={selectedTeam} />;
-};
-
-const TeamDocumentsWrapper: TeamComponent = ({ selectedTeam }) => {
-  if (!selectedTeam) return null;
-  return <TeamDocuments selectedTeam={selectedTeam} />;
-};
-
 export default function TeamWorkspaceLayout({ children }: TeamWorkspaceLayoutProps) {
   const { data: session } = useSession();
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
@@ -67,30 +51,6 @@ export default function TeamWorkspaceLayout({ children }: TeamWorkspaceLayoutPro
       component: TeamMembers,
       icon: UsersIcon,
       description: 'View and manage team members'
-    },
-    {
-      name: 'Chat',
-      component: TeamChatWrapper,
-      icon: ChatBubbleLeftRightIcon,
-      description: 'Real-time team communication'
-    },
-    {
-      name: 'Documents',
-      component: TeamDocumentsWrapper,
-      icon: DocumentTextIcon,
-      description: 'Collaborative document management'
-    },
-    {
-      name: 'Calendar',
-      component: () => <div>Calendar Component</div>,
-      icon: CalendarIcon,
-      description: 'Team events and timeline'
-    },
-    {
-      name: 'Progress',
-      component: () => <div>Progress Component</div>,
-      icon: ChartBarIcon,
-      description: 'Track team progress and metrics'
     },
     // Available to all authenticated users
     {
