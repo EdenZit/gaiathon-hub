@@ -66,6 +66,9 @@ export default function GalleryManagementPage() {
     const files = e.target.files;
     if (!files?.length) return;
 
+    // Check file size limit (2MB)
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
+    
     // Convert selected files to gallery images
     const newImages: IGalleryImage[] = [];
     const selectedCategory = formData.category || 'teams';
@@ -73,6 +76,12 @@ export default function GalleryManagementPage() {
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        
+        // Check file size
+        if (file.size > MAX_FILE_SIZE) {
+          setError(`File "${file.name}" exceeds the 2MB size limit`);
+          continue;
+        }
         
         // Create form data for file upload
         const formData = new FormData();
@@ -99,7 +108,10 @@ export default function GalleryManagementPage() {
         });
       }
 
-      setImages([...images, ...newImages]);
+      if (newImages.length > 0) {
+        setImages([...images, ...newImages]);
+        setError(null); // Clear any previous errors if at least one upload succeeded
+      }
     } catch (err) {
       console.error('Error uploading images:', err);
       setError(err instanceof Error ? err.message : 'Failed to upload images. Please try again.');
@@ -276,62 +288,76 @@ export default function GalleryManagementPage() {
 
           {/* Image Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700">
               Images
             </label>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {/* Existing Images */}
-              {images.map((image, index) => (
-                <div key={index} className="relative">
-                  <div className="aspect-video relative">
-                    <Image
-                      src={image.url}
-                      alt={image.caption}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                    >
-                      <XMarkIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    value={image.caption}
-                    onChange={(e) => updateCaption(index, e.target.value)}
-                    className="mt-1 block w-full text-sm rounded-md border border-gray-300 px-2 py-1 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="Image caption"
-                    required
-                  />
+            <div className="mt-1 flex flex-col space-y-4">
+              {/* Image Preview */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {images.map((image, index) => (
+                    <div key={index} className="relative group">
+                      <div className="aspect-video relative rounded-lg overflow-hidden border border-gray-200">
+                        <Image
+                          src={image.url}
+                          alt={image.caption}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50 rounded-lg">
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="p-1 bg-red-600 text-white rounded-full"
+                        >
+                          <XMarkIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={image.caption}
+                        onChange={(e) => updateCaption(index, e.target.value)}
+                        className="mt-1 w-full text-sm border border-gray-300 rounded-md px-2 py-1"
+                        placeholder="Caption"
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
 
               {/* Upload Button */}
-              <label className="aspect-video flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500">
-                <div className="text-center">
+              <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <span className="mt-2 block text-sm font-medium text-gray-600">
-                    Add Images
-                  </span>
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                    >
+                      <span>Upload images</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, GIF up to 2MB
+                  </p>
+                  {error && (
+                    <p className="text-xs text-red-500 mt-2">{error}</p>
+                  )}
                 </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageUpload}
-                />
-              </label>
+              </div>
             </div>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
 
           {/* Submit Button */}
           <div>

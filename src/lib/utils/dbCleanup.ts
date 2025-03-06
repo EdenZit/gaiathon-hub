@@ -4,7 +4,7 @@ import { BlogPost } from '@/models/BlogPost';
 import { Gallery } from '@/models/Gallery';
 import { AnnouncementPage } from '@/models/Announcement';
 
-export type CollectionName = 'users' | 'blogPosts' | 'gallery' | 'announcements' | 'all';
+export type CollectionName = 'users' | 'blogPosts' | 'gallery' | 'all';
 
 interface CleanupOptions {
   preserveAdmins?: boolean;
@@ -72,37 +72,36 @@ export async function cleanDatabase(collections: CollectionName[], options: Clea
           }
           break;
 
-        case 'announcements':
-          if (dryRun) {
-            const count = await AnnouncementPage.countDocuments({});
-            results['announcements'] = count;
-          } else {
-            const result = await AnnouncementPage.deleteMany({});
-            results['announcements'] = result.deletedCount;
-          }
-          break;
-
         case 'all':
           if (dryRun) {
             const userQuery = preserveAdmins ? { role: { $ne: 'admin' } } : {};
+            
+            // Count documents for each collection using a safer approach
             results['users'] = await User.countDocuments(userQuery);
-            results['blogPosts'] = await BlogPost.countDocuments({});
-            results['gallery'] = await Gallery.countDocuments({});
-            results['announcements'] = await AnnouncementPage.countDocuments({});
+            
+            try {
+              results['blogPosts'] = await BlogPost.estimatedDocumentCount();
+            } catch (error) {
+              results['blogPosts'] = 0;
+            }
+            
+            try {
+              results['gallery'] = await Gallery.estimatedDocumentCount();
+            } catch (error) {
+              results['gallery'] = 0;
+            }
           } else {
             // For actual deletion, handle users separately to ensure admin preservation
             const userQuery = preserveAdmins ? { role: { $ne: 'admin' } } : {};
-            const [users, blogPosts, gallery, announcements] = await Promise.all([
+            const [users, blogPosts, gallery] = await Promise.all([
               User.deleteMany(userQuery),
               BlogPost.deleteMany({}),
-              Gallery.deleteMany({}),
-              AnnouncementPage.deleteMany({})
+              Gallery.deleteMany({})
             ]);
             
             results['users'] = users.deletedCount;
             results['blogPosts'] = blogPosts.deletedCount;
             results['gallery'] = gallery.deletedCount;
-            results['announcements'] = announcements.deletedCount;
 
             // Verify admins were preserved for 'all' collection cleanup
             if (preserveAdmins) {

@@ -28,7 +28,6 @@ export default function DatabaseCleanupPage() {
     { id: 'users', name: 'Users' },
     { id: 'blogPosts', name: 'Blog Posts' },
     { id: 'gallery', name: 'Gallery' },
-    { id: 'announcements', name: 'Announcements' },
     { id: 'all', name: 'All Collections' }
   ];
 
@@ -81,11 +80,17 @@ export default function DatabaseCleanupPage() {
       const result: CleanupResult = await response.json();
       setStats(result.results);
       
-      toast.success(
-        dryRun
-          ? 'Dry run completed successfully'
-          : 'Database cleanup completed successfully'
-      );
+      if (dryRun) {
+        setDryRun(false);
+        toast.success('Dry run completed. Review the results and click "Clean Database" to proceed.');
+      } else {
+        toast.success('Database cleanup completed successfully');
+        setTimeout(() => {
+          fetchStats();
+          setSelectedCollections([]);
+          setDryRun(true);
+        }, 500);
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An error occurred');
       console.error('Cleanup error:', error);
@@ -181,7 +186,11 @@ export default function DatabaseCleanupPage() {
           <button
             onClick={handleCleanup}
             disabled={loading || selectedCollections.length === 0}
-            className="w-full mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-navy-600 hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50"
+            className={`w-full mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+              dryRun 
+                ? 'bg-navy-600 hover:bg-navy-700 focus:ring-navy-500' 
+                : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+            } focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50`}
           >
             {loading
               ? 'Processing...'
@@ -189,6 +198,14 @@ export default function DatabaseCleanupPage() {
               ? 'Preview Cleanup'
               : 'Clean Database'}
           </button>
+          
+          {!dryRun && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600 font-medium">
+                Warning: You are about to perform an actual database cleanup. This action cannot be undone.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

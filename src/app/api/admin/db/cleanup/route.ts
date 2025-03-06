@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate that all collection names are valid
-    const validCollections: CollectionName[] = ['users', 'blogPosts', 'gallery', 'announcements', 'all'];
+    const validCollections: CollectionName[] = ['users', 'blogPosts', 'gallery', 'all'];
     const invalidCollections = collections.filter(c => !validCollections.includes(c as CollectionName));
     
     if (invalidCollections.length > 0) {
@@ -90,6 +90,7 @@ export async function GET(req: NextRequest) {
 
     // Get collection counts (dry run)
     const result = await cleanDatabase(['all'], { dryRun: true });
+    
     return NextResponse.json(result);
   } catch (error) {
     console.error('DB Cleanup Check API error:', error);
