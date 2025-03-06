@@ -28,7 +28,7 @@ const regions: Region[] = [
       { name: "Université Félix Houphouët-Boigny", country: "COTE D'VOIRE" },
       { name: "University of Ghana", country: "GHANA" },
       { name: "University of Mines and Technology", country: "GHANA" },
-      { name: "Ghana communication Technology University", country: "GHANA" },
+      { name: "Ghana Communication Technology University", country: "GHANA" },
       { name: "Kwame Nkrumah University of Science and Technology", country: "GHANA" },
       { name: "Obafemi Awolowo University", country: "NIGERIA" },
       { name: "Université de Lomé", country: "TOGO" },
@@ -59,7 +59,7 @@ const regions: Region[] = [
 ];
 
 export default function ParticipatingCountriesPage() {
-  const [countries, setCountries] = useState<Country[]>([]);
+  const [countries, setCountries] = useState<University[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
