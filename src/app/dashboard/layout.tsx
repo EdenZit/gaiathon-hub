@@ -10,7 +10,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { status } = useSession({
+  const { status, data: session } = useSession({
     required: true,
     onUnauthenticated() {
       redirect('/login');
@@ -19,6 +19,11 @@ export default function DashboardLayout({
 
   if (status === 'loading') {
     return <div>Loading...</div>;
+  }
+
+  // Check if user exists in session
+  if (!session?.user) {
+    redirect('/account-deleted');
   }
 
   return (

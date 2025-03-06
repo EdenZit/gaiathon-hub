@@ -201,20 +201,66 @@ function UserManagementPage() {
           <button
             onClick={async () => {
               try {
-                const response = await fetch('/api/admin/users/export');
-                if (!response.ok) throw new Error('Export failed');
+                // Create a CSV from the filtered users directly in the frontend
+                const headers = [
+                  'ID',
+                  'Email',
+                  'Name',
+                  'Role',
+                  'Team Role',
+                  'Institution',
+                  'Year of Study',
+                  'Field of Study',
+                  'Gender',
+                  'Country',
+                  'Status',
+                  'Created At'
+                ].join(',');
+
+                // Convert filtered users to CSV rows
+                const rows = filteredUsers.map(user => [
+                  user._id,
+                  user.email,
+                  user.name || '',
+                  user.role || '',
+                  user.teamRole || '',
+                  user.institution || '',
+                  user.yearOfStudy || '',
+                  user.fieldOfStudy || '',
+                  user.gender || '',
+                  user.country || '',
+                  user.emailVerified ? 'Verified' : 'Unverified',
+                  new Date(user.createdAt).toLocaleDateString()
+                ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(','));
+
+                // Combine headers and rows
+                const csv = [headers, ...rows].join('\n');
                 
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
+                // Create a blob and download it
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'users.csv';
+                
+                // Create a filename that includes the current filters
+                let filename = 'users';
+                if (teamRoleFilter !== 'all') {
+                  filename += `_${teamRoleFilter}s`;
+                }
+                if (roleFilter !== 'all') {
+                  filename += `_${roleFilter}s`;
+                }
+                if (searchTerm) {
+                  filename += '_filtered';
+                }
+                a.download = `${filename}.csv`;
+                
                 document.body.appendChild(a);
                 a.click();
-                window.URL.revokeObjectURL(url);
+                URL.revokeObjectURL(url);
                 document.body.removeChild(a);
                 
-                toast.success('Users exported successfully');
+                toast.success(`${filteredUsers.length} users exported successfully`);
               } catch (error) {
                 console.error('Error exporting users:', error);
                 toast.error('Failed to export users');
@@ -222,7 +268,7 @@ function UserManagementPage() {
             }}
             className="px-4 py-2 bg-navy-600 text-white rounded-lg hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
           >
-            Export Users
+            Export {filteredUsers.length} Users
           </button>
           <input
             type="text"

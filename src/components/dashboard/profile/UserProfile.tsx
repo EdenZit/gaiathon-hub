@@ -96,6 +96,12 @@ export default function UserProfile() {
         credentials: 'include'
       });
       
+      if (response.status === 404) {
+        // User not found - likely deleted
+        window.location.href = '/account-deleted';
+        return;
+      }
+      
       if (!response.ok) {
         throw new Error('Failed to fetch profile');
       }
