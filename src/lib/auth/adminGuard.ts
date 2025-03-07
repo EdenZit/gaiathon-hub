@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import Redis from "ioredis";
 import { headers } from "next/headers";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 // Create a new Redis client for Docker
 const redis = new Redis(process.env.REDIS_URL || "redis://redis:6379");

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { connectDB } from '@/lib/mongodb';
+import { connectDB } from '@/lib/db/connection';
 import { Team } from '@/lib/db/models/Team';
 import { adminGuard } from '@/lib/auth/adminGuard';
 import { Types, Document } from 'mongoose';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { User } from '@/lib/db/models/User';
 
 type TeamCategory = 
