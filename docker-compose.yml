@@ -9,6 +9,7 @@ services:
       - .:/app
       - node_modules:/app/node_modules
       - next:/app/.next
+      - app_images:/app/public/images
     environment:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
@@ -33,6 +34,14 @@ services:
       start_period: 40s
     stop_grace_period: 1m
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
 
   task-runner:
     build:
@@ -70,6 +79,14 @@ services:
       timeout: 5s
       retries: 3
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 256M
 
 networks:
   app-network:
@@ -79,4 +96,6 @@ volumes:
   redis_data:
     driver: local
   node_modules:
-  next: 
+  next:
+  app_images:
+    driver: local 
