@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signIn } from 'next-auth/react'
@@ -8,35 +8,81 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/navigation'
 
-export function Navbar() {
+// Memoize dropdown components to prevent unnecessary re-renders
+const DropdownMenu = memo(({ 
+  items, 
+  isOpen, 
+  handleProtectedLink 
+}: { 
+  items: any[], 
+  isOpen: boolean,
+  handleProtectedLink?: (e: React.MouseEvent, href: string) => void
+}) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5">
+      {items.map((item) => (
+        item.protected ? (
+          <button
+            key={item.name}
+            onClick={(e) => handleProtectedLink && handleProtectedLink(e, item.href)}
+            className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+          >
+            {item.name}
+          </button>
+        ) : (
+          <Link
+            key={item.name}
+            href={item.href}
+            className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+          >
+            {item.name}
+          </Link>
+        )
+      ))}
+    </div>
+  );
+});
+
+DropdownMenu.displayName = 'DropdownMenu';
+
+// Main Navbar component
+export const Navbar = memo(function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const { data: session } = useSession()
   const router = useRouter()
   const closeTimeoutRef = useRef<NodeJS.Timeout>()
 
-  const handleMouseEnter = (name: string) => {
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleMouseEnter = useCallback((name: string) => {
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current)
     }
     setOpenDropdown(name)
-  }
+  }, []);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     closeTimeoutRef.current = setTimeout(() => {
       setOpenDropdown(null)
     }, 150)
-  }
+  }, []);
 
-  const handleProtectedLink = (e: React.MouseEvent, href: string) => {
+  const handleProtectedLink = useCallback((e: React.MouseEvent, href: string) => {
     e.preventDefault()
     if (!session) {
       router.push('/register')
     } else {
       router.push(href)
     }
-  }
+  }, [session, router]);
 
+  const toggleDropdown = useCallback((name: string) => {
+    setOpenDropdown(openDropdown === name ? null : name)
+  }, [openDropdown]);
+
+  // Navigation data
   const navigation = {
     company: [
       { name: 'Home', href: '/' },
@@ -54,10 +100,6 @@ export function Navbar() {
       { name: 'Privacy Policy', href: '/legal/privacy-policy' },
       { name: 'Cookie Policy', href: '/legal/cookie-policy' },
     ],
-  }
-
-  const toggleDropdown = (name: string) => {
-    setOpenDropdown(openDropdown === name ? null : name)
   }
 
   return (
@@ -90,19 +132,11 @@ export function Navbar() {
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
                 </button>
                 {openDropdown === 'company' && (
-                  <div 
-                    className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                  >
-                    {navigation.company.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                  </div>
+                  <DropdownMenu
+                    items={navigation.company}
+                    isOpen={openDropdown === 'company'}
+                    handleProtectedLink={handleProtectedLink}
+                  />
                 )}
               </div>
 
@@ -119,29 +153,11 @@ export function Navbar() {
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
                 </button>
                 {openDropdown === 'resources' && (
-                  <div 
-                    className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                  >
-                    {navigation.resources.map((item) => (
-                      item.protected ? (
-                        <button
-                          key={item.name}
-                          onClick={(e) => handleProtectedLink(e, item.href)}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                        >
-                          {item.name}
-                        </button>
-                      ) : (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                        >
-                          {item.name}
-                        </Link>
-                      )
-                    ))}
-                  </div>
+                  <DropdownMenu
+                    items={navigation.resources}
+                    isOpen={openDropdown === 'resources'}
+                    handleProtectedLink={handleProtectedLink}
+                  />
                 )}
               </div>
 
@@ -158,19 +174,11 @@ export function Navbar() {
                   <ChevronDownIcon className="ml-2 h-5 w-5" />
                 </button>
                 {openDropdown === 'legal' && (
-                  <div 
-                    className="absolute z-50 mt-3 w-48 rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                  >
-                    {navigation.legal.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                  </div>
+                  <DropdownMenu
+                    items={navigation.legal}
+                    isOpen={openDropdown === 'legal'}
+                    handleProtectedLink={handleProtectedLink}
+                  />
                 )}
               </div>
 
@@ -318,4 +326,4 @@ export function Navbar() {
       </nav>
     </header>
   );
-} 
+}) 

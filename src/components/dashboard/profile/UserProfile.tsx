@@ -451,6 +451,18 @@ export default function UserProfile() {
               </div>
 
               <div>
+                <label htmlFor="department" className="block text-sm font-medium">Department</label>
+                <input
+                  type="text"
+                  id="department"
+                  {...getInputProps('department')}
+                  placeholder="Enter your department"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <label htmlFor="fieldOfStudy" className="block text-sm font-medium">Major/Field of Study</label>
                 <input
                   type="text"
@@ -458,9 +470,7 @@ export default function UserProfile() {
                   {...getInputProps('fieldOfStudy', true)}
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="yearOfStudy" className="block text-sm font-medium">Year of Study</label>
                 <select
@@ -477,7 +487,9 @@ export default function UserProfile() {
                   <option value="other">Other</option>
                 </select>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-medium">Phone Number (Optional)</label>
                 <input

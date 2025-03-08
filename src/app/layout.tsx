@@ -5,13 +5,20 @@ import { Footer } from '@/components/layout/Footer';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { Toaster } from 'react-hot-toast';
 
-const inter = Inter({ subsets: ['latin'] });
+// Optimize font loading
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'sans-serif']
+});
 
 export const metadata = {
   title: 'GAIAthon-Hub',
   description: 'A unified platform for Earth Observation resources, collaboration, and innovation.',
 };
 
+// Optimize the layout component
 export default function RootLayout({
   children,
 }: {
@@ -29,7 +36,16 @@ export default function RootLayout({
             <Footer />
           </div>
         </AuthProvider>
-        <Toaster position="top-right" />
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+          }}
+        />
       </body>
     </html>
   );

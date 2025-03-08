@@ -7,7 +7,7 @@ const nextConfig = {
       'plus.unsplash.com',
       'avatars.githubusercontent.com',
     ],
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -15,6 +15,7 @@ const nextConfig = {
       },
     ],
   },
+  // Simplified webpack config
   webpack: (config) => {
     config.watchOptions = {
       poll: 1000,
@@ -22,13 +23,14 @@ const nextConfig = {
     };
     return config;
   },
+  // Disable experimental features
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,
   },
   // Transpile framer-motion
   transpilePackages: ['framer-motion'],
-  // Enable React strict mode
-  reactStrictMode: true,
+  // Disable React strict mode in development
+  reactStrictMode: false,
   // Disable x-powered-by header
   poweredByHeader: false,
   // Add security headers

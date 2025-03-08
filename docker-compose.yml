@@ -17,6 +17,9 @@ services:
       - HOST=0.0.0.0
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=http://localhost:3000
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - NEXT_WEBPACK_MEMORY_LIMIT=4096
+      - GENERATE_SOURCEMAP=false
     networks:
       - app-network
     depends_on:
@@ -28,6 +31,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    stop_grace_period: 1m
     restart: unless-stopped
 
   task-runner:

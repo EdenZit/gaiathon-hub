@@ -19,6 +19,7 @@ interface User {
   lastActive?: string;
   createdAt: string;
   institution?: string;
+  department?: string;
   yearOfStudy?: string;
   fieldOfStudy?: string;
   country?: string;
@@ -139,6 +140,7 @@ function UserManagementPage() {
 
   const handleProfileUpdate = async (userId: string, updateData: Partial<{
     institution: string;
+    department: string;
     yearOfStudy: string;
     fieldOfStudy: string;
     teamRole: 'leader' | 'member';
@@ -209,6 +211,7 @@ function UserManagementPage() {
                   'Role',
                   'Team Role',
                   'Institution',
+                  'Department',
                   'Year of Study',
                   'Field of Study',
                   'Gender',
@@ -225,6 +228,7 @@ function UserManagementPage() {
                   user.role || '',
                   user.teamRole || '',
                   user.institution || '',
+                  user.department || '',
                   user.yearOfStudy || '',
                   user.fieldOfStudy || '',
                   user.gender || '',
@@ -319,6 +323,9 @@ function UserManagementPage() {
                   Institution
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Department
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Year of Study
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -377,6 +384,15 @@ function UserManagementPage() {
                       value={user.institution || ''}
                       onChange={(e) => handleProfileUpdate(user._id, { institution: e.target.value })}
                       placeholder="Institution"
+                      className="text-sm text-gray-500 border rounded px-2 py-1 w-full"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      value={user.department || ''}
+                      onChange={(e) => handleProfileUpdate(user._id, { department: e.target.value })}
+                      placeholder="Department"
                       className="text-sm text-gray-500 border rounded px-2 py-1 w-full"
                     />
                   </td>

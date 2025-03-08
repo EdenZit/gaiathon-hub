@@ -67,6 +67,7 @@ interface PopulatedTeam {
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -99,39 +100,137 @@ export async function GET() {
     // Type assertion after validation
     const teams = rawTeams as unknown as PopulatedTeam[];
 
+    // Filter out any invalid members before transformation
+    teams.forEach(team => {
+      if (team.members) {
+        team.members = team.members.filter(member => member && member.user);
+      } else {
+        team.members = [];
+      }
+    });
+
     // Transform teams to include full member details
-    const transformedTeams = teams.map(team => ({
-      _id: team._id,
-      name: team.name,
-      category: team.category,
-      status: team.status,
-      leaderId: team.leaderId._id,
-      leader: {
-        _id: team.leaderId._id,
-        firstName: team.leaderId.firstName || '',
-        lastName: team.leaderId.lastName || '',
-        email: team.leaderId.email,
-        institution: team.leaderId.institution || '',
-        country: team.leaderId.country || ''
-      },
-      members: team.members.map((member: TeamMember) => ({
-        userId: member.user._id,
-        firstName: member.user.firstName || '',
-        lastName: member.user.lastName || '',
-        email: member.user.email,
-        teamRole: member.teamRole,
-        institution: member.user.institution || '',
-        country: member.user.country || '',
-        joinedAt: member.joinedAt
-      })),
-      createdAt: team.createdAt
-    }));
+    const transformedTeams = teams.map(team => {
+      try {
+        // Check if leaderId is populated correctly
+        if (!team.leaderId) {
+          console.error(`Team ${team._id} has null or undefined leaderId`);
+          // Return a partial team object with default values for leader
+          return {
+            _id: team._id,
+            name: team.name,
+            category: team.category || '',
+            status: team.status || 'pending',
+            leaderId: null,
+            leader: {
+              _id: null,
+              firstName: '',
+              lastName: '',
+              email: '',
+              institution: '',
+              country: ''
+            },
+            members: team.members?.map((member: TeamMember) => {
+              // Check if member.user exists
+              if (!member.user) {
+                return {
+                  userId: null,
+                  firstName: '',
+                  lastName: '',
+                  email: '',
+                  teamRole: member.teamRole || 'member',
+                  institution: '',
+                  country: '',
+                  joinedAt: member.joinedAt || new Date()
+                };
+              }
+              
+              return {
+                userId: member.user._id,
+                firstName: member.user.firstName || '',
+                lastName: member.user.lastName || '',
+                email: member.user.email || '',
+                teamRole: member.teamRole || 'member',
+                institution: member.user.institution || '',
+                country: member.user.country || '',
+                joinedAt: member.joinedAt || new Date()
+              };
+            }) || [],
+            createdAt: team.createdAt
+          };
+        }
+
+        // Normal case when leaderId is properly populated
+        return {
+          _id: team._id,
+          name: team.name,
+          category: team.category,
+          status: team.status,
+          leaderId: team.leaderId._id,
+          leader: {
+            _id: team.leaderId._id,
+            firstName: team.leaderId.firstName || '',
+            lastName: team.leaderId.lastName || '',
+            email: team.leaderId.email,
+            institution: team.leaderId.institution || '',
+            country: team.leaderId.country || ''
+          },
+          members: team.members.map((member: TeamMember) => {
+            // Check if member.user exists
+            if (!member.user) {
+              return {
+                userId: null,
+                firstName: '',
+                lastName: '',
+                email: '',
+                teamRole: member.teamRole || 'member',
+                institution: '',
+                country: '',
+                joinedAt: member.joinedAt || new Date()
+              };
+            }
+            
+            return {
+              userId: member.user._id,
+              firstName: member.user.firstName || '',
+              lastName: member.user.lastName || '',
+              email: member.user.email || '',
+              teamRole: member.teamRole,
+              institution: member.user.institution || '',
+              country: member.user.country || '',
+              joinedAt: member.joinedAt
+            };
+          }),
+          createdAt: team.createdAt
+        };
+      } catch (error) {
+        console.error(`Error transforming team ${team._id}:`, error);
+        // Return a minimal valid team object to prevent the entire request from failing
+        return {
+          _id: team._id,
+          name: team.name || 'Unknown Team',
+          category: team.category || '',
+          status: team.status || 'pending',
+          leaderId: null,
+          leader: {
+            _id: null,
+            firstName: '',
+            lastName: '',
+            email: '',
+            institution: '',
+            country: ''
+          },
+          members: [],
+          createdAt: team.createdAt || new Date()
+        };
+      }
+    });
 
     return NextResponse.json(transformedTeams);
   } catch (error) {
-    console.error('Error fetching teams:', error);
+    console.error('Error in GET /api/teams:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch teams' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

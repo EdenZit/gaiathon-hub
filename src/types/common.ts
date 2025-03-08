@@ -20,6 +20,7 @@ export interface IUserBase {
   lastName: string;
   role: UserRole;
   institution?: string;
+  department?: string;
   fieldOfStudy?: string;
   yearOfStudy?: string;
   country?: string;

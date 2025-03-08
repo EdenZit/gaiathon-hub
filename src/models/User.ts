@@ -54,6 +54,7 @@ const userSchema = new mongoose.Schema<IUserDocument>({
     default: false
   },
   institution: String,
+  department: String,
   fieldOfStudy: String,
   yearOfStudy: String,
   country: String,
