@@ -49,4 +49,7 @@ docs/
 
 # Build artifacts
 dist/
-build/ 
+build/
+
+# Large media files
+public/images/ 

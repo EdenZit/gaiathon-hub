@@ -125,3 +125,45 @@ npm run db:clean
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Image Management
+
+The GAIAthon-Hub platform uses a dedicated approach for handling images to ensure optimal performance and maintainability:
+
+### Image Storage
+
+- Images are stored in the `/public/images/` directory, organized by category (blog, gallery, partners, etc.)
+- For Docker deployments, images are stored in a dedicated volume (`app_images`) to keep the Docker image size small
+- The `.dockerignore` file excludes the `/public/images/` directory from the build context
+
+### Image Management Tools
+
+The project includes a dedicated script for managing images:
+
+```bash
+# Backup all images
+./scripts/manage-images.sh backup
+
+# Restore images from a backup
+./scripts/manage-images.sh restore [backup_filename]
+
+# Sync images to production
+./scripts/manage-images.sh sync-to-prod [production_server]
+
+# Sync images from production
+./scripts/manage-images.sh sync-from-prod [production_server]
+```
+
+### Image Optimization
+
+- The project uses Next.js Image component for automatic image optimization
+- A custom `OptimizedImage` component is available at `app/components/ui/OptimizedImage.tsx`
+- Images are automatically optimized for different device sizes and formats
+
+### Best Practices
+
+1. Keep image files as small as possible (use WebP format when possible)
+2. Use appropriate image dimensions for each use case
+3. Use the `OptimizedImage` component for all images to ensure proper optimization
+4. Regularly backup images using the provided script
+5. Consider using a CDN for production deployments with high traffic
