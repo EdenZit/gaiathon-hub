@@ -51,5 +51,4 @@ docs/
 dist/
 build/
 
-# Large media files
-public/images/ 
+# Large media files 

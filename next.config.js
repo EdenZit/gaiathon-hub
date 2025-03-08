@@ -6,7 +6,7 @@ const nextConfig = {
       'images.unsplash.com',
       'plus.unsplash.com',
     ],
-    unoptimized: false,
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
