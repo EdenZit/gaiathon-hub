@@ -143,7 +143,6 @@ const userSchema = new Schema<IUserDocument>(
       default: false,
     },
     profile: {
-      avatar: String,
       bio: String,
       organization: String,
       position: String,

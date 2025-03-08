@@ -43,7 +43,6 @@ export interface IUser {
   };
   profileCompleted?: boolean;
   profile?: {
-    avatar?: string;
     bio?: string;
     organization?: string;
     position?: string;
