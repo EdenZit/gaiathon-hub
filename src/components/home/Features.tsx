@@ -16,13 +16,55 @@ import {
 } from '@heroicons/react/24/outline';
 
 const winners = [
-  { id: 1, name: 'Team EcoWatch', project: 'Coastal Monitoring System', image: '/images/winners/team1.jpg' },
-  { id: 2, name: 'AquaGuard', project: 'Water Quality Analysis', image: '/images/winners/team2.jpg' },
-  { id: 3, name: 'GreenSense', project: 'Forest Cover Tracking', image: '/images/winners/team3.jpg' },
-  { id: 4, name: 'AgriTech', project: 'Crop Yield Prediction', image: '/images/winners/team4.jpg' },
-  { id: 5, name: 'UrbanPulse', project: 'Urban Heat Mapping', image: '/images/winners/team5.jpg' },
-  { id: 6, name: 'ClimateAI', project: 'Climate Change Analysis', image: '/images/winners/team6.jpg' },
-  { id: 7, name: 'EarthSense', project: 'Soil Health Monitoring', image: '/images/winners/team7.jpg' },
+  { 
+    id: 1, 
+    country: 'Benin', 
+    name: 'EcoDefenders', 
+    project: 'Combating poaching using IoT-enabled monitoring systems', 
+    image: '/images/winners/benin.jpg' 
+  },
+  { 
+    id: 2, 
+    country: 'Côte d\'Ivoire', 
+    name: 'Leaders Smart', 
+    project: 'Managing coastal areas for environmental sustainability', 
+    image: '/images/winners/cd-ivoire.jpg' 
+  },
+  { 
+    id: 3, 
+    country: 'Egypt', 
+    name: 'Nile Guardians', 
+    project: 'IoT-driven eco-friendly tile production from plastics', 
+    image: '/images/winners/egypt.jpg' 
+  },
+  { 
+    id: 4, 
+    country: 'Ghana', 
+    name: 'BroCode', 
+    project: 'Advancing sustainable water solutions through collaboration', 
+    image: '/images/winners/ghana.jpg' 
+  },
+  { 
+    id: 5, 
+    country: 'Morocco', 
+    name: 'Forest Rangers', 
+    project: 'Protecting forests from fires and illegal logging', 
+    image: '/images/winners/morocco.jpg' 
+  },
+  { 
+    id: 6, 
+    country: 'Togo', 
+    name: 'Green Tech Innovators', 
+    project: 'Deploying IoT sensors for real-time air monitoring', 
+    image: '/images/winners/togo.jpg' 
+  },
+  { 
+    id: 7, 
+    country: 'Tunisia', 
+    name: 'Next Gen', 
+    project: 'Enhancing agricultural water conservation through innovation', 
+    image: '/images/winners/tunisia.jpg' 
+  },
 ];
 
 const highlights = [
@@ -126,10 +168,10 @@ export function Features() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold text-gray-900">
-              GAIAthon'24 Winners
+              GAIAthon'25 Winners
             </h2>
             <p className="mt-4 text-lg text-gray-600">
-              Celebrating innovative solutions from our previous hackathon
+              Celebrating innovative solutions from our latest hackathon
             </p>
           </motion.div>
 
@@ -151,6 +193,9 @@ export function Features() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-8">
+                    <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-full mb-3">
+                      {winners[currentWinner].country}
+                    </span>
                     <h3 className="text-2xl font-bold text-white mb-2">
                       {winners[currentWinner].name}
                     </h3>
