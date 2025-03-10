@@ -5,6 +5,7 @@ import { withAdminGuard } from '@/components/auth/AdminGuard';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import MaintenanceToggle from '@/components/admin/MaintenanceToggle';
 import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
@@ -54,6 +55,11 @@ function SecurityPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Security Overview</h1>
+
+      {/* Maintenance Mode Toggle */}
+      <div className="mb-6">
+        <MaintenanceToggle />
+      </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

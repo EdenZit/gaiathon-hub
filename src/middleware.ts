@@ -59,6 +59,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Check if maintenance mode is enabled via environment variable
+  const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
+  
+  // Get the path from the URL
+  const path = request.nextUrl.pathname;
+  
+  // List of paths that should be accessible during maintenance
+  const allowedPaths = [
+    '/maintenance',
+    '/api/health', // Health check endpoint if you have one
+    '/_next', // Next.js assets
+    '/images', // Static images
+    '/favicon', // Favicon
+  ];
+  
+  // Check if the current path is allowed during maintenance
+  const isAllowedPath = allowedPaths.some(allowedPath => 
+    path === allowedPath || path.startsWith(allowedPath + '/')
+  );
+  
+  // If maintenance mode is enabled and the path is not allowed, redirect to maintenance page
+  if (isMaintenanceMode && !isAllowedPath) {
+    return NextResponse.redirect(new URL('/maintenance', request.url));
+  }
+
   return response;
 }
 
@@ -71,5 +96,14 @@ export const config = {
     '/register',
     '/login',
     '/admin-login',
+    /*
+     * Match all request paths except:
+     * 1. /api/auth/* (authentication routes)
+     * 2. /_next/static (static files)
+     * 3. /_next/image (image optimization files)
+     * 4. /favicon.ico (favicon file)
+     * 5. /maintenance (maintenance page itself)
+     */
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|maintenance).*)',
   ],
 }; 
