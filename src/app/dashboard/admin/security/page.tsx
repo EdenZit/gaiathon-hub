@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { withAdminGuard } from '@/components/auth/AdminGuard';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
-import MaintenanceToggle from '@/components/admin/MaintenanceToggle';
+import dynamic from 'next/dynamic';
 import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
@@ -13,6 +13,23 @@ import {
   UserGroupIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
+
+// Dynamically import the MaintenanceToggle component with SSR disabled
+const MaintenanceToggle = dynamic(
+  () => import('@/components/admin/MaintenanceToggle'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold text-gray-900">Maintenance Mode</h3>
+        <div className="flex justify-center py-4">
+          <Spinner />
+        </div>
+        <p className="text-sm text-gray-600">Loading maintenance controls...</p>
+      </div>
+    )
+  }
+);
 
 interface SecurityStats {
   totalErrors: number;
@@ -25,6 +42,7 @@ interface SecurityStats {
 function SecurityPage() {
   const [stats, setStats] = useState<SecurityStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [maintenanceError, setMaintenanceError] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -44,6 +62,11 @@ function SecurityPage() {
     fetchStats();
   }, []);
 
+  // Error handler for the MaintenanceToggle component
+  const handleMaintenanceError = () => {
+    setMaintenanceError(true);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -56,9 +79,37 @@ function SecurityPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Security Overview</h1>
 
-      {/* Maintenance Mode Toggle */}
+      {/* Maintenance Mode Toggle with error fallback */}
       <div className="mb-6">
-        <MaintenanceToggle />
+        {maintenanceError ? (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-900">Maintenance Mode</h3>
+            <p className="mt-2 text-gray-600">
+              Maintenance mode controls are temporarily unavailable. Please use the command line script to toggle maintenance mode.
+            </p>
+          </div>
+        ) : (
+          <ErrorBoundary fallback={
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold text-gray-900">Maintenance Mode</h3>
+              <p className="mt-2 text-gray-600">
+                Maintenance mode controls encountered an error. Please use the command line script to toggle maintenance mode.
+              </p>
+            </div>
+          }>
+            <Suspense fallback={
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold text-gray-900">Maintenance Mode</h3>
+                <div className="flex justify-center py-4">
+                  <Spinner />
+                </div>
+                <p className="text-sm text-gray-600">Loading maintenance controls...</p>
+              </div>
+            }>
+              <MaintenanceToggle />
+            </Suspense>
+          </ErrorBoundary>
+        )}
       </div>
 
       {/* Quick Stats */}
@@ -121,5 +172,31 @@ function SecurityPage() {
     </div>
   );
 }
+
+// Simple error boundary component
+class ErrorBoundary extends React.Component<{
+  children: React.ReactNode;
+  fallback: React.ReactNode;
+}> {
+  state = { hasError: false };
+  
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  
+  componentDidCatch(error: any, info: any) {
+    console.error("Error in component:", error, info);
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    
+    return this.props.children;
+  }
+}
+
+import React from 'react';
 
 export default withAdminGuard(SecurityPage); 

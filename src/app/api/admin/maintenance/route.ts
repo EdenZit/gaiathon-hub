@@ -47,6 +47,9 @@ async function updateMaintenanceMode(enable: boolean): Promise<boolean> {
     // Write the updated content back to the file
     fs.writeFileSync(envFilePath, envContent, 'utf8');
     
+    // Also update the current environment variable
+    process.env.MAINTENANCE_MODE = newValue;
+    
     // Restart the web container to apply changes
     if (process.env.NODE_ENV === 'production') {
       try {
@@ -64,15 +67,31 @@ async function updateMaintenanceMode(enable: boolean): Promise<boolean> {
   }
 }
 
+// Helper function to add CORS headers
+function addCorsHeaders(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+  return response;
+}
+
+// OPTIONS handler for CORS preflight requests
+export async function OPTIONS() {
+  return addCorsHeaders(NextResponse.json({}, { status: 200 }));
+}
+
 // GET endpoint to check current maintenance mode status
 export async function GET() {
   // Check if user is authenticated and is an admin
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== 'admin') {
+      return addCorsHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
+    }
+    
     // First check the environment variable
     const envMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
     
@@ -85,7 +104,7 @@ export async function GET() {
         const fileMaintenanceMode = match ? match[1] === 'true' : false;
         
         // Return the file value if it exists
-        return NextResponse.json({ maintenanceMode: fileMaintenanceMode });
+        return addCorsHeaders(NextResponse.json({ maintenanceMode: fileMaintenanceMode }));
       }
     } catch (fileError) {
       console.error('Error reading from .env.production:', fileError);
@@ -93,28 +112,31 @@ export async function GET() {
     }
     
     // Return the environment variable value as fallback
-    return NextResponse.json({ maintenanceMode: envMaintenanceMode });
+    return addCorsHeaders(NextResponse.json({ maintenanceMode: envMaintenanceMode }));
   } catch (error) {
     console.error('Error checking maintenance mode:', error);
-    return NextResponse.json({ error: 'Failed to check maintenance mode' }, { status: 500 });
+    return addCorsHeaders(NextResponse.json({ 
+      error: 'Failed to check maintenance mode',
+      maintenanceMode: false // Default to false on error
+    }, { status: 500 }));
   }
 }
 
 // POST endpoint to toggle maintenance mode
 export async function POST(request: Request) {
-  // Check if user is authenticated and is an admin
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  
   try {
+    // Check if user is authenticated and is an admin
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== 'admin') {
+      return addCorsHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
+    }
+    
     // Parse the request body
     const { enable } = await request.json();
     
     // Validate the input
     if (typeof enable !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+      return addCorsHeaders(NextResponse.json({ error: 'Invalid input' }, { status: 400 }));
     }
     
     // Update the maintenance mode
@@ -125,21 +147,21 @@ export async function POST(request: Request) {
       // This won't persist after restart but at least provides some functionality
       process.env.MAINTENANCE_MODE = enable ? 'true' : 'false';
       
-      return NextResponse.json({ 
+      return addCorsHeaders(NextResponse.json({ 
         success: true, 
         warning: 'Could not update .env.production file. Changes will not persist after server restart.',
         message: enable ? 'Maintenance mode temporarily enabled' : 'Maintenance mode temporarily disabled',
         maintenanceMode: enable
-      });
+      }));
     }
     
-    return NextResponse.json({ 
+    return addCorsHeaders(NextResponse.json({ 
       success: true, 
       message: enable ? 'Maintenance mode enabled' : 'Maintenance mode disabled',
       maintenanceMode: enable
-    });
+    }));
   } catch (error) {
     console.error('Error toggling maintenance mode:', error);
-    return NextResponse.json({ error: 'Failed to toggle maintenance mode' }, { status: 500 });
+    return addCorsHeaders(NextResponse.json({ error: 'Failed to toggle maintenance mode' }, { status: 500 }));
   }
 } 

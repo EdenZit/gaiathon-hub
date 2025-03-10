@@ -11,6 +11,7 @@ export default function MaintenanceToggle() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
+  const [fetchAttempts, setFetchAttempts] = useState(0);
 
   // Fetch the current maintenance mode status
   useEffect(() => {
@@ -20,7 +21,14 @@ export default function MaintenanceToggle() {
         setError(null);
         setWarning(null);
         
-        const response = await fetch('/api/admin/maintenance');
+        const response = await fetch('/api/admin/maintenance', {
+          // Add cache: 'no-store' to prevent caching issues
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch maintenance mode status');
@@ -28,16 +36,23 @@ export default function MaintenanceToggle() {
         
         const data = await response.json();
         setIsEnabled(data.maintenanceMode);
+        setFetchAttempts(0); // Reset attempts on success
       } catch (err) {
+        console.error('Error fetching maintenance status:', err);
         setError('Failed to load maintenance mode status');
-        console.error(err);
+        
+        // Retry logic (up to 3 attempts)
+        if (fetchAttempts < 3) {
+          setFetchAttempts(prev => prev + 1);
+          setTimeout(() => fetchStatus(), 1000); // Retry after 1 second
+        }
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchStatus();
-  }, []);
+  }, [fetchAttempts]);
 
   // Toggle maintenance mode
   const toggleMaintenanceMode = async () => {
@@ -50,6 +65,8 @@ export default function MaintenanceToggle() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         },
         body: JSON.stringify({ enable: !isEnabled }),
       });
@@ -68,13 +85,26 @@ export default function MaintenanceToggle() {
         toast.success(data.message + '. The change may take a few moments to take effect.');
       }
     } catch (err) {
+      console.error('Error toggling maintenance mode:', err);
       setError('Failed to toggle maintenance mode');
       toast.error('Failed to toggle maintenance mode. Please try again or use the command line script.');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // If there's a persistent error, show a simplified version
+  if (fetchAttempts >= 3 && error) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold text-gray-900">Maintenance Mode</h3>
+        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md text-sm flex items-start">
+          <AlertCircle className="h-5 w-5 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+          <div>Unable to connect to maintenance service. Please use the command line script instead.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
