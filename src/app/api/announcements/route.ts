@@ -42,23 +42,37 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
+      console.error('Authentication required for PUT /api/announcements');
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
+    // Check for CSRF protection header
+    const csrfHeader = request.headers.get('X-CSRF-Protection');
+    if (!csrfHeader) {
+      console.error('CSRF protection header missing for PUT /api/announcements');
+      return NextResponse.json(
+        { error: 'CSRF protection required' },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
     const data = await request.json();
+    console.log('Received data for announcements update:', JSON.stringify(data).substring(0, 200) + '...');
 
     let page = await AnnouncementPage.findOne();
     
     if (!page) {
+      console.log('Creating new AnnouncementPage document');
       page = await AnnouncementPage.create({
         ...data,
         updatedBy: session.user.id
       });
     } else {
+      console.log('Updating existing AnnouncementPage document');
       page.upcomingEvents = data.upcomingEvents || page.upcomingEvents;
       page.announcements = data.announcements || page.announcements;
       page.importantDates = data.importantDates || page.importantDates;
@@ -81,4 +95,16 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Add OPTIONS method to handle preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
 } 

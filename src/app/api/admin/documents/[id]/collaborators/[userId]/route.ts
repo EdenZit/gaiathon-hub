@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
-import { Document } from '@/lib/db/models/Document';
+import { Document } from '@/models/Document';
 import mongoose from 'mongoose';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string; userId: string } }) {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Check if collaborator already exists
-    if (document.collaborators.some(id => id.toString() === userId)) {
+    if (document.collaborators.some((id: mongoose.Types.ObjectId) => id.toString() === userId)) {
       return NextResponse.json({ error: 'User is already a collaborator' }, { status: 400 });
     }
 
@@ -60,12 +60,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Check if user is a collaborator
-    if (!document.collaborators.some(id => id.toString() === userId)) {
+    if (!document.collaborators.some((id: mongoose.Types.ObjectId) => id.toString() === userId)) {
       return NextResponse.json({ error: 'User is not a collaborator' }, { status: 400 });
     }
 
     // Remove collaborator
-    document.collaborators = document.collaborators.filter(id => id.toString() !== userId);
+    document.collaborators = document.collaborators.filter((id: mongoose.Types.ObjectId) => id.toString() !== userId);
     await document.save();
     await document.populate('owner collaborators', 'name email');
 

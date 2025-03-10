@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
-import { Document } from '@/lib/db/models/Document';
+import { Document } from '@/models/Document';
 import { AdminDocumentQuery, ApiError, PaginatedResponse } from '@/types/admin';
 import { IDocument } from '@/types/models';
 

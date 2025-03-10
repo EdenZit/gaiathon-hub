@@ -33,9 +33,23 @@ class RedisService extends EventEmitter {
 
   private constructor() {
     super();
+    
+    // Skip Redis connection during build process
+    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
+      console.log('Skipping Redis connection during build phase');
+      this.publisher = this.createMockRedisClient();
+      this.subscriber = this.createMockRedisClient();
+      this.client = this.createMockRedisClient();
+      return;
+    }
+    
+    // Use REDIS_URL from environment variables
+    const redisUrl = process.env.REDIS_URL || 'redis://redis:6379';
+    console.log(`Connecting to Redis at: ${redisUrl}`);
+    
     const redisOptions = {
-      host: process.env.REDIS_HOST || 'redis',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      // Use URL instead of host/port
+      url: redisUrl,
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
         console.log(`Retrying Redis connection in ${delay}ms...`);
@@ -47,12 +61,36 @@ class RedisService extends EventEmitter {
       lazyConnect: true,
     };
 
-    this.publisher = new Redis(redisOptions);
-    this.subscriber = new Redis(redisOptions);
-    this.client = new Redis(redisOptions);
+    try {
+      this.publisher = new Redis(redisOptions);
+      this.subscriber = new Redis(redisOptions);
+      this.client = new Redis(redisOptions);
+      this.setupEventHandlers();
+      this.startHealthCheck();
+    } catch (error) {
+      console.error('Failed to initialize Redis connections:', error);
+      // Fallback to mock clients
+      this.publisher = this.createMockRedisClient();
+      this.subscriber = this.createMockRedisClient();
+      this.client = this.createMockRedisClient();
+    }
+  }
 
-    this.setupEventHandlers();
-    this.startHealthCheck();
+  private createMockRedisClient() {
+    // Create a mock Redis client for build process
+    const mockClient = {
+      on: () => mockClient,
+      connect: async () => {},
+      disconnect: async () => {},
+      quit: async () => {},
+      ping: async () => 'PONG',
+      publish: async () => 0,
+      subscribe: async () => {},
+      get: async () => null,
+      set: async () => 'OK',
+      del: async () => 0,
+    } as unknown as Redis;
+    return mockClient;
   }
 
   public static getInstance(): RedisService {

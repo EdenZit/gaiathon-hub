@@ -3,10 +3,22 @@ import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/lib/db/models/User';
 import { Team } from '@/lib/db/models/Team';
-import { Document } from '@/lib/db/models/Document';
+import { Document } from '@/models/Document';
 import { Redis } from 'ioredis';
 
-const redis = new Redis(process.env.REDIS_URL!);
+// Create a mock Redis client for build process
+const createMockRedisClient = () => {
+  return {
+    get: async () => null,
+    setex: async () => 'OK',
+  } as unknown as Redis;
+};
+
+// Use Redis or mock client based on environment
+const redis = process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build'
+  ? createMockRedisClient()
+  : new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+
 const CACHE_TTL = 300; // 5 minutes
 
 export async function GET() {

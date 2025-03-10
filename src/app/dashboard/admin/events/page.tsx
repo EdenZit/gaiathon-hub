@@ -100,13 +100,17 @@ export default function EventsManagementPage() {
 
       const res = await fetch('/api/announcements', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Protection': '1'
+        },
         body: JSON.stringify(newData)
       });
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || 'Failed to update page');
+        console.error('Response error:', res.status, error);
+        throw new Error(error.message || `Failed to update page (Status: ${res.status})`);
       }
 
       setPageData(newData);
