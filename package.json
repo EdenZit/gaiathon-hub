@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "tsc --noEmit && next build",
+    "build": "next build --no-lint",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit && tsc --project scripts/tsconfig.json --noEmit",

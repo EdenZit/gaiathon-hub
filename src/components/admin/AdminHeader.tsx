@@ -26,7 +26,7 @@ export default function AdminHeader() {
             {/* Profile dropdown */}
             <div className="relative">
               <button
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: '/' })}
                 className="text-sm text-gray-700 hover:text-navy-600"
               >
                 Sign Out

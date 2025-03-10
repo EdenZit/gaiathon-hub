@@ -6,16 +6,16 @@ async function testConnection() {
     console.log('Testing MongoDB Atlas connection...');
     const connection = await connectDB();
     
-    if (!connection.connection.db) {
+    if (!connection.db) {
       throw new Error('Database connection not established');
     }
 
     // Test the connection by getting server status
-    const status = await connection.connection.db.admin().ping();
+    const status = await connection.db.admin().ping();
     console.log('MongoDB Atlas connection test result:', status);
     
     // Get database statistics
-    const stats = await connection.connection.db.stats();
+    const stats = await connection.db.stats();
     console.log('Database statistics:', {
       collections: stats.collections,
       indexes: stats.indexes,

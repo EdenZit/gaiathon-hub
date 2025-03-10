@@ -74,7 +74,7 @@ export function DashboardHeader() {
                     Your Profile
                   </Link>
                   <button
-                    onClick={() => signOut()}
+                    onClick={() => signOut({ callbackUrl: '/' })}
                     className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <ArrowLeftOnRectangleIcon className="mr-2 h-5 w-5" />

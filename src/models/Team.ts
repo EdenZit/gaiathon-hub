@@ -124,7 +124,7 @@ teamSchema.methods.updateMemberRole = async function(
     throw new Error('User is not a member of this team');
   }
   
-  const member = this.members.find(m => m.userId.equals(userId));
+  const member: { userId: mongoose.Types.ObjectId; role: TeamRole } = this.members.find((m: { userId: mongoose.Types.ObjectId }) => m.userId.equals(userId));
   if (!member) {
     throw new Error('Member not found');
   }
