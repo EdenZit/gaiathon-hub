@@ -3,19 +3,23 @@
 import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function MaintenanceToggle() {
   const [isEnabled, setIsEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   // Fetch the current maintenance mode status
   useEffect(() => {
     const fetchStatus = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        setWarning(null);
+        
         const response = await fetch('/api/admin/maintenance');
         
         if (!response.ok) {
@@ -39,6 +43,8 @@ export default function MaintenanceToggle() {
   const toggleMaintenanceMode = async () => {
     try {
       setIsLoading(true);
+      setError(null);
+      setWarning(null);
       
       const response = await fetch('/api/admin/maintenance', {
         method: 'POST',
@@ -55,7 +61,12 @@ export default function MaintenanceToggle() {
       const data = await response.json();
       setIsEnabled(data.maintenanceMode);
       
-      toast.success(data.message + '. The change may take a few moments to take effect.');
+      if (data.warning) {
+        setWarning(data.warning);
+        toast.success(data.message + '. ' + data.warning);
+      } else {
+        toast.success(data.message + '. The change may take a few moments to take effect.');
+      }
     } catch (err) {
       setError('Failed to toggle maintenance mode');
       toast.error('Failed to toggle maintenance mode. Please try again or use the command line script.');
@@ -106,6 +117,13 @@ export default function MaintenanceToggle() {
         )}
       </div>
       
+      {warning && (
+        <div className="mt-4 p-3 bg-yellow-50 text-yellow-700 rounded-md text-sm flex items-start">
+          <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+          <div>{warning}</div>
+        </div>
+      )}
+      
       <div className="mt-4 text-sm text-gray-600">
         <p>
           When maintenance mode is enabled, all users will be redirected to a maintenance page.
@@ -117,8 +135,9 @@ export default function MaintenanceToggle() {
       </div>
       
       {error && (
-        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-          {error}. Please try again or use the command line script.
+        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md text-sm flex items-start">
+          <AlertCircle className="h-5 w-5 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+          <div>{error}. Please try again or use the command line script.</div>
         </div>
       )}
     </div>

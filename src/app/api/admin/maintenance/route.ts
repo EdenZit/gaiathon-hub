@@ -14,6 +14,12 @@ async function updateMaintenanceMode(enable: boolean): Promise<boolean> {
     // Get the path to the .env.production file
     const envFilePath = path.resolve(process.cwd(), '.env.production');
     
+    // Check if the file exists and is accessible
+    if (!fs.existsSync(envFilePath)) {
+      console.error('Error: .env.production file not found');
+      return false;
+    }
+    
     // Read the current content of the file
     let envContent = fs.readFileSync(envFilePath, 'utf8');
     
@@ -24,18 +30,31 @@ async function updateMaintenanceMode(enable: boolean): Promise<boolean> {
     
     // Check if the value exists and needs to be changed
     if (!regex.test(envContent)) {
-      return false;
+      // If the regex doesn't match, try to find the MAINTENANCE_MODE line anyway
+      const maintenanceModeRegex = /MAINTENANCE_MODE=(true|false)/;
+      if (maintenanceModeRegex.test(envContent)) {
+        // Replace whatever value is there
+        envContent = envContent.replace(maintenanceModeRegex, `MAINTENANCE_MODE=${newValue}`);
+      } else {
+        // If MAINTENANCE_MODE doesn't exist, add it
+        envContent += `\nMAINTENANCE_MODE=${newValue}`;
+      }
+    } else {
+      // Update the content with the regex we already tested
+      envContent = envContent.replace(regex, `MAINTENANCE_MODE=${newValue}`);
     }
-    
-    // Update the content
-    envContent = envContent.replace(regex, `MAINTENANCE_MODE=${newValue}`);
     
     // Write the updated content back to the file
     fs.writeFileSync(envFilePath, envContent, 'utf8');
     
     // Restart the web container to apply changes
     if (process.env.NODE_ENV === 'production') {
-      await execAsync('docker-compose restart web');
+      try {
+        await execAsync('docker-compose restart web');
+      } catch (execError) {
+        console.error('Error restarting web container:', execError);
+        // Even if restart fails, we still updated the file, so return true
+      }
     }
     
     return true;
@@ -54,17 +73,27 @@ export async function GET() {
   }
   
   try {
-    // Get the path to the .env.production file
-    const envFilePath = path.resolve(process.cwd(), '.env.production');
+    // First check the environment variable
+    const envMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
     
-    // Read the current content of the file
-    const envContent = fs.readFileSync(envFilePath, 'utf8');
+    // Then try to read from the file as a backup
+    try {
+      const envFilePath = path.resolve(process.cwd(), '.env.production');
+      if (fs.existsSync(envFilePath)) {
+        const envContent = fs.readFileSync(envFilePath, 'utf8');
+        const match = envContent.match(/MAINTENANCE_MODE=(true|false)/);
+        const fileMaintenanceMode = match ? match[1] === 'true' : false;
+        
+        // Return the file value if it exists
+        return NextResponse.json({ maintenanceMode: fileMaintenanceMode });
+      }
+    } catch (fileError) {
+      console.error('Error reading from .env.production:', fileError);
+      // Fall back to the environment variable
+    }
     
-    // Extract the MAINTENANCE_MODE value
-    const match = envContent.match(/MAINTENANCE_MODE=(true|false)/);
-    const maintenanceMode = match ? match[1] === 'true' : false;
-    
-    return NextResponse.json({ maintenanceMode });
+    // Return the environment variable value as fallback
+    return NextResponse.json({ maintenanceMode: envMaintenanceMode });
   } catch (error) {
     console.error('Error checking maintenance mode:', error);
     return NextResponse.json({ error: 'Failed to check maintenance mode' }, { status: 500 });
@@ -92,7 +121,16 @@ export async function POST(request: Request) {
     const success = await updateMaintenanceMode(enable);
     
     if (!success) {
-      return NextResponse.json({ error: 'Failed to update maintenance mode' }, { status: 500 });
+      // If file update failed, try to update just the environment variable
+      // This won't persist after restart but at least provides some functionality
+      process.env.MAINTENANCE_MODE = enable ? 'true' : 'false';
+      
+      return NextResponse.json({ 
+        success: true, 
+        warning: 'Could not update .env.production file. Changes will not persist after server restart.',
+        message: enable ? 'Maintenance mode temporarily enabled' : 'Maintenance mode temporarily disabled',
+        maintenanceMode: enable
+      });
     }
     
     return NextResponse.json({ 

@@ -5,6 +5,7 @@ import { withAdminGuard } from '@/components/auth/AdminGuard';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import MaintenanceToggle from '@/components/admin/MaintenanceToggle';
 import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
@@ -55,12 +56,9 @@ function SecurityPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Security Overview</h1>
 
-      {/* Maintenance Mode Section */}
-      <div className="mb-6 bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900">Maintenance Mode</h3>
-        <p className="mt-2 text-gray-600">
-          Maintenance mode controls are temporarily unavailable. Please use the command line script to toggle maintenance mode.
-        </p>
+      {/* Maintenance Mode Toggle */}
+      <div className="mb-6">
+        <MaintenanceToggle />
       </div>
 
       {/* Quick Stats */}
