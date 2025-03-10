@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
 export default function MaintenanceToggle() {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -55,14 +55,10 @@ export default function MaintenanceToggle() {
       const data = await response.json();
       setIsEnabled(data.maintenanceMode);
       
-      toast.success(data.message, {
-        description: 'The change may take a few moments to take effect.',
-      });
+      toast.success(data.message + '. The change may take a few moments to take effect.');
     } catch (err) {
       setError('Failed to toggle maintenance mode');
-      toast.error('Failed to toggle maintenance mode', {
-        description: 'Please try again or use the command line script.',
-      });
+      toast.error('Failed to toggle maintenance mode. Please try again or use the command line script.');
       console.error(err);
     } finally {
       setIsLoading(false);
