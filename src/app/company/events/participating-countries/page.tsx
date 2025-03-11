@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 interface University {
   name: string;
   country: string;
+  website?: string;
 }
 
 interface Region {
@@ -18,42 +19,42 @@ const regions: Region[] = [
   {
     name: "NORTHERN AFRICA",
     institutions: [
-      { name: "Higher School of Communication", country: "TUNISIA" },
-      { name: "The British University of Egypt", country: "EGYPT" }
+      { name: "Higher School of Communication", country: "TUNISIA", website: "https://www.supcom.tn/" },
+      { name: "The British University of Egypt", country: "EGYPT", website: "https://www.bue.edu.eg/" }
     ]
   },
   {
     name: "WESTERN AFRICA",
     institutions: [
-      { name: "Université Félix Houphouët-Boigny", country: "COTE D'VOIRE" },
-      { name: "University of Ghana", country: "GHANA" },
-      { name: "University of Mines and Technology", country: "GHANA" },
-      { name: "Ghana Communication Technology University", country: "GHANA" },
-      { name: "Kwame Nkrumah University of Science and Technology", country: "GHANA" },
-      { name: "Obafemi Awolowo University", country: "NIGERIA" },
-      { name: "Université de Lomé", country: "TOGO" },
-      { name: "Universite Cheikh Anta Diop", country: "SENEGAL" },
-      { name: "L'Université Nationale des Sciences, Technologies, Ingénieriecet Mathématiques", country: "BENIN" }
+      { name: "Université Félix Houphouët-Boigny", country: "COTE D'VOIRE", website: "https://univ-cocody.ci/" },
+      { name: "University of Ghana", country: "GHANA", website: "https://www.ug.edu.gh/" },
+      { name: "University of Mines and Technology", country: "GHANA", website: "https://umat.edu.gh/" },
+      { name: "Ghana Communication Technology University", country: "GHANA", website: "https://site.gctu.edu.gh/" },
+      { name: "Kwame Nkrumah University of Science and Technology", country: "GHANA", website: "https://www.knust.edu.gh/" },
+      { name: "Obafemi Awolowo University", country: "NIGERIA", website: "https://oauife.edu.ng/" },
+      { name: "Université de Lomé", country: "TOGO", website: "https://univ-lome.tg/" },
+      { name: "Universite Cheikh Anta Diop", country: "SENEGAL", website: "https://www.ucad.sn/" },
+      { name: "L'Université Nationale des Sciences, Technologies, Ingénieriecet Mathématiques", country: "BENIN", website: "https://www.unstim.bj/" }
     ]
   },
   {
     name: "EASTERN AFRICA",
     institutions: [
-      { name: "Makerere University", country: "UGANDA" },
-      { name: "Addis Ababa Science and Technology University", country: "ETHIOPIA" },
-      { name: "Technical University of Kenya", country: "KENYA" }
+      { name: "Makerere University", country: "UGANDA", website: "https://mak.ac.ug/" },
+      { name: "Addis Ababa Science and Technology University", country: "ETHIOPIA", website: "https://www.aastu.edu.et/" },
+      { name: "Technical University of Kenya", country: "KENYA", website: "https://tukenya.ac.ke/" }
     ]
   },
   {
     name: "CENTRAL AFRICA",
     institutions: [
-      { name: "University of Kinshasa", country: "DEMOCRATIC REPUBLIC OF CONGO" }
+      { name: "University de Dschang", country: "CAMEROON", website: "https://www.univ-dschang.org/" }
     ]
   },
   {
     name: "SOUTHERN AFRICA",
     institutions: [
-      { name: "University of Botswana", country: "BOTSWANA" }
+      { name: "Malawi University of Business and Applied Sciences", country: "MALAWI", website: "https://www.mubas.ac.mw/" }
     ]
   }
 ];
@@ -119,7 +120,18 @@ export default function ParticipatingCountriesPage() {
                     className="group hover:bg-blue-50 p-4 rounded-xl transition-all duration-200"
                   >
                     <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors duration-200">
-                      {institution.name}
+                      {institution.website ? (
+                        <a 
+                          href={institution.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {institution.name}
+                        </a>
+                      ) : (
+                        institution.name
+                      )}
                     </h3>
                     <p className="text-gray-600 font-medium">
                       {institution.country}
