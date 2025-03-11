@@ -146,7 +146,7 @@ export function SecurityQuestionForm() {
         
         <div>
           <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
-            Current Password
+            Current Password <span className="text-gray-500">(for security question update)</span>
           </label>
           <div className="relative">
             <input

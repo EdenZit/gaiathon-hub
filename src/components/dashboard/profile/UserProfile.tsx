@@ -680,150 +680,133 @@ export default function UserProfile() {
       <div className="mt-8 bg-white shadow rounded-lg p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Password Management</h2>
         
-        {isChangingPassword ? (
-          <div>
-            <form onSubmit={handlePasswordChange} className="space-y-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium">Change Password</h3>
-                <button
-                  type="submit"
-                  disabled={isChangingPassword}
-                  className={`px-4 py-2 rounded-md text-white font-medium
-                    ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-                  `}
-                >
-                  {isChangingPassword ? 'Changing...' : 'Change Password'}
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="currentPassword" className="block text-sm font-medium">
-                    Current Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showCurrentPassword ? "text" : "password"}
-                      id="currentPassword"
-                      value={passwordForm.currentPassword}
-                      onChange={(e) => setPasswordForm(prev => ({
-                        ...prev,
-                        currentPassword: e.target.value
-                      }))}
-                      required
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    >
-                      {showCurrentPassword ? (
-                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                      ) : (
-                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showNewPassword ? "text" : "password"}
-                      id="newPassword"
-                      value={passwordForm.newPassword}
-                      onChange={(e) => setPasswordForm(prev => ({
-                        ...prev,
-                        newPassword: e.target.value
-                      }))}
-                      required
-                      minLength={8}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                    >
-                      {showNewPassword ? (
-                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                      ) : (
-                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium">
-                    Confirm New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      id="confirmPassword"
-                      value={passwordForm.confirmPassword}
-                      onChange={(e) => setPasswordForm(prev => ({
-                        ...prev,
-                        confirmPassword: e.target.value
-                      }))}
-                      required
-                      minLength={8}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? (
-                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                      ) : (
-                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="pt-4 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsChangingPassword(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isChangingPassword}
-                    className={`px-4 py-2 rounded-md text-white font-medium
-                      ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-                    `}
-                  >
-                    {isChangingPassword ? 'Changing...' : 'Change Password'}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <div>
-            <p className="text-gray-600 mb-4">
-              Change your password regularly to keep your account secure.
-            </p>
+        <form onSubmit={handlePasswordChange} className="space-y-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-medium">Change Password</h3>
             <button
-              type="button"
-              onClick={() => setIsChangingPassword(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              type="submit"
+              disabled={isChangingPassword}
+              className={`px-4 py-2 rounded-md text-white font-medium
+                ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+              `}
             >
-              Change Password
+              {isChangingPassword ? 'Changing...' : 'Change Password'}
             </button>
           </div>
-        )}
+
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="currentPassword" className="block text-sm font-medium">
+                Current Password <span className="text-gray-500">(for password change)</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  id="currentPassword"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm(prev => ({
+                    ...prev,
+                    currentPassword: e.target.value
+                  }))}
+                  required
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? (
+                    <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  ) : (
+                    <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  id="newPassword"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm(prev => ({
+                    ...prev,
+                    newPassword: e.target.value
+                  }))}
+                  required
+                  minLength={8}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  ) : (
+                    <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm(prev => ({
+                    ...prev,
+                    confirmPassword: e.target.value
+                  }))}
+                  required
+                  minLength={8}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  ) : (
+                    <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            <div className="pt-4 flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => setIsChangingPassword(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                className={`px-4 py-2 rounded-md text-white font-medium
+                  ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+                `}
+              >
+                {isChangingPassword ? 'Changing...' : 'Change Password'}
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
 
       {/* Security Question Section */}
