@@ -66,7 +66,8 @@ export const authOptions: NextAuthOptions = {
             throw new Error('Invalid email or password');
           }
 
-          if (user.status !== 'active') {
+          // Check if user status is explicitly set to inactive
+          if (user.status === 'inactive') {
             console.error('Inactive account:', credentials.email);
             throw new Error('Account is inactive');
           }
@@ -78,7 +79,7 @@ export const authOptions: NextAuthOptions = {
             lastName: user.lastName,
             name: user.name || `${user.firstName} ${user.lastName}`,
             role: user.role,
-            status: user.status,
+            status: user.status || 'active',
             teamRole: user.teamRole
           };
         } catch (error) {

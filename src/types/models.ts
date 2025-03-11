@@ -34,6 +34,10 @@ export interface IUser {
   githubUrl?: string;
   personalWebsite?: string;
   linkedinUrl?: string;
+  securityQuestion?: {
+    question: string;
+    answer: string;
+  };
   techSkills?: {
     coding: boolean;
     remoteSensing: boolean;

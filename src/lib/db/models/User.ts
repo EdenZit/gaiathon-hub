@@ -116,6 +116,16 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
       trim: true,
     },
+    securityQuestion: {
+      question: {
+        type: String,
+        required: false
+      },
+      answer: {
+        type: String,
+        required: false
+      }
+    },
     techSkills: {
       coding: {
         type: Boolean,
