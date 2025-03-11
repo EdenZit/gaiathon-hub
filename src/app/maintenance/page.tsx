@@ -2,14 +2,22 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { Clock, AlertCircle, ArrowRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Clock, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 export default function MaintenancePage() {
+  const { data: session } = useSession();
+  const [showAdminLink, setShowAdminLink] = useState(false);
+  
   // Log that the maintenance page was accessed
   useEffect(() => {
     console.log('Maintenance page accessed');
-  }, []);
+    // Check if the user is an admin
+    if (session?.user?.role === 'admin') {
+      setShowAdminLink(true);
+    }
+  }, [session]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
@@ -78,6 +86,28 @@ export default function MaintenancePage() {
                 info@edenwayfoundation.com
               </a>
             </p>
+            
+            {/* Admin access link */}
+            <div className="mt-8 pt-4 border-t border-gray-200">
+              <Link 
+                href="/admin-login" 
+                className="inline-flex items-center text-sm text-gray-500 hover:text-navy-600"
+              >
+                <ShieldCheck size={16} className="mr-1" />
+                Administrator Access
+              </Link>
+              
+              {showAdminLink && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm text-green-800">
+                    You are logged in as an administrator. 
+                    <Link href="/dashboard/admin" className="ml-1 font-medium underline">
+                      Go to Admin Dashboard
+                    </Link>
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

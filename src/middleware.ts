@@ -72,6 +72,8 @@ export async function middleware(request: NextRequest) {
     '/_next', // Next.js assets
     '/images', // Static images
     '/favicon', // Favicon
+    '/admin-login', // Allow admin login during maintenance
+    '/api/auth', // Auth API routes needed for admin login
   ];
   
   // Check if the current path is allowed during maintenance
@@ -79,8 +81,14 @@ export async function middleware(request: NextRequest) {
     path === allowedPath || path.startsWith(allowedPath + '/')
   );
   
-  // If maintenance mode is enabled and the path is not allowed, redirect to maintenance page
+  // If maintenance mode is enabled and the path is not allowed, check if user is admin
   if (isMaintenanceMode && !isAllowedPath) {
+    // Allow admin users to bypass maintenance mode
+    if (isAdmin) {
+      return response;
+    }
+    
+    // Redirect non-admin users to maintenance page
     return NextResponse.redirect(new URL('/maintenance', request.url));
   }
 
