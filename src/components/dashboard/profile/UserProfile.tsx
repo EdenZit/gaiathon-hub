@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { SecurityQuestionForm } from '@/components/features/profile/SecurityQuestionForm';
 
 interface TechSkills {
   coding: boolean;
@@ -671,76 +672,120 @@ export default function UserProfile() {
         </div>
       </form>
 
-      <div className="mt-10 pt-10 border-t border-gray-200">
-        <form onSubmit={handlePasswordChange} className="space-y-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Change Password</h2>
+      {/* Password Change Section */}
+      <div className="mt-8 bg-white shadow rounded-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Password Management</h2>
+        
+        {isChangingPassword ? (
+          <div>
+            <form onSubmit={handlePasswordChange} className="space-y-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium">Change Password</h3>
+                <button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className={`px-4 py-2 rounded-md text-white font-medium
+                    ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+                  `}
+                >
+                  {isChangingPassword ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="currentPassword" className="block text-sm font-medium">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) => setPasswordForm(prev => ({
+                      ...prev,
+                      currentPassword: e.target.value
+                    }))}
+                    required
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="newPassword" className="block text-sm font-medium">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm(prev => ({
+                      ...prev,
+                      newPassword: e.target.value
+                    }))}
+                    required
+                    minLength={8}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm(prev => ({
+                      ...prev,
+                      confirmPassword: e.target.value
+                    }))}
+                    required
+                    minLength={8}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                  />
+                </div>
+                
+                <div className="pt-4 flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsChangingPassword(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isChangingPassword}
+                    className={`px-4 py-2 rounded-md text-white font-medium
+                      ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+                    `}
+                  >
+                    {isChangingPassword ? 'Changing...' : 'Change Password'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div>
+            <p className="text-gray-600 mb-4">
+              Change your password regularly to keep your account secure.
+            </p>
             <button
-              type="submit"
-              disabled={isChangingPassword}
-              className={`px-4 py-2 rounded-md text-white font-medium
-                ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-              `}
+              type="button"
+              onClick={() => setIsChangingPassword(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              {isChangingPassword ? 'Changing...' : 'Change Password'}
+              Change Password
             </button>
           </div>
+        )}
+      </div>
 
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="currentPassword" className="block text-sm font-medium">
-                Current Password
-              </label>
-              <input
-                type="password"
-                id="currentPassword"
-                value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm(prev => ({
-                  ...prev,
-                  currentPassword: e.target.value
-                }))}
-                required
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium">
-                New Password
-              </label>
-              <input
-                type="password"
-                id="newPassword"
-                value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm(prev => ({
-                  ...prev,
-                  newPassword: e.target.value
-                }))}
-                required
-                minLength={8}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm(prev => ({
-                  ...prev,
-                  confirmPassword: e.target.value
-                }))}
-                required
-                minLength={8}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              />
-            </div>
-          </div>
-        </form>
+      {/* Security Question Section */}
+      <div className="mt-8">
+        <SecurityQuestionForm />
       </div>
     </div>
   );
