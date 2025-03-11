@@ -32,7 +32,11 @@ fi
 case "$1" in
   on)
     echo -e "${YELLOW}Enabling maintenance mode on remote server...${NC}"
-    ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && sed -i 's/MAINTENANCE_MODE=false/MAINTENANCE_MODE=true/' .env.production && docker-compose restart web"
+    # Update .env.production file
+    ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && sed -i 's/MAINTENANCE_MODE=false/MAINTENANCE_MODE=true/' .env.production"
+    
+    # Restart containers with the environment variable set
+    ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && export MAINTENANCE_MODE=true && docker-compose -f docker-compose.prod.yml up -d"
     
     if [ $? -eq 0 ]; then
       echo -e "${GREEN}Maintenance mode enabled successfully!${NC}"
@@ -45,7 +49,11 @@ case "$1" in
     
   off)
     echo -e "${YELLOW}Disabling maintenance mode on remote server...${NC}"
-    ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && sed -i 's/MAINTENANCE_MODE=true/MAINTENANCE_MODE=false/' .env.production && docker-compose restart web"
+    # Update .env.production file
+    ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && sed -i 's/MAINTENANCE_MODE=true/MAINTENANCE_MODE=false/' .env.production"
+    
+    # Restart containers with the environment variable set
+    ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && export MAINTENANCE_MODE=false && docker-compose -f docker-compose.prod.yml up -d"
     
     if [ $? -eq 0 ]; then
       echo -e "${GREEN}Maintenance mode disabled successfully!${NC}"
