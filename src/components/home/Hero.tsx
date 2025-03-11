@@ -9,7 +9,7 @@ import { FaRocket, FaUsers, FaGlobe, FaArrowRight } from 'react-icons/fa6';
 const stats = [
   { label: 'Universities', value: '16', icon: FaUsers },
   { label: 'Countries', value: '12', icon: FaGlobe },
-  { label: 'Projects', value: '100+', icon: FaRocket },
+  { label: 'Projects', value: '50+', icon: FaRocket },
 ];
 
 export function Hero() {
