@@ -6,6 +6,10 @@ interface IUserDocument extends Omit<IUserBase, '_id'>, Document {
   password: string;
   teams: mongoose.Types.ObjectId[];
   hasActiveTeam: boolean;
+  securityQuestion?: {
+    question: string;
+    answer: string;
+  };
   comparePassword(candidatePassword: string): Promise<boolean>;
   checkProfileCompletion(): boolean;
   isTeamLeader(): Promise<boolean>;
@@ -62,7 +66,17 @@ const userSchema = new mongoose.Schema<IUserDocument>({
     type: String,
     enum: ['male', 'female', null],
     default: null
-  }
+  },
+  securityQuestion: {
+    question: {
+      type: String,
+      required: false
+    },
+    answer: {
+      type: String,
+      required: false
+    }
+  },
 }, {
   timestamps: true
 });

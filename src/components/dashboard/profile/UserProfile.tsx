@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { SecurityQuestionForm } from '@/components/features/profile/SecurityQuestionForm';
+import { FaEye, FaEyeSlash } from 'react-icons/fa6';
 
 interface TechSkills {
   coding: boolean;
@@ -81,6 +82,9 @@ export default function UserProfile() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const fetchProfile = async () => {
     if (!session?.user?.email) return;
@@ -697,53 +701,92 @@ export default function UserProfile() {
                   <label htmlFor="currentPassword" className="block text-sm font-medium">
                     Current Password
                   </label>
-                  <input
-                    type="password"
-                    id="currentPassword"
-                    value={passwordForm.currentPassword}
-                    onChange={(e) => setPasswordForm(prev => ({
-                      ...prev,
-                      currentPassword: e.target.value
-                    }))}
-                    required
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showCurrentPassword ? "text" : "password"}
+                      id="currentPassword"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm(prev => ({
+                        ...prev,
+                        currentPassword: e.target.value
+                      }))}
+                      required
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    >
+                      {showCurrentPassword ? (
+                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                      ) : (
+                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label htmlFor="newPassword" className="block text-sm font-medium">
                     New Password
                   </label>
-                  <input
-                    type="password"
-                    id="newPassword"
-                    value={passwordForm.newPassword}
-                    onChange={(e) => setPasswordForm(prev => ({
-                      ...prev,
-                      newPassword: e.target.value
-                    }))}
-                    required
-                    minLength={8}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      id="newPassword"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm(prev => ({
+                        ...prev,
+                        newPassword: e.target.value
+                      }))}
+                      required
+                      minLength={8}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? (
+                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                      ) : (
+                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-medium">
                     Confirm New Password
                   </label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    value={passwordForm.confirmPassword}
-                    onChange={(e) => setPasswordForm(prev => ({
-                      ...prev,
-                      confirmPassword: e.target.value
-                    }))}
-                    required
-                    minLength={8}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirmPassword"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm(prev => ({
+                        ...prev,
+                        confirmPassword: e.target.value
+                      }))}
+                      required
+                      minLength={8}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                      ) : (
+                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="pt-4 flex justify-end space-x-3">

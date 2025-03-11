@@ -19,8 +19,8 @@ const SECURITY_QUESTIONS = [
 ];
 
 export function SecurityQuestionForm() {
-  const [securityQuestion, setSecurityQuestion] = useState('');
-  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [customQuestion, setCustomQuestion] = useState('');
   const [isCustomQuestion, setIsCustomQuestion] = useState(false);
@@ -33,9 +33,9 @@ export function SecurityQuestionForm() {
 
     try {
       // Use custom question if selected
-      const questionToSave = isCustomQuestion ? customQuestion : securityQuestion;
+      const questionToSave = isCustomQuestion ? customQuestion : question;
       
-      if (!questionToSave || !securityAnswer || !currentPassword) {
+      if (!questionToSave || !answer || !currentPassword) {
         toast.error('All fields are required');
         setIsLoading(false);
         return;
@@ -48,7 +48,7 @@ export function SecurityQuestionForm() {
         },
         body: JSON.stringify({
           question: questionToSave,
-          answer: securityAnswer,
+          answer,
           currentPassword,
         }),
       });
@@ -62,7 +62,7 @@ export function SecurityQuestionForm() {
       toast.success('Security question updated successfully');
       
       // Clear form
-      setSecurityAnswer('');
+      setAnswer('');
       setCurrentPassword('');
     } catch (error) {
       if (error instanceof Error) {
@@ -111,15 +111,15 @@ export function SecurityQuestionForm() {
             />
           ) : (
             <select
-              value={securityQuestion}
-              onChange={(e) => setSecurityQuestion(e.target.value)}
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               required
             >
               <option value="">Select a security question</option>
-              {SECURITY_QUESTIONS.map((question, index) => (
-                <option key={index} value={question}>
-                  {question}
+              {SECURITY_QUESTIONS.map((q, index) => (
+                <option key={index} value={q}>
+                  {q}
                 </option>
               ))}
             </select>
@@ -127,14 +127,14 @@ export function SecurityQuestionForm() {
         </div>
         
         <div>
-          <label htmlFor="securityAnswer" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="answer" className="block text-sm font-medium text-gray-700 mb-1">
             Answer
           </label>
           <input
-            id="securityAnswer"
+            id="answer"
             type="text"
-            value={securityAnswer}
-            onChange={(e) => setSecurityAnswer(e.target.value)}
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
             placeholder="Your answer"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             required

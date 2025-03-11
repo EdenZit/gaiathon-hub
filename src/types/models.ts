@@ -18,6 +18,8 @@ export interface IUser {
   role: 'user' | 'admin';
   teamRole: 'leader' | 'member';
   status?: 'active' | 'inactive';
+  securityQuestion?: string;
+  securityAnswer?: string;
   gender?: 'male' | 'female' | 'other';
   lastActive?: Date;
   teams?: Types.ObjectId[];

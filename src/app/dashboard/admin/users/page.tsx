@@ -6,7 +6,8 @@ import { useEffect, useState } from 'react';
 import { withAdminGuard } from '@/components/auth/AdminGuard';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'react-hot-toast';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, KeyIcon } from '@heroicons/react/24/outline';
+import { UserPasswordReset } from '@/components/features/admin/UserPasswordReset';
 
 interface User {
   _id: string;
@@ -33,6 +34,7 @@ function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
   const [teamRoleFilter, setTeamRoleFilter] = useState<'all' | 'leader' | 'member'>('all');
+  const [selectedUserForPasswordReset, setSelectedUserForPasswordReset] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -165,6 +167,14 @@ function UserManagementPage() {
       console.error('Error updating user profile:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to update user profile');
     }
+  };
+
+  const handleOpenPasswordReset = (userId: string) => {
+    setSelectedUserForPasswordReset(userId);
+  };
+
+  const handleClosePasswordReset = () => {
+    setSelectedUserForPasswordReset(null);
   };
 
   const filteredUsers = users.filter(user => {
@@ -475,6 +485,13 @@ function UserManagementPage() {
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       )}
+                      <button
+                        onClick={() => handleOpenPasswordReset(user._id)}
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Reset Password"
+                      >
+                        <KeyIcon className="h-5 w-5" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -483,6 +500,21 @@ function UserManagementPage() {
           </table>
         </div>
       </div>
+
+      {/* Password Reset Modal */}
+      {selectedUserForPasswordReset && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">Reset User Password</h2>
+            <UserPasswordReset 
+              userId={selectedUserForPasswordReset} 
+              userEmail={users.find(user => user._id === selectedUserForPasswordReset)?.email || ''}
+              onSuccess={handleClosePasswordReset}
+              onCancel={handleClosePasswordReset}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

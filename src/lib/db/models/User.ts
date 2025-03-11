@@ -4,6 +4,7 @@ import { IUser } from '../../../types/models';
 
 interface IUserDocument extends Omit<IUser, keyof Document>, Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
+  verifySecurityAnswer(answer: string): Promise<boolean>;
 }
 
 interface IUserModel extends Model<IUserDocument> {
@@ -52,6 +53,15 @@ const userSchema = new Schema<IUserDocument>(
       type: String,
       enum: ['active', 'inactive'],
       default: 'active'
+    },
+    // Security question fields
+    securityQuestion: {
+      type: String,
+      trim: true,
+    },
+    securityAnswer: {
+      type: String,
+      trim: true,
     },
     gender: {
       type: String,
@@ -180,10 +190,33 @@ userSchema.pre('save', async function(this: IUserDocument, next) {
   }
 });
 
+// Hash security answer before saving
+userSchema.pre('save', async function(this: IUserDocument, next) {
+  if (!this.isModified('securityAnswer')) return next();
+  
+  try {
+    // Only hash if there's a security answer
+    if (this.securityAnswer) {
+      // Check if the answer is already hashed
+      if (this.securityAnswer.startsWith('$2')) {
+        return next();
+      }
+      
+      const salt = await bcrypt.genSalt(10);
+      const hashedAnswer = await bcrypt.hash(this.securityAnswer.toLowerCase().trim(), salt);
+      this.securityAnswer = hashedAnswer;
+    }
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
+});
+
 // Add any instance methods here
 userSchema.methods.toJSON = function(this: IUserDocument) {
   const obj = this.toObject();
   delete obj.password;
+  delete obj.securityAnswer; // Don't expose security answer
   return obj;
 };
 
@@ -204,6 +237,22 @@ userSchema.methods.comparePassword = async function(this: IUserDocument, candida
     return isMatch;
   } catch (error) {
     console.error('Password comparison error:', error);
+    return false;
+  }
+};
+
+// Add verifySecurityAnswer method
+userSchema.methods.verifySecurityAnswer = async function(this: IUserDocument, answer: string): Promise<boolean> {
+  try {
+    if (!this.securityAnswer || !answer) {
+      return false;
+    }
+    
+    // Compare the provided answer with the stored hash
+    const isMatch = await bcrypt.compare(answer.toLowerCase().trim(), this.securityAnswer);
+    return isMatch;
+  } catch (error) {
+    console.error('Security answer verification error:', error);
     return false;
   }
 };
