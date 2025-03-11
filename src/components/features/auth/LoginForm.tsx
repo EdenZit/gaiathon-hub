@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FaEye, FaEyeSlash } from 'react-icons/fa6';
+import Link from 'next/link';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -87,6 +88,26 @@ export function LoginForm() {
               <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
             )}
           </button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <input
+            id="remember-me"
+            name="remember-me"
+            type="checkbox"
+            className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
+          />
+          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+            Remember me
+          </label>
+        </div>
+
+        <div className="text-sm">
+          <Link href="/forgot-password" className="font-medium text-navy-600 hover:text-navy-500">
+            Forgot your password?
+          </Link>
         </div>
       </div>
 

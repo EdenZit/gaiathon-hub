@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { SecurityQuestionForm } from '@/components/features/profile/SecurityQuestionForm';
+import { FaEye, FaEyeSlash } from 'react-icons/fa6';
 
 interface TechSkills {
   coding: boolean;
@@ -81,6 +82,9 @@ export default function UserProfile() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const fetchProfile = async () => {
     if (!session?.user?.email) return;
@@ -330,7 +334,7 @@ export default function UserProfile() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold">Profile Information</h2>
-            <p className="text-sm text-red-600 mt-1">To refresh the entries, log out and then log back in.</p>
+            <p className="text-sm text-red-600 font-medium mt-1">Please log out and log in again to apply updates.</p>
           </div>
           <button
             type="submit"
@@ -677,96 +681,115 @@ export default function UserProfile() {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Password Management</h2>
         
         {isChangingPassword ? (
-          <div>
-            <form onSubmit={handlePasswordChange} className="space-y-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium">Change Password</h3>
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div>
+              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Current Password
+              </label>
+              <div className="relative">
+                <input
+                  id="currentPassword"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                  required
+                />
                 <button
-                  type="submit"
-                  disabled={isChangingPassword}
-                  className={`px-4 py-2 rounded-md text-white font-medium
-                    ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-                  `}
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                 >
-                  {isChangingPassword ? 'Changing...' : 'Change Password'}
+                  {showCurrentPassword ? (
+                    <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  ) : (
+                    <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  )}
                 </button>
               </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="currentPassword" className="block text-sm font-medium">
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    id="currentPassword"
-                    value={passwordForm.currentPassword}
-                    onChange={(e) => setPasswordForm(prev => ({
-                      ...prev,
-                      currentPassword: e.target.value
-                    }))}
-                    required
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    id="newPassword"
-                    value={passwordForm.newPassword}
-                    onChange={(e) => setPasswordForm(prev => ({
-                      ...prev,
-                      newPassword: e.target.value
-                    }))}
-                    required
-                    minLength={8}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    value={passwordForm.confirmPassword}
-                    onChange={(e) => setPasswordForm(prev => ({
-                      ...prev,
-                      confirmPassword: e.target.value
-                    }))}
-                    required
-                    minLength={8}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                  />
-                </div>
-                
-                <div className="pt-4 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsChangingPassword(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isChangingPassword}
-                    className={`px-4 py-2 rounded-md text-white font-medium
-                      ${isChangingPassword ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-                    `}
-                  >
-                    {isChangingPassword ? 'Changing...' : 'Change Password'}
-                  </button>
-                </div>
+            </div>
+            
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  id="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  ) : (
+                    <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  )}
+                </button>
               </div>
-            </form>
-          </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Password must be at least 8 characters long.
+              </p>
+            </div>
+            
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  ) : (
+                    <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsChangingPassword(false);
+                  setPasswordForm({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: '',
+                  });
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Change Password
+              </button>
+            </div>
+          </form>
         ) : (
           <div>
             <p className="text-gray-600 mb-4">

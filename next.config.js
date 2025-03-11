@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // Disable caching in development
+  onDemandEntries: {
+    // period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 10 * 1000,
+    // number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 1,
+  },
   images: {
     domains: [
       'images.unsplash.com',
@@ -36,6 +43,15 @@ const nextConfig = {
   // Add security headers
   async headers() {
     return [
+      {
+        source: '/dashboard/profile',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0, must-revalidate',
+          },
+        ],
+      },
       {
         source: '/:path*',
         headers: [
