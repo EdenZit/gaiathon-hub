@@ -148,6 +148,23 @@ const userSchema = new Schema<IUserDocument>(
         trim: true,
       },
     },
+    adminNotes: [{
+      adminEmail: {
+        type: String,
+        required: true
+      },
+      action: {
+        type: String,
+        required: true
+      },
+      reason: {
+        type: String
+      },
+      timestamp: {
+        type: Date,
+        default: Date.now
+      }
+    }],
     profileCompleted: {
       type: Boolean,
       default: false,

@@ -6,6 +6,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { withAdminGuard } from '@/components/auth/AdminGuard';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'react-hot-toast';
+import { UserPasswordReset } from '@/components/features/admin/UserPasswordReset';
+import { AdminForgotPasswordReset } from '@/components/features/admin/AdminForgotPasswordReset';
 
 interface UserDetails {
   _id: string;
@@ -49,6 +51,8 @@ function UserDetailsPage() {
   const [user, setUser] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [showForgotPasswordReset, setShowForgotPasswordReset] = useState(false);
 
   useEffect(() => {
     fetchUserDetails();
@@ -317,6 +321,61 @@ function UserDetailsPage() {
               </dd>
             </div>
           </dl>
+        </div>
+      </div>
+
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Account Management</h3>
+        </div>
+        <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-md font-medium text-gray-700">Password Management</h4>
+              <p className="text-sm text-gray-500 mt-1">
+                Reset the user's password if they need assistance accessing their account.
+              </p>
+              <div className="mt-3 space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordReset(true);
+                    setShowForgotPasswordReset(false);
+                  }}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-navy-600 hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500"
+                >
+                  Standard Password Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPasswordReset(true);
+                    setShowPasswordReset(false);
+                  }}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                >
+                  Forgotten Password Reset
+                </button>
+              </div>
+            </div>
+
+            {showPasswordReset && user && (
+              <UserPasswordReset 
+                userId={user._id} 
+                userEmail={user.email} 
+                onSuccess={() => setShowPasswordReset(false)}
+                onCancel={() => setShowPasswordReset(false)}
+              />
+            )}
+
+            {showForgotPasswordReset && user && (
+              <AdminForgotPasswordReset 
+                userEmail={user.email} 
+                onSuccess={() => setShowForgotPasswordReset(false)}
+                onCancel={() => setShowForgotPasswordReset(false)}
+              />
+            )}
+          </div>
         </div>
       </div>
 

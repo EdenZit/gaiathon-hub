@@ -45,6 +45,12 @@ export interface IUser {
     iot: boolean;
     other?: string;
   };
+  adminNotes?: Array<{
+    adminEmail: string;
+    action: string;
+    reason?: string;
+    timestamp: Date;
+  }>;
   profileCompleted?: boolean;
   profile?: {
     avatar?: string;
