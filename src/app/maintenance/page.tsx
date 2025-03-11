@@ -65,10 +65,6 @@ export default function MaintenancePage() {
               </li>
               <li className="flex items-start">
                 <ArrowRight size={18} className="mr-2 mt-1 text-navy-600 flex-shrink-0" />
-                <span>Check our blog for the latest Earth Observation news</span>
-              </li>
-              <li className="flex items-start">
-                <ArrowRight size={18} className="mr-2 mt-1 text-navy-600 flex-shrink-0" />
                 <span>Bookmark this page to easily return when we're back online</span>
               </li>
             </ul>
@@ -78,8 +74,8 @@ export default function MaintenancePage() {
             <p>Thank you for your understanding and continued support.</p>
             <p className="mt-2">
               If you need immediate assistance, please contact us at{' '}
-              <a href="mailto:support@gaiathon-hub.com" className="text-navy-600 hover:underline">
-                support@gaiathon-hub.com
+              <a href="mailto:info@edenwayfoundation.com" className="text-navy-600 hover:underline">
+                info@edenwayfoundation.com
               </a>
             </p>
           </div>
