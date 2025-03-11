@@ -93,42 +93,48 @@ export function Hero() {
                 transition={{ delay: 0.7, duration: 0.5 }}
                 className="relative"
               >
-                <Link 
-                  href="/company/events/participating-countries"
-                  className="block group cursor-pointer"
-                >
-                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#0A192F] shadow-2xl">
-                    <Image
-                      src="/images/maps/africa-participants.png"
-                      alt="Map of participating African countries"
-                      fill
-                      className="object-contain transition-transform duration-300 group-hover:scale-105"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F] via-transparent to-transparent" />
-                    
-                    {/* Stats Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <div className="grid grid-cols-3 gap-4">
-                        {stats.map((stat) => (
-                          <div
-                            key={stat.label}
-                            className="text-center"
-                          >
-                            <stat.icon className="h-6 w-6 mx-auto text-blue-400 mb-2" />
-                            <div className="text-2xl font-bold text-white">{stat.value}</div>
-                            <div className="text-sm text-gray-400">{stat.label}</div>
-                          </div>
-                        ))}
+                {/* Map with clickable area */}
+                <div className="relative">
+                  <Link 
+                    href="/company/events/participating-countries"
+                    className="block group cursor-pointer"
+                  >
+                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#0A192F] shadow-2xl">
+                      {/* Transparent overlay to make entire area clickable */}
+                      <div className="absolute inset-0 z-20" aria-hidden="true"></div>
+                      
+                      <Image
+                        src="/images/maps/africa-participants.png"
+                        alt="Map of participating African countries"
+                        fill
+                        className="object-contain transition-transform duration-300 group-hover:scale-105"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F] via-transparent to-transparent" />
+                      
+                      {/* Stats Overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none z-10">
+                        <div className="grid grid-cols-3 gap-4">
+                          {stats.map((stat) => (
+                            <div
+                              key={stat.label}
+                              className="text-center"
+                            >
+                              <stat.icon className="h-6 w-6 mx-auto text-blue-400 mb-2" />
+                              <div className="text-2xl font-bold text-white">{stat.value}</div>
+                              <div className="text-sm text-gray-400">{stat.label}</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-4 text-center">
-                    <p className="text-blue-400 group-hover:text-blue-300 transition-colors">
-                      Tap the Globe to Explore GAIAthon'25 Institutions!
-                    </p>
-                  </div>
-                </Link>
+                    <div className="mt-4 text-center">
+                      <p className="text-blue-400 group-hover:text-blue-300 transition-colors">
+                        Tap to Explore GAIAthon'25 Participating Institutions!
+                      </p>
+                    </div>
+                  </Link>
+                </div>
 
                 {/* Decorative Elements */}
                 <div className="absolute -top-4 -right-4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
