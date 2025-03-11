@@ -333,25 +333,27 @@ export default function UserProfile() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold">Profile Information</h2>
-            <p className="text-sm text-red-600 mt-1">To refresh the entries, log out and then log back in.</p>
+            <h2 className="text-2xl font-bold text-gray-800">Profile Information</h2>
+            <p className="text-sm text-red-600 mt-1">Please log out and log in again to apply updates.</p>
           </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`px-4 py-2 rounded-md text-white font-medium
-              ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-            `}
-          >
-            {isLoading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Edit Profile'}
-          </button>
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`px-4 py-2 rounded-md text-white font-medium
+                ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'}
+              `}
+            >
+              {isLoading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Edit Profile'}
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Basic Information */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Basic Information</h3>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 pt-2">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                   First Name
@@ -507,8 +509,8 @@ export default function UserProfile() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Location Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Location Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div>
                 <label htmlFor="country" className="block text-sm font-medium">Country</label>
                 <input
@@ -531,8 +533,8 @@ export default function UserProfile() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Technical Skills</h3>
-            <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Technical Skills</h3>
+            <div className="space-y-2 pt-2">
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -604,56 +606,58 @@ export default function UserProfile() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Experience & Links</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Experience & Links</h3>
             
-            <div>
-              <label htmlFor="previousHackathonExperience" className="block text-sm font-medium">
-                Previous Hackathon Experience (Optional)
-              </label>
-              <textarea
-                id="previousHackathonExperience"
-                {...getInputProps('previousHackathonExperience')}
-                rows={3}
-                placeholder="Share your previous hackathon experiences..."
-              />
-            </div>
-
-            <div className="space-y-4">
+            <div className="pt-2">
               <div>
-                <label htmlFor="githubUrl" className="block text-sm font-medium">GitHub Profile URL (Optional)</label>
-                <input
-                  type="url"
-                  id="githubUrl"
-                  {...getInputProps('githubUrl')}
-                  placeholder="https://github.com/username"
+                <label htmlFor="previousHackathonExperience" className="block text-sm font-medium">
+                  Previous Hackathon Experience (Optional)
+                </label>
+                <textarea
+                  id="previousHackathonExperience"
+                  {...getInputProps('previousHackathonExperience')}
+                  rows={3}
+                  placeholder="Share your previous hackathon experiences..."
                 />
               </div>
 
-              <div>
-                <label htmlFor="personalWebsite" className="block text-sm font-medium">Personal Website (Optional)</label>
-                <input
-                  type="url"
-                  id="personalWebsite"
-                  {...getInputProps('personalWebsite')}
-                  placeholder="https://example.com"
-                />
-              </div>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="githubUrl" className="block text-sm font-medium">GitHub Profile URL (Optional)</label>
+                  <input
+                    type="url"
+                    id="githubUrl"
+                    {...getInputProps('githubUrl')}
+                    placeholder="https://github.com/username"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="linkedinUrl" className="block text-sm font-medium">LinkedIn Profile URL (Optional)</label>
-                <input
-                  type="url"
-                  id="linkedinUrl"
-                  {...getInputProps('linkedinUrl')}
-                  placeholder="https://linkedin.com/in/username"
-                />
+                <div>
+                  <label htmlFor="personalWebsite" className="block text-sm font-medium">Personal Website (Optional)</label>
+                  <input
+                    type="url"
+                    id="personalWebsite"
+                    {...getInputProps('personalWebsite')}
+                    placeholder="https://example.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="linkedinUrl" className="block text-sm font-medium">LinkedIn Profile URL (Optional)</label>
+                  <input
+                    type="url"
+                    id="linkedinUrl"
+                    {...getInputProps('linkedinUrl')}
+                    placeholder="https://linkedin.com/in/username"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Additional Information</h3>
-            <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Additional Information</h3>
+            <div className="pt-2">
               <label htmlFor="bio" className="block text-sm font-medium">Bio</label>
               <textarea
                 id="bio"
@@ -678,11 +682,11 @@ export default function UserProfile() {
 
       {/* Password Change Section */}
       <div className="mt-8 bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Password Management</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Password Management</h2>
         
-        <form onSubmit={handlePasswordChange} className="space-y-6">
+        <form onSubmit={handlePasswordChange} className="space-y-6 pt-2">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-medium">Change Password</h3>
+            <h3 className="text-lg font-medium text-gray-700">Change Password</h3>
             <button
               type="submit"
               disabled={isChangingPassword}
