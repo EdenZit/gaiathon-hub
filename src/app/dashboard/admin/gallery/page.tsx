@@ -66,12 +66,15 @@ export default function GalleryManagementPage() {
     const files = e.target.files;
     if (!files?.length) return;
 
-    // Check file size limit (2MB)
-    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
+    // Check file size limit (5MB)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
     
     // Convert selected files to gallery images
     const newImages: IGalleryImage[] = [];
     const selectedCategory = formData.category || 'teams';
+    
+    setIsSubmitting(true);
+    setError(null);
     
     try {
       for (let i = 0; i < files.length; i++) {
@@ -79,7 +82,8 @@ export default function GalleryManagementPage() {
         
         // Check file size
         if (file.size > MAX_FILE_SIZE) {
-          setError(`File "${file.name}" exceeds the 2MB size limit`);
+          console.warn(`File "${file.name}" exceeds the 5MB size limit`);
+          setError(`File "${file.name}" exceeds the 5MB size limit`);
           continue;
         }
         
@@ -87,6 +91,8 @@ export default function GalleryManagementPage() {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('category', selectedCategory);
+
+        console.log(`Uploading file: ${file.name}, size: ${file.size}, type: ${file.type}`);
 
         // Upload the file
         const uploadRes = await fetch('/api/gallery/upload', {
@@ -96,10 +102,12 @@ export default function GalleryManagementPage() {
 
         if (!uploadRes.ok) {
           const errorData = await uploadRes.json();
+          console.error('Upload error response:', errorData);
           throw new Error(errorData.error || 'Failed to upload image');
         }
 
         const uploadData = await uploadRes.json();
+        console.log('Upload success:', uploadData);
         
         // Add to images array with the returned URL
         newImages.push({
@@ -115,6 +123,8 @@ export default function GalleryManagementPage() {
     } catch (err) {
       console.error('Error uploading images:', err);
       setError(err instanceof Error ? err.message : 'Failed to upload images. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -139,6 +149,8 @@ export default function GalleryManagementPage() {
     setError(null);
 
     try {
+      console.log('Submitting gallery item:', { ...formData, images });
+      
       const res = await fetch('/api/gallery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -149,22 +161,27 @@ export default function GalleryManagementPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to create gallery item');
+        const errorData = await res.json();
+        console.error('Gallery submission error:', errorData);
+        throw new Error(errorData.error || 'Failed to create gallery item');
       }
 
       // Reset form
       setFormData({
         title: '',
         description: '',
-        category: CATEGORIES[0] as Category
+        category: CATEGORIES[0]
       });
       setImages([]);
       
-      // Refresh the page
-      router.refresh();
+      // Refresh gallery items
+      await fetchGalleryItems();
+      
+      // Show success message
+      alert('Gallery item created successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error creating gallery item:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create gallery item');
     } finally {
       setIsSubmitting(false);
     }
@@ -287,13 +304,52 @@ export default function GalleryManagementPage() {
           </div>
 
           {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Images
             </label>
-            <div className="mt-1 flex flex-col space-y-4">
-              {/* Image Preview */}
-              {images.length > 0 && (
+            <div className="flex items-center justify-center w-full">
+              <label
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer ${
+                  isSubmitting ? 'bg-gray-100 border-gray-300' : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                      <p className="text-sm text-gray-500">Uploading...</p>
+                    </>
+                  ) : (
+                    <>
+                      <PhotoIcon className="w-10 h-10 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</p>
+                    </>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  disabled={isSubmitting}
+                />
+              </label>
+            </div>
+            
+            {/* Error Message */}
+            {error && (
+              <p className="text-sm text-red-500 mt-2">{error}</p>
+            )}
+            
+            {/* Image Preview */}
+            {images.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Images</h3>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                   {images.map((image, index) => (
                     <div key={index} className="relative group">
@@ -324,39 +380,8 @@ export default function GalleryManagementPage() {
                     </div>
                   ))}
                 </div>
-              )}
-
-              {/* Upload Button */}
-              <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600">
-                    <label
-                      htmlFor="file-upload"
-                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-                    >
-                      <span>Upload images</span>
-                      <input
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        className="sr-only"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                      />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    PNG, JPG, GIF up to 2MB
-                  </p>
-                  {error && (
-                    <p className="text-xs text-red-500 mt-2">{error}</p>
-                  )}
-                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Submit Button */}
