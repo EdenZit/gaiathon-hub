@@ -53,6 +53,7 @@
     "@tiptap/react": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/uuid": "^10.0.0",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.4",
     "bcryptjs": "^2.4.3",
@@ -77,12 +78,13 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^4.12.0",
     "redis": "^4.6.12",
+    "sharp": "^0.33.2",
     "sonner": "^2.0.1",
     "swr": "^2.3.2",
     "tailwind-merge": "^2.6.0",
     "tsconfig-paths": "^4.2.0",
-    "zod": "^3.24.2",
-    "sharp": "^0.33.2"
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@humanwhocodes/config-array": "^0.11.11",
