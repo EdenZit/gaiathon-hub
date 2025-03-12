@@ -99,17 +99,38 @@ export default function BlogManagementPage() {
     if (!confirm('Are you sure you want to delete this post?')) return;
 
     try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log(`Attempting to delete blog post with slug: ${slug}`);
+      
       const res = await fetch(`/api/blog/${slug}`, {
         method: 'DELETE'
       });
 
-      if (!res.ok) throw new Error('Failed to delete post');
+      const data = await res.json();
       
+      if (!res.ok) {
+        console.error('Delete error response:', data);
+        throw new Error(data.error || 'Failed to delete post');
+      }
+      
+      console.log('Delete success response:', data);
+      
+      // Update the UI by removing the deleted post
       setPosts(posts.filter(post => post.slug !== slug));
+      
+      // Show success message
+      alert('Blog post deleted successfully');
+      
+      // Refresh the page
       router.refresh();
     } catch (err) {
       console.error('Error deleting post:', err);
-      setError('Failed to delete post');
+      setError(err instanceof Error ? err.message : 'Failed to delete post');
+      alert(`Error deleting post: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
