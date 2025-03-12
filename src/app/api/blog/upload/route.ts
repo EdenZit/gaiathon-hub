@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { readdirSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync } from 'fs';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -29,8 +29,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`Received file upload: ${file.name}, size: ${file.size}, type: ${file.type}, context: ${context}`);
+
     // Validate file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      console.error(`Invalid file type: ${file.type}`);
       return NextResponse.json(
         { error: 'Invalid file type. Allowed types: JPEG, PNG, WebP, GIF' },
         { status: 400 }
@@ -39,43 +42,52 @@ export async function POST(request: NextRequest) {
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
+      console.error(`File size exceeds limit: ${file.size} bytes`);
       return NextResponse.json(
         { error: 'File size exceeds 5MB limit' },
         { status: 400 }
       );
     }
 
-    // Get the next file number
+    // Ensure the blog directory exists
     const blogDir = join(process.cwd(), 'public', 'images', 'blog');
-    const existingFiles = readdirSync(blogDir)
-      .filter(f => f.startsWith(`blog-${context}-`))
-      .sort();
-    
-    const lastFileNumber = existingFiles.length > 0
-      ? parseInt(existingFiles[existingFiles.length - 1].split('-')[2].split('.')[0])
-      : 0;
-    
-    const nextNumber = lastFileNumber + 1;
+    if (!existsSync(blogDir)) {
+      mkdirSync(blogDir, { recursive: true });
+    }
 
-    // Create filename (e.g., blog-cover-1.jpg or blog-content-1.jpg)
+    // Generate a unique filename using timestamp
+    const timestamp = Date.now();
     const extension = file.type.split('/')[1];
-    const filename = `blog-${context}-${nextNumber}.${extension}`;
+    const filename = `blog-${context}-${timestamp}.${extension}`;
     
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     // Save file
     const path = join(blogDir, filename);
-    await writeFile(path, buffer);
+    try {
+      await writeFile(path, buffer);
+      console.log(`File saved successfully: ${filename}`);
+    } catch (err) {
+      console.error('Error writing file:', err);
+      return NextResponse.json(
+        { error: 'Failed to save file to disk', details: err instanceof Error ? err.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
 
     // Return the file URL
-    return NextResponse.json({
+    const response = {
       url: `/images/blog/${filename}`,
       success: true,
       context,
       size: file.size,
-      type: file.type
-    });
+      type: file.type,
+      filename
+    };
+    
+    console.log('Upload response:', response);
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(

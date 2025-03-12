@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { RichTextEditor } from '@/components/shared/RichTextEditor';
 import { TagInput } from '@/components/shared/TagInput';
@@ -29,6 +29,7 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverImagePreview, setCoverImagePreview] = useState<string>(initialData?.coverImage || '');
   const [error, setError] = useState<string | null>(null);
+  const [isFeatured, setIsFeatured] = useState<boolean>(!!initialData?.featuredOrder);
 
   const {
     register,
@@ -50,6 +51,14 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
       authorName: '',
     },
   });
+
+  // Initialize featuredOrder if it exists in initialData
+  useEffect(() => {
+    if (initialData?.featuredOrder) {
+      setValue('featuredOrder', initialData.featuredOrder);
+      setIsFeatured(true);
+    }
+  }, [initialData, setValue]);
 
   const handleFormSubmit = async (data: BlogFormData) => {
     try {
@@ -80,6 +89,9 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
     const file = e.target.files?.[0];
     if (file) {
       try {
+        setIsSubmitting(true); // Show loading state
+        console.log(`Uploading file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+        
         const formData = new FormData();
         formData.append('file', file);
         formData.append('context', 'cover');
@@ -91,16 +103,20 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
 
         if (!res.ok) {
           const error = await res.json();
+          console.error('Upload error response:', error);
           throw new Error(error.error || 'Failed to upload image');
         }
 
         const data = await res.json();
+        console.log('Upload success:', data);
         setValue('coverImage', data.url);
         setCoverImagePreview(data.url);
       } catch (error) {
         console.error('Error uploading image:', error);
         // Show error message to the user
-        alert(error instanceof Error ? error.message : 'Failed to upload image');
+        setError(error instanceof Error ? error.message : 'Failed to upload image');
+      } finally {
+        setIsSubmitting(false); // Hide loading state
       }
     }
   };
@@ -162,20 +178,44 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
         <label className="block text-sm font-medium text-gray-700">
           Cover Image <span className="text-red-500">*</span>
         </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="mt-1 block w-full border-2 border-gray-700 rounded-md p-2"
-        />
-        {coverImagePreview && (
-          <img
-            src={coverImagePreview}
-            alt="Cover preview"
-            className="mt-2 h-48 w-full object-cover rounded-md"
+        <div className="mt-1 relative">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className={`block w-full border-2 border-gray-700 rounded-md p-2 ${isSubmitting ? 'opacity-50' : ''}`}
+            disabled={isSubmitting}
           />
-        )}
-        {!coverImagePreview && (
+          {isSubmitting && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70">
+              <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-2 text-sm text-gray-700">Uploading...</span>
+            </div>
+          )}
+        </div>
+        {coverImagePreview ? (
+          <div className="mt-2 relative">
+            <img
+              src={coverImagePreview}
+              alt="Cover preview"
+              className="h-48 w-full object-cover rounded-md"
+            />
+            <div className="absolute top-2 right-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setValue('coverImage', '');
+                  setCoverImagePreview('');
+                }}
+                className="bg-red-600 text-white p-1 rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ) : (
           <p className="mt-1 text-sm text-red-600">Cover image is required</p>
         )}
       </div>
@@ -239,8 +279,13 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
           <div className="mt-1 flex items-center space-x-3">
             <input
               type="checkbox"
+              id="featuredArticle"
+              checked={isFeatured}
               onChange={(e) => {
-                if (e.target.checked) {
+                const isChecked = e.target.checked;
+                console.log('Featured checkbox changed:', isChecked);
+                setIsFeatured(isChecked);
+                if (isChecked) {
                   setValue('featuredOrder', 1);
                 } else {
                   setValue('featuredOrder', undefined);
@@ -248,9 +293,9 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
               }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded"
             />
-            <span className="text-sm text-gray-600">
+            <label htmlFor="featuredArticle" className="text-sm text-gray-600">
               Make this a featured article
-            </span>
+            </label>
           </div>
           <p className="mt-1 text-xs text-gray-500">
             Featured articles appear prominently on the blog homepage

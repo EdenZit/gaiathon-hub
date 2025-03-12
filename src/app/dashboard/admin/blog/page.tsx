@@ -18,6 +18,8 @@ interface BlogFormData {
   status: 'draft' | 'published';
   seoTitle: string;
   seoDescription: string;
+  authorName: string;
+  featuredOrder?: number;
 }
 
 export default function BlogManagementPage() {
@@ -48,6 +50,8 @@ export default function BlogManagementPage() {
 
   const handleSubmit = async (formData: BlogFormData) => {
     try {
+      console.log('Submitting blog post with data:', formData);
+      
       // Calculate read time based on content length
       const wordCount = formData.content.split(/\s+/).length;
       const readTime = `${Math.ceil(wordCount / 200)} min read`;
@@ -58,6 +62,8 @@ export default function BlogManagementPage() {
         publishedAt: formData.status === 'published' ? new Date().toISOString() : null
       };
 
+      console.log('Post data being sent to API:', postData);
+
       const res = await fetch('/api/blog' + (selectedPost ? `/${selectedPost.slug}` : ''), {
         method: selectedPost ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,8 +72,12 @@ export default function BlogManagementPage() {
 
       if (!res.ok) {
         const error = await res.json();
+        console.error('API error response:', error);
         throw new Error(error.error || 'Failed to save blog post');
       }
+
+      const savedPost = await res.json();
+      console.log('Post saved successfully:', savedPost);
 
       // Reset form and refresh posts
       setIsEditing(false);
