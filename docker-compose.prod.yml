@@ -18,6 +18,7 @@ services:
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - MAINTENANCE_MODE=${MAINTENANCE_MODE}
     depends_on:
       - redis
     healthcheck:
