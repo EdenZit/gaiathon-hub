@@ -168,7 +168,7 @@ export function Features() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold text-gray-900">
-              GAIAthon'25 Winners
+              GAIAthon'24 Winners
             </h2>
             <p className="mt-4 text-lg text-gray-600">
               Celebrating innovative solutions from our latest hackathon
