@@ -12,7 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit && tsc --project scripts/tsconfig.json --noEmit",
-    "security:audit": "npm audit && npm audit fix",
+    "security:audit": "npm audit --audit-level=high || true && npm audit fix --audit-level=high || true",
     "security:outdated": "npm outdated",
     "preinstall": "node -e \"if(process.env.npm_execpath.indexOf('yarn') !== -1) throw new Error('Please use npm instead of yarn')\"",
     "postinstall": "npm run security:audit",

@@ -127,8 +127,11 @@ export async function GET() {
     // Verify admin status
     const user = await User.findOne({ email: session.user.email });
     if (!user || user.role !== 'admin') {
+      console.log(`User ${session.user.email} attempted to access admin teams but has role: ${user?.role || 'undefined'}`);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    console.log(`Admin ${user.email} fetching teams`);
 
     // Get all teams with populated leader and member details
     const rawTeams = await Team.find({})
@@ -136,37 +139,91 @@ export async function GET() {
       .populate('members.user', 'firstName lastName email institution country')
       .lean();
 
+    console.log(`Found ${rawTeams.length} teams in the database`);
+
     // Type assertion after validation
     const teams = rawTeams as unknown as PopulatedTeam[];
 
     // Transform teams to include full member details
-    const transformedTeams = teams.map(team => ({
-      _id: team._id,
-      name: team.name,
-      category: team.category,
-      status: team.status,
-      leaderId: team.leaderId._id,
-      leader: {
-        _id: team.leaderId._id,
-        firstName: team.leaderId.firstName || '',
-        lastName: team.leaderId.lastName || '',
-        email: team.leaderId.email,
-        institution: team.leaderId.institution || '',
-        country: team.leaderId.country || ''
-      },
-      members: team.members.map((member: TeamMember) => ({
-        userId: member.user._id,
-        firstName: member.user.firstName || '',
-        lastName: member.user.lastName || '',
-        email: member.user.email,
-        teamRole: member.teamRole,
-        institution: member.user.institution || '',
-        country: member.user.country || '',
-        joinedAt: member.joinedAt
-      })),
-      createdAt: team.createdAt
-    }));
+    const transformedTeams = teams.map(team => {
+      try {
+        // Check if leaderId exists and is properly populated
+        if (!team.leaderId || typeof team.leaderId !== 'object') {
+          console.log(`Team ${team._id} has invalid leaderId:`, team.leaderId);
+          return {
+            _id: team._id,
+            name: team.name || 'Unknown Team',
+            category: team.category || 'Digital Platforms and Interactive Applications',
+            status: team.status || 'pending',
+            leaderId: null,
+            leader: {
+              _id: null,
+              firstName: 'Unknown',
+              lastName: 'Leader',
+              email: 'unknown@example.com',
+              institution: '',
+              country: ''
+            },
+            members: [],
+            createdAt: team.createdAt || new Date()
+          };
+        }
 
+        // Process members, filtering out any invalid entries
+        const validMembers = (team.members || []).filter(member => 
+          member && member.user && typeof member.user === 'object'
+        );
+
+        return {
+          _id: team._id,
+          name: team.name,
+          category: team.category,
+          status: team.status,
+          leaderId: team.leaderId._id,
+          leader: {
+            _id: team.leaderId._id,
+            firstName: team.leaderId.firstName || '',
+            lastName: team.leaderId.lastName || '',
+            email: team.leaderId.email,
+            institution: team.leaderId.institution || '',
+            country: team.leaderId.country || ''
+          },
+          members: validMembers.map((member: TeamMember) => ({
+            userId: member.user._id,
+            firstName: member.user.firstName || '',
+            lastName: member.user.lastName || '',
+            email: member.user.email,
+            teamRole: member.teamRole,
+            institution: member.user.institution || '',
+            country: member.user.country || '',
+            joinedAt: member.joinedAt
+          })),
+          createdAt: team.createdAt
+        };
+      } catch (error) {
+        console.error(`Error processing team ${team._id}:`, error);
+        // Return a minimal valid team object to prevent the entire request from failing
+        return {
+          _id: team._id,
+          name: team.name || 'Error Processing Team',
+          category: team.category || 'Digital Platforms and Interactive Applications',
+          status: team.status || 'pending',
+          leaderId: null,
+          leader: {
+            _id: null,
+            firstName: 'Error',
+            lastName: 'Processing',
+            email: 'error@example.com',
+            institution: '',
+            country: ''
+          },
+          members: [],
+          createdAt: team.createdAt || new Date()
+        };
+      }
+    });
+
+    console.log(`Returning ${transformedTeams.length} transformed teams`);
     return NextResponse.json(transformedTeams);
   } catch (error) {
     console.error('Error fetching teams:', error);
