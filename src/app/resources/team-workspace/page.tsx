@@ -169,8 +169,27 @@ export default function TeamWorkspacePage() {
               <p className="text-lg text-gray-600">
                 You are a member of team: <span className="font-semibold">{team.name}</span>
               </p>
-              <div className="mt-2 flex justify-center">
+              <div className="mt-2 flex flex-col items-center">
                 <StatusBadge status={team.status} />
+                {team.status === 'rejected' && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700">
+                      Your team registration has been rejected. Please contact the administrators for more information.
+                    </p>
+                    {session?.user?.teamRole === 'leader' && (
+                      <p className="mt-2 text-red-600">
+                        As a team leader, you can create a new team or request a review of this decision.
+                      </p>
+                    )}
+                  </div>
+                )}
+                {team.status === 'pending' && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-yellow-700">
+                      Your team registration is pending approval. Please wait for administrator review.
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="mt-6">
                 <h3 className="text-lg font-medium text-gray-900">Team Members</h3>
@@ -192,6 +211,16 @@ export default function TeamWorkspacePage() {
                   ))}
                 </div>
               </div>
+              {team.status === 'rejected' && session?.user?.teamRole === 'leader' && (
+                <div className="mt-8">
+                  <button
+                    onClick={handleCreateTeam}
+                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Create New Team
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -48,13 +48,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== 'admin') {
-      console.error('Unauthorized team deletion attempt:', {
-        userId: session?.user?.id,
-        role: session?.user?.role,
-        teamId: params.id
-      });
+    const isAdmin = await adminGuard(request, 'delete_team');
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -84,11 +79,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Delete the team
     await Team.findByIdAndDelete(params.id);
-
-    console.log('Team deleted successfully:', {
-      teamId: params.id,
-      deletedBy: session.user.id
-    });
 
     return NextResponse.json({ message: 'Team deleted successfully' });
   } catch (error: any) {

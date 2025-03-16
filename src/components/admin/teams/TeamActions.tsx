@@ -12,9 +12,10 @@ import type { Team } from '@/lib/api/teams';
 
 interface TeamActionsProps {
   team: Team;
+  onStatusChange: () => Promise<void>;
 }
 
-export function TeamActions({ team }: TeamActionsProps) {
+export function TeamActions({ team, onStatusChange }: TeamActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleStatusChange = async (newStatus: 'approved' | 'rejected' | 'pending') => {
@@ -35,8 +36,8 @@ export function TeamActions({ team }: TeamActionsProps) {
       }
 
       toast.success('Team status updated successfully');
-      // Refresh the page to show updated data
-      window.location.reload();
+      // Instead of reloading the page, call onStatusChange to refresh the data
+      await onStatusChange();
     } catch (error) {
       console.error('Error updating team status:', error);
       toast.error('Failed to update team status');
@@ -59,8 +60,8 @@ export function TeamActions({ team }: TeamActionsProps) {
       }
 
       toast.success('Team deleted successfully');
-      // Refresh the page to show updated data
-      window.location.reload();
+      // Instead of reloading the page, call onStatusChange to refresh the data
+      await onStatusChange();
     } catch (error) {
       console.error('Error deleting team:', error);
       toast.error('Failed to delete team');

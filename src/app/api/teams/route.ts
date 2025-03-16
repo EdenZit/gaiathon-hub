@@ -291,7 +291,8 @@ export async function POST(req: Request) {
       name,
       category,
       leaderId: user._id,
-      members
+      members,
+      status: 'pending'
     });
 
     // Process additional members if any

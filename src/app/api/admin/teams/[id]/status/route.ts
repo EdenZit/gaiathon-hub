@@ -5,14 +5,32 @@ import { adminGuard } from '@/lib/auth/adminGuard';
 import { z } from 'zod';
 import { Types } from 'mongoose';
 
-interface TeamMember {
+interface TeamDocument {
   _id: Types.ObjectId;
-  firstName?: string;
-  lastName?: string;
-  email: string;
-  institution?: string;
-  country?: string;
-  teamRole?: string;
+  name: string;
+  category: string;
+  status: 'pending' | 'approved' | 'rejected';
+  leaderId: {
+    _id: Types.ObjectId;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    institution?: string;
+    country?: string;
+  };
+  members: Array<{
+    user: {
+      _id: Types.ObjectId;
+      firstName?: string;
+      lastName?: string;
+      email: string;
+      institution?: string;
+      country?: string;
+    };
+    teamRole: 'leader' | 'member';
+    joinedAt: Date;
+  }>;
+  createdAt: Date;
 }
 
 const updateStatusSchema = z.object({
@@ -27,7 +45,10 @@ export async function PUT(
     // Verify admin access
     const isAdmin = await adminGuard(request, 'update_team_status');
     if (!isAdmin) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();
@@ -35,37 +56,51 @@ export async function PUT(
 
     await connectDB();
 
-    const team = await Team.findByIdAndUpdate(
+    const rawTeam = await Team.findByIdAndUpdate(
       params.id,
       { $set: { status: validatedData.status } },
       { new: true }
     )
-    .populate('members', 'firstName lastName email institution country teamRole')
-    .populate('leaderId', 'firstName lastName email');
+    .populate('members.user', 'firstName lastName email institution country')
+    .populate('leaderId', 'firstName lastName email institution country')
+    .lean();
 
-    if (!team) {
+    if (!rawTeam) {
       return NextResponse.json(
         { error: 'Team not found' },
         { status: 404 }
       );
     }
 
+    // Cast the raw team to our expected document type
+    const team = rawTeam as unknown as TeamDocument;
+
     // Transform the response
     const transformedTeam = {
       _id: team._id.toString(),
       name: team.name,
+      category: team.category,
       status: team.status,
       leaderId: team.leaderId._id.toString(),
-      members: team.members.map((member: TeamMember) => ({
-        _id: member._id.toString(),
-        firstName: member.firstName || '',
-        lastName: member.lastName || '',
-        email: member.email,
-        institution: member.institution,
-        country: member.country,
-        teamRole: member.teamRole
+      leader: team.leaderId ? {
+        _id: team.leaderId._id.toString(),
+        firstName: team.leaderId.firstName || '',
+        lastName: team.leaderId.lastName || '',
+        email: team.leaderId.email || '',
+        institution: team.leaderId.institution || '',
+        country: team.leaderId.country || ''
+      } : null,
+      members: (team.members || []).map((member) => ({
+        _id: member.user._id.toString(),
+        firstName: member.user.firstName || '',
+        lastName: member.user.lastName || '',
+        email: member.user.email || '',
+        institution: member.user.institution || '',
+        country: member.user.country || '',
+        teamRole: member.teamRole || 'member',
+        joinedAt: member.joinedAt ? new Date(member.joinedAt).toISOString() : new Date().toISOString()
       })),
-      createdAt: team.createdAt.toISOString()
+      createdAt: team.createdAt ? new Date(team.createdAt).toISOString() : new Date().toISOString()
     };
 
     return NextResponse.json({
@@ -94,7 +129,4 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
-
-// Apply admin middleware to all routes
-export { adminMiddleware as middleware } from '@/middleware/adminMiddleware'; 
+} 

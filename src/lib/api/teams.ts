@@ -31,15 +31,21 @@ export interface Team {
   createdAt: string;
 }
 
-export const getTeams = cache(async (): Promise<Team[]> => {
+export const getTeams = async (): Promise<Team[]> => {
   try {
     await connectDB();
     
     console.log('Admin fetching teams - starting query');
     
     const teams = await TeamModel.find({})
-      .populate('leaderId', 'firstName lastName email institution country')
-      .populate('members.user', 'firstName lastName email institution country')
+      .populate({
+        path: 'leaderId',
+        select: 'firstName lastName email institution country'
+      })
+      .populate({
+        path: 'members.user',
+        select: 'firstName lastName email institution country'
+      })
       .sort({ createdAt: -1 })
       .lean();
     
@@ -47,19 +53,38 @@ export const getTeams = cache(async (): Promise<Team[]> => {
     
     // Log the raw team data for debugging
     teams.forEach((team, index) => {
-      console.log(`Team ${index + 1}: ${team.name}, ID: ${team._id}, Status: ${team.status}`);
-      console.log(`  Leader ID: ${team.leaderId?._id || 'undefined'}`);
-      console.log(`  Members count: ${team.members?.length || 0}`);
+      console.log(`Team ${index + 1}:`, {
+        name: team.name,
+        id: team._id,
+        status: team.status,
+        leaderId: team.leaderId?._id,
+        memberCount: team.members?.length,
+        rawTeam: team
+      });
     });
 
     return teams.map((team: any) => {
       try {
+        const transformedMembers = (team.members || []).map((member: any) => {
+          const user = member.user || {};
+          return {
+            _id: user._id?.toString() || '',
+            firstName: user.firstName || 'Deleted User',
+            lastName: user.lastName || '',
+            email: user.email || 'deleted@example.com',
+            teamRole: member.teamRole || 'member',
+            institution: user.institution || '',
+            country: user.country || '',
+            joinedAt: member.joinedAt ? new Date(member.joinedAt).toISOString() : new Date().toISOString()
+          };
+        });
+
         return {
           _id: team._id.toString(),
           name: team.name || '',
           category: team.category || 'Digital Platforms and Interactive Applications',
           status: team.status || 'pending',
-          leaderId: team.leaderId?._id?.toString(),
+          leaderId: team.leaderId?._id?.toString() || '',
           leader: team.leaderId ? {
             _id: team.leaderId._id?.toString() || '',
             firstName: team.leaderId.firstName || '',
@@ -68,16 +93,7 @@ export const getTeams = cache(async (): Promise<Team[]> => {
             institution: team.leaderId.institution || '',
             country: team.leaderId.country || ''
           } : null,
-          members: (team.members || []).map((member: any) => ({
-            _id: member.user?._id?.toString() || '',
-            firstName: member.user?.firstName || 'Deleted User',
-            lastName: member.user?.lastName || '',
-            email: member.user?.email || 'deleted@example.com',
-            teamRole: member.teamRole || 'member',
-            institution: member.user?.institution || '',
-            country: member.user?.country || '',
-            joinedAt: member.joinedAt ? new Date(member.joinedAt).toISOString() : new Date().toISOString()
-          })),
+          members: transformedMembers,
           createdAt: team.createdAt ? new Date(team.createdAt).toISOString() : new Date().toISOString()
         };
       } catch (error) {
@@ -99,4 +115,4 @@ export const getTeams = cache(async (): Promise<Team[]> => {
     console.error('Error in getTeams function:', error);
     return [];
   }
-}); 
+}; 
