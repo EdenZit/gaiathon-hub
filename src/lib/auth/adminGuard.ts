@@ -5,8 +5,20 @@ import Redis from "ioredis";
 import { headers } from "next/headers";
 import { authOptions } from "@/lib/auth";
 
-// Create a new Redis client for Docker
-const redis = new Redis(process.env.REDIS_URL || "redis://redis:6379");
+// Create a new Redis client for Docker with better error handling
+const redis = new Redis(process.env.REDIS_URL || "redis://redis:6379", {
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
+  maxRetriesPerRequest: 3,
+  enableOfflineQueue: false,
+  showFriendlyErrorStack: true
+});
+
+redis.on('error', (err) => {
+  console.error('Redis connection error:', err);
+});
 
 // Simple rate limiting implementation
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
@@ -103,48 +115,57 @@ export async function adminGuard(req: NextRequest, action: string = "unknown") {
       throw new Error("User is not an admin");
     }
 
-    // Rate limiting check
-    const { success, limit, reset, remaining } = await checkRateLimit(
-      session.user.id || "anonymous"
-    );
-
-    if (!success) {
-      await logAdminAction(action, session, req, false, "Rate limit exceeded");
-      return NextResponse.json(
-        {
-          error: "Too many requests",
-          code: "RATE_LIMIT_EXCEEDED",
-          message: "Please try again later",
-          reset,
-        },
-        {
-          status: 429,
-          headers: {
-            "X-RateLimit-Limit": limit.toString(),
-            "X-RateLimit-Remaining": remaining.toString(),
-            "X-RateLimit-Reset": reset.toString(),
-          },
-        }
+    try {
+      // Rate limiting check
+      const { success, limit, reset, remaining } = await checkRateLimit(
+        session.user.id || "anonymous"
       );
+
+      if (!success) {
+        await logAdminAction(action, session, req, false, "Rate limit exceeded").catch(console.error);
+        return NextResponse.json(
+          {
+            error: "Too many requests",
+            code: "RATE_LIMIT_EXCEEDED",
+            message: "Please try again later",
+            reset,
+          },
+          {
+            status: 429,
+            headers: {
+              "X-RateLimit-Limit": limit.toString(),
+              "X-RateLimit-Remaining": remaining.toString(),
+              "X-RateLimit-Reset": reset.toString(),
+            },
+          }
+        );
+      }
+
+      // Log successful auth
+      await logAdminAction(action, session, req, true).catch(console.error);
+    } catch (redisError) {
+      // If Redis fails, log the error but allow the request
+      console.error('Redis error in adminGuard:', redisError);
     }
 
-    // Log successful auth
-    await logAdminAction(action, session, req, true);
     console.log('Admin access granted for:', session.user.email);
-    
     return true;
 
   } catch (error) {
     // Log failed attempt
     const session = await getServerSession(authOptions);
     console.error('Admin guard error:', error);
-    await logAdminAction(
-      action,
-      session,
-      req,
-      false,
-      error instanceof Error ? error.message : "Unknown error"
-    );
+    try {
+      await logAdminAction(
+        action,
+        session,
+        req,
+        false,
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    } catch (logError) {
+      console.error('Failed to log admin action:', logError);
+    }
 
     return false;
   }
