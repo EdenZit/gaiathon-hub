@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { Container } from '@/components/ui/layout/container';
 import { TeamsList } from '@/components/admin/teams/TeamsList';
 import { TeamsSkeleton } from '@/components/admin/teams/TeamsSkeleton';
+import { TeamExportButton } from '@/components/admin/teams/TeamExportButton';
 
 export default async function TeamManagementPage() {
   return (
@@ -11,6 +12,7 @@ export default async function TeamManagementPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight">Team Management</h1>
+          <TeamExportButton />
         </div>
 
         <Suspense fallback={<TeamsSkeleton />}>
