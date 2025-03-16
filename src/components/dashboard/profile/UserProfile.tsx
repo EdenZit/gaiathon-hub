@@ -334,7 +334,7 @@ export default function UserProfile() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold">Profile Information</h2>
-            <p className="text-sm text-red-600 font-medium mt-1">Please log out and log in again to apply updates.</p>
+            <p className="text-sm text-red-600 font-medium mt-1">Please complete Profile and log out and log in again to apply updates.</p>
           </div>
           <button
             type="submit"

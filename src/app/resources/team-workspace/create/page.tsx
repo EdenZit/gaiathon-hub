@@ -179,8 +179,8 @@ export default function CreateTeamPage() {
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-navy-500 focus:outline-none focus:ring-navy-500 sm:text-sm"
             placeholder="Enter email addresses, separated by commas"
           />
-          <p className="mt-1 text-sm text-gray-500">
-            Enter the email addresses of team members, separated by commas
+          <p className="mt-1 text-sm text-red-600">
+            Enter the email addresses of ONLY REGISTERED team members, separated by commas
           </p>
         </div>
 
