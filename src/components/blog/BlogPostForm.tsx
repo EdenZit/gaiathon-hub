@@ -290,6 +290,7 @@ export function BlogPostForm({ initialData, onSubmit, onCancel }: BlogPostFormPr
                 } else {
                   setValue('featuredOrder', undefined);
                 }
+                console.log('Updated featuredOrder:', isChecked ? 1 : undefined);
               }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded"
             />
