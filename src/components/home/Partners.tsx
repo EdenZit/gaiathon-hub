@@ -24,6 +24,12 @@ const partners = [
     website: 'https://commission.europa.eu/index_en',
   },
   {
+    name: 'African Space Agency',
+    logo: '/images/partners/afsa.png',
+    hasArrow: true,
+    website: 'https://africanspaceagency.org',
+  },
+  {
     name: 'Regional Marine Center, University of Ghana',
     logo: '/images/sponsors/rmc.png',
     hasArrow: true,
