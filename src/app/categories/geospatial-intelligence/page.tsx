@@ -141,14 +141,14 @@ const GeospatialIntelligencePage = () => {
                   className="flex items-start bg-gray-50 p-4 rounded-lg"
                 >
                   <span className="text-indigo-600 mr-3">🔹</span>
-                  <span>A web-based interactive visualization or dashboard showcasing your geospatial analysis</span>
+                  <span>A synthesis report that presents analysis of a specific situation using Earth Observation data, supported by graphs or maps that provide the necessary evidence for their policy proposal.</span>
                 </motion.li>
                 <motion.li
                   variants={itemVariants}
                   className="flex items-start bg-gray-50 p-4 rounded-lg"
                 >
                   <span className="text-indigo-600 mr-3">🔹</span>
-                  <span>A synthesis report that presents analysis of a specific situation using Earth Observation data, supported by graphs or maps that provide the necessary evidence for their policy proposal.</span>
+                  <span>Documentation of data sources, processing methods, and policy recommendations</span>
                 </motion.li>
                 <motion.li
                   variants={itemVariants}
