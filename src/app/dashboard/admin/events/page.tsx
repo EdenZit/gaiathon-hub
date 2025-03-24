@@ -132,7 +132,10 @@ export default function EventsManagementPage() {
 
       const res = await fetch('/api/announcements', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Protection': '1'
+        },
         body: JSON.stringify(newData)
       });
 
