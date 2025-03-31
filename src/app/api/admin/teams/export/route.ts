@@ -75,38 +75,56 @@ export async function GET(request: NextRequest) {
     ].join(',');
 
     // Convert teams to CSV rows
-    const rows = teams.flatMap(team => 
+    const rows = teams.flatMap(team => {
+      // Helper function to safely get user data
+      const getUserData = (user: any) => ({
+        firstName: user?.firstName || 'Unknown',
+        lastName: user?.lastName || 'User',
+        email: user?.email || 'No email',
+        institution: user?.institution || 'Not specified',
+        country: user?.country || 'Not specified'
+      });
+
+      // Get leader data safely
+      const leaderData = getUserData(team.leaderId);
+
       // Add leader first
-      [
-        [
-          team._id.toString(),
-          team.name,
-          team.category,
-          team.status,
-          `${team.leaderId.firstName || ''} ${team.leaderId.lastName || ''}`.trim(),
-          team.leaderId.email,
-          'leader',
-          team.leaderId.institution || 'Not specified',
-          team.leaderId.country || 'Not specified',
-          new Date(team.createdAt).toISOString(),
-          new Date(team.createdAt).toISOString()
-        ].map(field => `"${field}"`).join(','),
-        // Then add other members
-        ...team.members.filter(member => member.teamRole !== 'leader').map((member: TeamMember) => [
-          team._id.toString(),
-          team.name,
-          team.category,
-          team.status,
-          `${member.user.firstName || ''} ${member.user.lastName || ''}`.trim(),
-          member.user.email,
-          member.teamRole,
-          member.user.institution || 'Not specified',
-          member.user.country || 'Not specified',
-          new Date(member.joinedAt).toISOString(),
-          new Date(team.createdAt).toISOString()
-        ].map(field => `"${field}"`).join(','))
-      ]
-    );
+      const leaderRow = [
+        team._id.toString(),
+        team.name,
+        team.category,
+        team.status,
+        `${leaderData.firstName} ${leaderData.lastName}`.trim(),
+        leaderData.email,
+        'leader',
+        leaderData.institution,
+        leaderData.country,
+        new Date(team.createdAt).toISOString(),
+        new Date(team.createdAt).toISOString()
+      ].map(field => `"${field}"`).join(',');
+
+      // Then add other members
+      const memberRows = team.members
+        .filter(member => member.teamRole !== 'leader')
+        .map((member: TeamMember) => {
+          const memberData = getUserData(member.user);
+          return [
+            team._id.toString(),
+            team.name,
+            team.category,
+            team.status,
+            `${memberData.firstName} ${memberData.lastName}`.trim(),
+            memberData.email,
+            member.teamRole,
+            memberData.institution,
+            memberData.country,
+            new Date(member.joinedAt).toISOString(),
+            new Date(team.createdAt).toISOString()
+          ].map(field => `"${field}"`).join(',');
+        });
+
+      return [leaderRow, ...memberRows];
+    });
 
     // Combine headers and rows
     const csv = [headers, ...rows].join('\n');
