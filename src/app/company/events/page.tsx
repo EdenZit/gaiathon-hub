@@ -29,6 +29,25 @@ async function getPageData(): Promise<PageData> {
 export default async function EventsPage() {
   const pageData = await getPageData();
 
+  const upcomingEvents = [
+    {
+      title: 'GAIAthon 2025 Webinar Series',
+      date: '8 April 2025',
+      description: 'The GAIAthon webinar series will begin on 8 April 2025. Experts will engage students on a range of topics designed to enhance their learning and participation in GAIAthon.',
+      type: 'webinar'
+    }
+  ];
+
+  const importantDates = [
+    { date: '8 April – 9 May', event: 'GAIAthon\'25 Webinar Series' },
+    { date: '16 May', event: 'Submission of Round One PowerPoint Pitch' },
+    { date: '23 May', event: 'Announcement of finalists' },
+    { date: '23 May – 27 June', event: 'Development of Solution/Prototypes' },
+    { date: '27 June', event: 'Submission of Final Products' },
+    { date: '1 July', event: 'Announcement of Local Winner' },
+    { date: '18 – 21 August', event: 'GAIAfest (Accra, Ghana)' }
+  ];
+
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -52,30 +71,23 @@ export default async function EventsPage() {
             <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
           </div>
           <div className="space-y-6">
-            {pageData.upcomingEvents.map((event, index) => (
+            {upcomingEvents.map((event, index) => (
               <div
                 key={index}
                 className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    {event.topic}
+                    {event.title}
                   </h3>
                   <p className="text-gray-600 mb-4">{event.description}</p>
                   <p className="text-sm text-blue-600 font-medium">
-                    {new Date(event.date).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric'
-                    })}
+                    {event.date}
                   </p>
                 </div>
               </div>
             ))}
-            {pageData.upcomingEvents.length === 0 && (
+            {upcomingEvents.length === 0 && (
               <p className="text-gray-500 text-center py-4">No upcoming events at this time.</p>
             )}
           </div>
@@ -120,28 +132,25 @@ export default async function EventsPage() {
             <StarIcon className="h-8 w-8 text-blue-600" />
             <h2 className="text-2xl font-bold text-gray-900">Important Dates</h2>
           </div>
-          <div className="space-y-4">
-            {pageData.importantDates.map((date, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4"
-              >
-                <div className="flex-shrink-0 w-16 text-center">
-                  <span className="text-lg font-bold text-blue-600">
-                    {new Date(date.date).getDate()}
-                  </span>
-                  <span className="block text-sm text-blue-600">
-                    {new Date(date.date).toLocaleDateString('en-US', { month: 'short' })}
-                  </span>
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="grid gap-2">
+              {importantDates.map((date, index) => (
+                <div
+                  key={index}
+                  className="flex items-start space-x-4 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <div className="min-w-[150px] font-medium text-blue-600">
+                    {date.date}
+                  </div>
+                  <div className="text-gray-900">
+                    {date.event}
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-gray-900">{date.description}</p>
-                </div>
-              </div>
-            ))}
-            {pageData.importantDates.length === 0 && (
-              <p className="text-gray-500 text-center py-4">No important dates at this time.</p>
-            )}
+              ))}
+              {importantDates.length === 0 && (
+                <p className="text-gray-500 text-center py-4">No important dates at this time.</p>
+              )}
+            </div>
           </div>
         </section>
       </div>

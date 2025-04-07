@@ -15,7 +15,7 @@ const faqData = [
   },
   {
     question: "How can teams register for GAIAthon '25?",
-    answer: "Teams can register online by completing the registration form available at www.gaiaclubs.org."
+    answer: "Teams can register online by completing the registration form available at www.gaiathon.com."
   },
   {
     question: "What are the topics for GAIAthon '25?",
