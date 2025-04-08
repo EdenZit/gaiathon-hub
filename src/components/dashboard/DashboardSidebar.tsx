@@ -10,6 +10,8 @@ import {
   Squares2X2Icon,
   ShieldCheckIcon,
   UserGroupIcon,
+  DocumentTextIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import type { ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react';
 
@@ -19,6 +21,7 @@ interface NavItem {
   icon: ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, "ref"> & { title?: string | undefined; titleId?: string | undefined; } & RefAttributes<SVGSVGElement>>;
   adminHref?: string;
   requireAdmin?: boolean;
+  external?: boolean;
 }
 
 const navigation: NavItem[] = [
@@ -37,6 +40,18 @@ const navigation: NavItem[] = [
     name: 'EO Tools',
     href: '/dashboard/tools',
     icon: WrenchScrewdriverIcon,
+  },
+  {
+    name: 'Social media voting',
+    href: 'https://forms.gle/YZnPiDdqgw37obBfA',
+    icon: ClipboardDocumentListIcon,
+    external: true,
+  },
+  {
+    name: 'GAIAthon\'25 Guidelines',
+    href: 'https://drive.google.com/drive/folders/1bdA4yOAxNC1xn0YE_HKcAVSUt9zArNoT?usp=sharing',
+    icon: DocumentTextIcon,
+    external: true,
   },
 ];
 
@@ -77,6 +92,41 @@ export function DashboardSidebar() {
             
             if ((item.requireAdmin && !isAdmin) || (isAdmin && item.requireAdmin === false)) return null;
 
+            const linkContent = (
+              <>
+                <item.icon
+                  className={clsx(
+                    'mr-3 h-6 w-6 flex-shrink-0',
+                    isActive
+                      ? 'text-blue-700'
+                      : 'text-gray-400 group-hover:text-gray-500'
+                  )}
+                  aria-hidden="true"
+                />
+                {item.name}
+                {item.external && (
+                  <span className="ml-2 text-xs text-gray-400">↗</span>
+                )}
+              </>
+            );
+
+            if (item.external) {
+              return (
+                <a
+                  key={item.name}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={clsx(
+                    'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                    'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  )}
+                >
+                  {linkContent}
+                </a>
+              );
+            }
+
             return (
               <Link
                 key={item.name}
@@ -88,16 +138,7 @@ export function DashboardSidebar() {
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 )}
               >
-                <item.icon
-                  className={clsx(
-                    'mr-3 h-6 w-6 flex-shrink-0',
-                    isActive
-                      ? 'text-blue-700'
-                      : 'text-gray-400 group-hover:text-gray-500'
-                  )}
-                  aria-hidden="true"
-                />
-                {item.name}
+                {linkContent}
               </Link>
             );
           })}
