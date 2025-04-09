@@ -48,7 +48,7 @@ const navigation: NavItem[] = [
     external: true,
   },
   {
-    name: 'GAIAthon\'25 Guidelines',
+    name: 'GAIAthon\'25 Materials',
     href: 'https://drive.google.com/drive/folders/1bdA4yOAxNC1xn0YE_HKcAVSUt9zArNoT?usp=sharing',
     icon: DocumentTextIcon,
     external: true,
