@@ -42,12 +42,6 @@ const navigation: NavItem[] = [
     icon: WrenchScrewdriverIcon,
   },
   {
-    name: 'Social media voting',
-    href: 'https://forms.gle/YZnPiDdqgw37obBfA',
-    icon: ClipboardDocumentListIcon,
-    external: true,
-  },
-  {
     name: 'GAIAthon\'25 Materials',
     href: 'https://drive.google.com/drive/folders/1bdA4yOAxNC1xn0YE_HKcAVSUt9zArNoT?usp=sharing',
     icon: DocumentTextIcon,
