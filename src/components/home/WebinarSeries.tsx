@@ -37,7 +37,7 @@ const webinars: Webinar[] = [
       bio: 'Hamdi is a sustainable development leader with 20+ years\' experience, spearheads GMES & Africa\'s Technical Assistance Team at the African Union Commission. He bridges geospatial tech and partnerships to advance Earth Observation solutions for Africa\'s environmental and resource challenges.',
       photo: '/images/webinar/hamdi-kacem.jpg',
     },
-    zoomLink: 'https://us06web.zoom.us/j/83817773048?pwd=QgOOym5X3dPD4YO7sjyZUHDewha0pg.1',
+    zoomLink: 'https://us06web.zoom.us/j/82656333374?pwd=MrKXXAf3WEKzo6VW7TcwXzMPJXaqLh.1',
   },
   {
     date: 'Tuesday 8 April 2025 @ 10:00 GMT',
