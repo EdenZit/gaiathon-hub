@@ -26,8 +26,7 @@ const webinars: Webinar[] = [
       name: 'Dr. Kwame Agyekum',
       bio: 'Kwame serves as the Project Manager of the GMES and Africa programme for the North and West African coastal states. He integrates satellite data with ocean modelling to address illegal fishing in West Africa. His Earth Observation (EO)-driven tools provide coastal states with actionable insights to enhance maritime security, fisheries management and oil spill monitoring.',
       photo: '/images/webinar/kwame-agyekum.jpg',
-    },
-    zoomLink: 'https://us06web.zoom.us/j/89400316941?pwd=wJ8rgJUQn2CiKrPnw5AVsbDaX17eYj.1',
+    }
   },
   {
     date: 'Thursday 17 April 2025 @ 10:00 GMT',
