@@ -20,41 +20,24 @@ interface Webinar {
 
 const webinars: Webinar[] = [
   {
-    date: 'Tuesday 15 April 2025 @ 10:00 GMT',
-    topic: 'Enhancing Fisheries Management in the Gulf of Guinea: Leveraging Earth Observation Data for Sustainable Practice',
+    date: 'Tuesday 22 April 2025 @ 10:00 GMT',
+    topic: 'Introducing Cloud-Based Tools Available on WEkEO for Efficient Analysis of Earth Observation Data',
     speaker: {
-      name: 'Dr. Kwame Agyekum',
-      bio: 'Kwame serves as the Project Manager of the GMES and Africa programme for the North and West African coastal states. He integrates satellite data with ocean modelling to address illegal fishing in West Africa. His Earth Observation (EO)-driven tools provide coastal states with actionable insights to enhance maritime security, fisheries management and oil spill monitoring.',
-      photo: '/images/webinar/kwame-agyekum.jpg',
-    }
+      name: 'Dr. Hayley Evers-King',
+      bio: 'Hayley is a leading marine applications expert at EUMETSAT, supporting ocean-related satellite data use under the Copernicus Programme. Her expertise spans sensor validation, algorithm development, and applications in marine ecosystems, aquaculture, and climate services. She is also an advocate for open-source tools and creative science communication.',
+      photo: '/images/webinar/hayley-king.jpg',
+    },
+    zoomLink: 'https://us06web.zoom.us/j/81666319733?pwd=t3Vc3d1SkEcJxTbqdfhbid3Sm8VmB7.1',
   },
   {
-    date: 'Thursday 17 April 2025 @ 10:00 GMT',
-    topic: 'Harnessing Earth Observation for Sustainable Development: The GMES and Africa Programme',
+    date: 'Thursday 4 April 2025 @ 10:00 GMT',
+    topic: 'Fostering Digital Entrepreneurship in Higher Education: The Role of Earth Observation Technologies',
     speaker: {
-      name: 'Mr. Hamdi Kacem',
-      bio: 'Hamdi is a sustainable development leader with 20+ years\' experience, spearheads GMES & Africa\'s Technical Assistance Team at the African Union Commission. He bridges geospatial tech and partnerships to advance Earth Observation solutions for Africa\'s environmental and resource challenges.',
-      photo: '/images/webinar/hamdi-kacem.jpg',
+      name: 'Professor Gayane Faye',
+      bio: 'Gayane is a pioneer in spatial remote sensing and led the development of Senegal\'s first satellite, GANDESAT-1A. He heads the SENSAT programme and drives innovation in Earth observation for environmental and disaster management across West Africa.',
+      photo: '/images/webinar/gayan-faye.jpg',
     },
-    zoomLink: 'https://us06web.zoom.us/j/82656333374?pwd=MrKXXAf3WEKzo6VW7TcwXzMPJXaqLh.1',
-  },
-  {
-    date: 'Tuesday 8 April 2025 @ 10:00 GMT',
-    topic: 'Empowering African Youth through GAIA Initiatives: A Pathway to Technological Innovation',
-    speaker: {
-      name: 'Prof. George Wiafe',
-      bio: '',
-      photo: '',
-    },
-  },
-  {
-    date: 'Thursday 10 April 2025 @ 10:00 GMT',
-    topic: 'From Prototype to Profit: Building an EO and IoT Start-up in Africa',
-    speaker: {
-      name: 'Mr. Meshack Ndiritu',
-      bio: '',
-      photo: '',
-    },
+    zoomLink: 'https://us06web.zoom.us/j/86505593439?pwd=Tw3dB39ndOEb8HlIKD2n0Ww7sJ9s3s.1',
   },
 ];
 
