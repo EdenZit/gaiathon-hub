@@ -30,7 +30,7 @@ const webinars: Webinar[] = [
     zoomLink: 'https://us06web.zoom.us/j/81666319733?pwd=t3Vc3d1SkEcJxTbqdfhbid3Sm8VmB7.1',
   },
   {
-    date: 'Thursday 4 April 2025 @ 10:00 GMT',
+    date: 'Thursday 24 April 2025 @ 10:00 GMT',
     topic: 'Fostering Digital Entrepreneurship in Higher Education: The Role of Earth Observation Technologies',
     speaker: {
       name: 'Professor Gayane Faye',
