@@ -20,24 +20,24 @@ interface Webinar {
 
 const webinars: Webinar[] = [
   {
-    date: 'Tuesday 22 April 2025 @ 10:00 GMT',
-    topic: 'Introducing Cloud-Based Tools Available on WEkEO for Efficient Analysis of Earth Observation Data',
+    date: 'Tuesday 29 April 2025 @ 10:00 GMT',
+    topic: 'Bridging Knowledge and Innovation: A Journey from Campus to IoT Entrepreneurship in Africa',
     speaker: {
-      name: 'Dr. Hayley Evers-King',
-      bio: 'Hayley is a leading marine applications expert at EUMETSAT, supporting ocean-related satellite data use under the Copernicus Programme. Her expertise spans sensor validation, algorithm development, and applications in marine ecosystems, aquaculture, and climate services. She is also an advocate for open-source tools and creative science communication.',
-      photo: '/images/webinar/hayley-king.jpg',
+      name: 'Mr. Samuel Adranyi',
+      bio: 'Samuel, founder of Crafted Climate Ltd, Microsoft Azure MVP, and IoT advocate, empowers African youth through technology education, entrepreneurship, and climate innovation, driving Africa\'s digital and sustainable transformation.',
+      photo: '/images/webinar/samuel-adranyi.jpg',
     },
-    zoomLink: 'https://us06web.zoom.us/j/81666319733?pwd=t3Vc3d1SkEcJxTbqdfhbid3Sm8VmB7.1',
+    zoomLink: 'https://us06web.zoom.us/j/89108792190?pwd=iUswMZSiR1Ci6hyklXVyO5EZ5hWOvz.1',
   },
   {
-    date: 'Thursday 24 April 2025 @ 10:00 GMT',
-    topic: 'Fostering Digital Entrepreneurship in Higher Education: The Role of Earth Observation Technologies',
+    date: 'Thursday 1 May 2025 @ 10:00 GMT',
+    topic: 'GAIAthon\'25 Webinar Finale',
     speaker: {
-      name: 'Professor Gayane Faye',
-      bio: 'Gayane is a pioneer in spatial remote sensing and led the development of Senegal\'s first satellite, GANDESAT-1A. He heads the SENSAT programme and drives innovation in Earth observation for environmental and disaster management across West Africa.',
-      photo: '/images/webinar/gayan-faye.jpg',
+      name: 'Professor George Wiafe',
+      bio: 'George is the Founder of Edenway Foundation and Coordinator of the GAIAthon Incubation Challenge. This session marks the final event of the GAIAthon 2025 Webinar Series, providing an opportunity for all participating teams to have their queries addressed by the Coordinator.',
+      photo: '/images/webinar/george-wiafe.jpg',
     },
-    zoomLink: 'https://us06web.zoom.us/j/86505593439?pwd=Tw3dB39ndOEb8HlIKD2n0Ww7sJ9s3s.1',
+    zoomLink: 'https://us06web.zoom.us/j/85402483425?pwd=TEYgKekmQjMIwoawFsMvN40M7syaU6.1',
   },
 ];
 
