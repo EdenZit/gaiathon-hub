@@ -36,7 +36,7 @@ const webinars: Webinar[] = [
     description: 'This session marks the final event of the GAIAthon 2025 Webinar Series, providing an opportunity for all participating teams to have their queries addressed by the Coordinator.',
     speaker: {
       name: 'Professor George Wiafe',
-      bio: 'George is the Founder of Edenway Foundation and Coordinator of the GAIAthon Incubation Challenge.',
+      bio: 'George is the Founder of Edenway Foundation and Coordinator of the GAIAthon Innovation Challenge.',
       photo: '/images/webinar/george-wiafe.jpg',
     },
     zoomLink: 'https://us06web.zoom.us/j/85402483425?pwd=TEYgKekmQjMIwoawFsMvN40M7syaU6.1',
