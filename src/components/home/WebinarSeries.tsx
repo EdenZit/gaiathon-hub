@@ -16,6 +16,7 @@ interface Webinar {
   topic: string;
   speaker: Speaker;
   zoomLink?: string;
+  description?: string;
 }
 
 const webinars: Webinar[] = [
@@ -32,9 +33,10 @@ const webinars: Webinar[] = [
   {
     date: 'Thursday 1 May 2025 @ 10:00 GMT',
     topic: 'GAIAthon\'25 Webinar Finale',
+    description: 'This session marks the final event of the GAIAthon 2025 Webinar Series, providing an opportunity for all participating teams to have their queries addressed by the Coordinator.',
     speaker: {
       name: 'Professor George Wiafe',
-      bio: 'George is the Founder of Edenway Foundation and Coordinator of the GAIAthon Incubation Challenge. This session marks the final event of the GAIAthon 2025 Webinar Series, providing an opportunity for all participating teams to have their queries addressed by the Coordinator.',
+      bio: 'George is the Founder of Edenway Foundation and Coordinator of the GAIAthon Incubation Challenge.',
       photo: '/images/webinar/george-wiafe.jpg',
     },
     zoomLink: 'https://us06web.zoom.us/j/85402483425?pwd=TEYgKekmQjMIwoawFsMvN40M7syaU6.1',
@@ -78,6 +80,11 @@ export function WebinarSeries() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">
                   {webinar.topic}
                 </h3>
+                {webinar.description && (
+                  <p className="text-gray-600 italic mb-4">
+                    {webinar.description}
+                  </p>
+                )}
 
                 {webinar.speaker.photo && (
                   <div className="flex items-start space-x-4">
@@ -102,6 +109,7 @@ export function WebinarSeries() {
                 {!webinar.speaker.photo && (
                   <div className="mt-4">
                     <h4 className="text-lg font-semibold text-gray-900">{webinar.speaker.name}</h4>
+                    <p className="mt-1 text-sm text-gray-600">{webinar.speaker.bio}</p>
                   </div>
                 )}
 
