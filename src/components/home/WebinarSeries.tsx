@@ -21,25 +21,14 @@ interface Webinar {
 
 const webinars: Webinar[] = [
   {
-    date: 'Tuesday 29 April 2025 @ 10:00 GMT',
-    topic: 'Bridging Knowledge and Innovation: A Journey from Campus to IoT Entrepreneurship in Africa',
+    date: 'Thursday 8 May 2025 @ 10:00 GMT',
+    topic: 'Getting started with Copernicus Data Space Ecosystem - tackling environmental challenges in Africa with free data and processing power',
     speaker: {
-      name: 'Mr. Samuel Adranyi',
-      bio: 'Samuel, founder of Crafted Climate Ltd, Microsoft Azure MVP, and IoT advocate, empowers African youth through technology education, entrepreneurship, and climate innovation, driving Africa\'s digital and sustainable transformation.',
-      photo: '/images/webinar/samuel-adranyi.jpg',
+      name: 'Dr. András Zlinszky',
+      bio: 'András serves as a Community Evangelist at the Copernicus Data Space Ecosystem. He specialises in ecology, earth observation, and outreach and advances satellite data access through training initiatives.',
+      photo: '/images/webinar/andras-zlinszky.jpg',
     },
-    zoomLink: 'https://us06web.zoom.us/j/89108792190?pwd=iUswMZSiR1Ci6hyklXVyO5EZ5hWOvz.1',
-  },
-  {
-    date: 'Thursday 1 May 2025 @ 10:00 GMT',
-    topic: 'GAIAthon\'25 Webinar Finale',
-    description: 'This session marks the final event of the GAIAthon 2025 Webinar Series, providing an opportunity for all participating teams to have their queries addressed by the Coordinator.',
-    speaker: {
-      name: 'Professor George Wiafe',
-      bio: 'George is the Founder of Edenway Foundation and Coordinator of the GAIAthon Innovation Challenge.',
-      photo: '/images/webinar/george-wiafe.jpg',
-    },
-    zoomLink: 'https://us06web.zoom.us/j/85402483425?pwd=TEYgKekmQjMIwoawFsMvN40M7syaU6.1',
+    zoomLink: 'https://us06web.zoom.us/j/87974136801?pwd=uB0P6tc9zGXcFi0MWVD3CBbWEbshYE.1',
   },
 ];
 
