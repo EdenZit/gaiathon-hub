@@ -1,10 +1,10 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, StarIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 
 interface Speaker {
   name: string;
@@ -13,6 +13,8 @@ interface Speaker {
   date: string;
   topic: string;
   affiliation: string;
+  isSpecial?: boolean;
+  zoomLink?: string;
 }
 
 const webinars: Speaker[] = [
@@ -79,31 +81,62 @@ const webinars: Speaker[] = [
     date: '8th May 2025',
     topic: 'Getting started with Copernicus Data Space Ecosystem - tackling environmental challenges in Africa with free data and processing power',
     affiliation: 'Copernicus Data Space Ecosystem'
+  },
+  {
+    name: 'Dr. Tidiane Ouattara',
+    bio: 'African Space Council',
+    photo: '/images/webinar/tidiane-outtara.jpg',
+    date: '20th May 2025',
+    topic: 'Exploring Opportunities for African Youth to Participate in and Contribute to the Growing Space Sector',
+    affiliation: 'President, African Space Council',
+    isSpecial: true,
+    zoomLink: 'https://us06web.zoom.us/j/82391733895?pwd=i6xj4HSizc7RL8vPxEvKUJmkLqwYOU.1'
   }
 ];
 
 export function WebinarSeries() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [direction, setDirection] = useState(0);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
+      setDirection(1);
       setCurrentIndex((prevIndex) => (prevIndex + 1) % webinars.length);
-    }, 10000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, [isAutoPlaying]);
 
   const nextSlide = () => {
+    setDirection(1);
     setCurrentIndex((prevIndex) => (prevIndex + 1) % webinars.length);
     setIsAutoPlaying(false);
   };
 
   const prevSlide = () => {
+    setDirection(-1);
     setCurrentIndex((prevIndex) => (prevIndex - 1 + webinars.length) % webinars.length);
     setIsAutoPlaying(false);
+  };
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0
+    })
   };
 
   return (
@@ -135,44 +168,72 @@ export function WebinarSeries() {
         </motion.div>
 
         <div className="relative max-w-4xl mx-auto">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
-          >
-            <div className="p-8">
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="flex-shrink-0">
-                  <div className="relative h-48 w-48 rounded-xl overflow-hidden">
-                    <Image
-                      src={webinars[currentIndex].photo}
-                      alt={webinars[currentIndex].name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 192px, 192px"
-                    />
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={currentIndex}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+              className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
+            >
+              <div className="p-8">
+                <div className="flex flex-col md:flex-row gap-8">
+                  <div className="flex-shrink-0 relative">
+                    <div className="relative h-48 w-48 rounded-xl overflow-hidden">
+                      <Image
+                        src={webinars[currentIndex].photo}
+                        alt={webinars[currentIndex].name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 192px, 192px"
+                      />
+                    </div>
+                    {webinars[currentIndex].isSpecial && (
+                      <div className="absolute -top-2 -right-2 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 shadow-lg">
+                        <StarIcon className="h-4 w-4" />
+                        Special Edition
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-blue-600 mb-2">
-                    {webinars[currentIndex].date}
+                  <div className="flex-1">
+                    <div className={`text-sm mb-2 ${webinars[currentIndex].isSpecial ? 'text-red-600 font-semibold' : 'text-blue-600'}`}>
+                      {webinars[currentIndex].date}
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                      {webinars[currentIndex].topic}
+                    </h3>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-1">
+                      {webinars[currentIndex].name}
+                    </h4>
+                    <p className="text-gray-600 mb-4">
+                      {webinars[currentIndex].affiliation}
+                    </p>
+                    {webinars[currentIndex].zoomLink && (
+                      <Link
+                        href={webinars[currentIndex].zoomLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
+                          webinars[currentIndex].isSpecial 
+                            ? 'bg-red-600 hover:bg-red-700' 
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        } transition-colors duration-200`}
+                      >
+                        <VideoCameraIcon className="h-5 w-5 mr-2" />
+                        Join Webinar
+                      </Link>
+                    )}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {webinars[currentIndex].topic}
-                  </h3>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">
-                    {webinars[currentIndex].name}
-                  </h4>
-                  <p className="text-gray-600">
-                    {webinars[currentIndex].affiliation}
-                  </p>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </AnimatePresence>
 
           <button
             onClick={prevSlide}
@@ -188,15 +249,20 @@ export function WebinarSeries() {
           </button>
 
           <div className="flex justify-center mt-6 gap-2">
-            {webinars.map((_, index) => (
+            {webinars.map((webinar, index) => (
               <button
                 key={index}
                 onClick={() => {
+                  setDirection(index > currentIndex ? 1 : -1);
                   setCurrentIndex(index);
                   setIsAutoPlaying(false);
                 }}
                 className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentIndex ? 'bg-blue-600' : 'bg-gray-300'
+                  index === currentIndex 
+                    ? webinar.isSpecial 
+                      ? 'bg-red-600' 
+                      : 'bg-blue-600'
+                    : 'bg-gray-300'
                 }`}
               />
             ))}
