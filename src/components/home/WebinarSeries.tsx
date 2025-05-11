@@ -19,6 +19,16 @@ interface Speaker {
 
 const webinars: Speaker[] = [
   {
+    name: 'Dr. Tidiane Ouattara',
+    bio: 'African Space Council',
+    photo: '/images/webinar/tidiane-outtara.jpg',
+    date: '20th May 2025',
+    topic: 'Exploring Opportunities for African Youth to Participate in and Contribute to the Growing Space Sector',
+    affiliation: 'President, African Space Council',
+    isSpecial: true,
+    zoomLink: 'https://us06web.zoom.us/j/82391733895?pwd=i6xj4HSizc7RL8vPxEvKUJmkLqwYOU.1'
+  },
+  {
     name: 'Professor George Wiafe',
     bio: 'Edenway Foundation',
     photo: '/images/webinar/george-wiafe.jpg',
@@ -81,16 +91,6 @@ const webinars: Speaker[] = [
     date: '8th May 2025',
     topic: 'Getting started with Copernicus Data Space Ecosystem - tackling environmental challenges in Africa with free data and processing power',
     affiliation: 'Copernicus Data Space Ecosystem'
-  },
-  {
-    name: 'Dr. Tidiane Ouattara',
-    bio: 'African Space Council',
-    photo: '/images/webinar/tidiane-outtara.jpg',
-    date: '20th May 2025',
-    topic: 'Exploring Opportunities for African Youth to Participate in and Contribute to the Growing Space Sector',
-    affiliation: 'President, African Space Council',
-    isSpecial: true,
-    zoomLink: 'https://us06web.zoom.us/j/82391733895?pwd=i6xj4HSizc7RL8vPxEvKUJmkLqwYOU.1'
   }
 ];
 
