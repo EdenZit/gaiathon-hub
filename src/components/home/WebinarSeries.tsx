@@ -19,12 +19,12 @@ interface Speaker {
 
 const webinars: Speaker[] = [
   {
-    name: 'Dr. Tidiane Ouattara',
-    bio: 'African Space Council',
+    name: 'H.E. Dr. Tidiane Ouattara',
+    bio: 'African Space Agency',
     photo: '/images/webinar/tidiane-outtara.jpg',
     date: '20th May 2025',
     topic: 'Exploring Opportunities for African Youth to Participate in and Contribute to the Growing Space Sector',
-    affiliation: 'President, African Space Council',
+    affiliation: 'President of the Council of the African Space Agency',
     isSpecial: true,
     zoomLink: 'https://us06web.zoom.us/j/82391733895?pwd=i6xj4HSizc7RL8vPxEvKUJmkLqwYOU.1'
   },
