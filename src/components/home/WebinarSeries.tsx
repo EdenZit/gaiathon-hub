@@ -197,7 +197,7 @@ export function WebinarSeries() {
                     {webinars[currentIndex].isSpecial && (
                       <div className="absolute -top-2 -right-2 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 shadow-lg">
                         <StarIcon className="h-4 w-4" />
-                        Special Edition
+                        Upcoming Special Edition
                       </div>
                     )}
                   </div>
