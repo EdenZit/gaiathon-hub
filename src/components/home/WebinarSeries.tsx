@@ -22,7 +22,7 @@ const webinars: Speaker[] = [
     name: 'H.E. Dr. Tidiane Ouattara',
     bio: 'African Space Agency',
     photo: '/images/webinar/tidiane-outtara.jpg',
-    date: '20th May 2025',
+    date: 'Tuesday 20th May 2025 @ 10:00 GMT',
     topic: 'Exploring Opportunities for African Youth to Participate in and Contribute to the Growing Space Sector',
     affiliation: 'President of the Council of the African Space Agency',
     isSpecial: true,
