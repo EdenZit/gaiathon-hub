@@ -59,6 +59,12 @@ const partners = [
     hasArrow: true,
     website: 'https://www.mercator-ocean.eu',
   },
+  {
+    name: 'US Embassy Ghana',
+    logo: '/images/partners/usembassy.png',
+    hasArrow: true,
+    website: 'https://gh.usembassy.gov',
+  },
 ];
 
 const containerVariants = {
