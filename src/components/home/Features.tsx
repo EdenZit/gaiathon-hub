@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Categories } from '@/components/home/Categories';
 import { Partners } from '@/components/home/Partners';
 import { WebinarSeries } from './WebinarSeries';
+import { GAIAthonResults } from './GAIAthonResults';
 import { 
   ChartBarIcon,
   UserGroupIcon,
@@ -81,9 +82,6 @@ export function Features() {
         </div>
       </div>
 
-      {/* Webinar Series Section */}
-      <WebinarSeries />
-
       {/* Categories Section */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -93,6 +91,12 @@ export function Features() {
       >
         <Categories />
       </motion.div>
+
+      {/* GAIAthon Results Section */}
+      <GAIAthonResults />
+
+      {/* Webinar Series Section */}
+      <WebinarSeries />
 
       {/* Partners Section */}
       <Partners />
