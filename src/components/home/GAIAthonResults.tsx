@@ -168,7 +168,7 @@ export function GAIAthonResults() {
             GAIAthon'25: 45 Teams Advance to the Next Stage
           </h2>
           <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            Round One of GAIAthon'25 concluded on 16 May 2025. From 112 teams across 15 universities, 
+            Round One of GAIAthon'25 concluded on 23 May 2025. From 112 teams across 15 universities, 
             45 top teams have advanced to develop their solutions by 27 June 2025.
           </p>
         </motion.div>
