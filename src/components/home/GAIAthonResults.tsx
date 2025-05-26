@@ -81,7 +81,7 @@ const institutions: Institution[] = [
     name: 'Ghana Communication Technology University',
     teams: [
       { name: 'Team FixiMami', topic: 'HighSafe smart accident alert system' },
-      { name: 'GCTU Team-3', topic: 'TerraPlan Smart Land-Use Intelligence Platform' },
+      { name: 'GCTU Alpha', topic: 'Forest AI: Solar IoT and TinyML for Instant Logging Detection' },
       { name: 'GCTU-XI', topic: 'AquaSentinel Smart Water Monitoring Module' }
     ]
   },
