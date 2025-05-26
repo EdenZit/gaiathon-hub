@@ -25,8 +25,7 @@ const webinars: Speaker[] = [
     date: 'Tuesday 20th May 2025 @ 10:00 GMT',
     topic: 'Exploring Opportunities for African Youth to Participate in and Contribute to the Growing Space Sector',
     affiliation: 'Vice President of the Council of the African Space Agency',
-    isSpecial: true,
-    zoomLink: 'https://us06web.zoom.us/j/82391733895?pwd=i6xj4HSizc7RL8vPxEvKUJmkLqwYOU.1'
+    isSpecial: true
   },
   {
     name: 'Professor George Wiafe',
