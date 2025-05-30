@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { FaUsers, FaLightbulb, FaTrophy, FaBuildingColumns } from 'react-icons/fa6';
+import { CountdownBanner } from './CountdownBanner';
 
 interface Team {
   name: string;
@@ -172,6 +173,8 @@ export function GAIAthonResults() {
             45 top teams have advanced to develop their solutions by 27 June 2025.
           </p>
         </motion.div>
+
+        <CountdownBanner />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {institutions.map((institution, index) => (
