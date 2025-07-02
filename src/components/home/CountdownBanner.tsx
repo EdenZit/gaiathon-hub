@@ -12,7 +12,7 @@ export function CountdownBanner() {
   });
 
   useEffect(() => {
-    const targetDate = new Date('2025-06-27T23:59:00Z');
+    const targetDate = new Date('2025-08-20T09:00:00Z');
 
     const calculateTimeLeft = () => {
       const now = new Date();
@@ -54,8 +54,8 @@ export function CountdownBanner() {
       className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl shadow-lg p-6 mb-8"
     >
       <div className="text-center text-white mb-4">
-        <h3 className="text-xl font-semibold mb-2">Time Remaining Until Final Submission</h3>
-        <p className="text-blue-100">June 27, 2025 at 23:59 GMT</p>
+        <h3 className="text-xl font-semibold mb-2">Countdown to GAIAfest</h3>
+        <p className="text-blue-100">August 20, 2025 at 09:00 GMT</p>
       </div>
       <div className="grid grid-cols-4 gap-4">
         {timeBlocks.map((block) => (

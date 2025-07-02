@@ -18,71 +18,55 @@ const institutions: Institution[] = [
     country: 'Benin',
     name: 'National University of Sciences, Technologies, Engineering, and Mathematics',
     teams: [
-      { name: 'World Well Being Defenders', topic: 'Climate data portal for impact analysis and policy use' },
-      { name: 'Sustainable Innovators', topic: 'Floating IoT device monitoring for coastal water quality' },
-      { name: 'SymplTech', topic: 'Intelligent system for detecting and monitoring pollution levels' }
+      { name: 'Sustainable Innovators', topic: 'Floating IoT device monitoring for coastal water quality' }
     ]
   },
   {
     country: 'Cameroon',
     name: 'University de Dschang',
     teams: [
-      { name: 'Green Pulse', topic: 'Hydroponics and IoT for fodder production' },
-      { name: 'Spatial Innovation', topic: 'Landslide assessment using spatial intelligence' },
-      { name: 'Dschang', topic: 'Mapping environmental impacts of industrial mining' }
+      { name: 'Green Pulse', topic: 'Hydroponics and IoT for fodder production' }
     ]
   },
   {
     country: 'Egypt',
     name: 'The British University of Egypt',
     teams: [
-      { name: 'Pharaonic Minds', topic: 'Sustainable Agriculture From Recovered Harm' },
-      { name: 'Afribot Firepatrol', topic: 'Fire detection and monitoring system' },
-      { name: 'Flutter Force', topic: 'Recycling for a Sustainable Future' }
+      { name: 'Pharaonic Minds', topic: 'Sustainable Agriculture From Recovered Harm' }
     ]
   },
   {
     country: 'Ethiopia',
     name: 'Addis Ababa Science and Technology University',
     teams: [
-      { name: 'EcoFarmIQ', topic: 'AI-Powered Crop Recommendation and farm Monitoring system' },
-      { name: 'The Shakeless 60', topic: 'Early Earthquake Detection System with IOT' },
-      { name: 'CashMate', topic: 'IoT-Enabled Smart Systems - A Maternal Health Platform' }
+      { name: 'EcoFarmIQ', topic: 'AI-Powered Crop Recommendation and farm Monitoring system' }
     ]
   },
   {
     country: 'Ghana',
     name: 'University of Ghana',
     teams: [
-      { name: 'Mavericks', topic: 'AQUAGUARD water quality monitoring system' },
-      { name: 'Source Code', topic: 'FarmSight Real-time crop intelligence using satellite data & AI' },
-      { name: 'Tide Watch', topic: 'Coastal flood monitoring system' }
+      { name: 'Mavericks', topic: 'AQUAGUARD water quality monitoring system' }
     ]
   },
   {
     country: 'Ghana',
     name: 'Kwame Nkrumah University of Science and Technology',
     teams: [
-      { name: 'Code Verse', topic: 'FloodPredict mobile flood detection system' },
-      { name: 'CAD', topic: 'Smart IoT Device for real-time particulate matter monitoring' },
-      { name: 'GNADE', topic: 'AeroHealth air quality monitoring app' }
+      { name: 'CAD', topic: 'Smart IoT Device for real-time particulate matter monitoring' }
     ]
   },
   {
     country: 'Ghana',
     name: 'University of Mines and Technology',
     teams: [
-      { name: 'AQUAFIX', topic: 'IoT-Based smart aquaculture system' },
-      { name: 'Intellectual Powerhouse', topic: 'Powerhive real-time AI-powered hybrid renewable energy system' },
-      { name: 'Impact Team', topic: 'IoT-Based Smart Solar Panel Optimization' }
+      { name: 'Intellectual Powerhouse', topic: 'Powerhive real-time AI-powered hybrid renewable energy system' }
     ]
   },
   {
     country: 'Ghana',
     name: 'Ghana Communication Technology University',
     teams: [
-      { name: 'Team FixiMami', topic: 'HighSafe smart accident alert system' },
-      { name: 'GCTU Alpha', topic: 'Forest AI app for instant logging detection' },
       { name: 'GCTU-XI', topic: 'AquaSentinel Smart Water Monitoring Module' }
     ]
   },
@@ -90,62 +74,48 @@ const institutions: Institution[] = [
     country: 'Kenya',
     name: 'Technical University of Kenya',
     teams: [
-      { name: 'Geovisionaries', topic: 'GreenMap web-based mapping tool' },
-      { name: 'DIJI', topic: 'Mehthane monitoring system' },
-      { name: 'Infinity Sentinels', topic: 'NovaBox vehicle safety app' }
+      { name: 'Geovisionaries', topic: 'GreenMap web-based mapping tool' }
     ]
   },
   {
     country: 'Malawi',
     name: 'University of Business and Applied Sciences',
     teams: [
-      { name: 'Zeroday', topic: 'Tisese Blantyre Waste Management Optimizer' },
-      { name: 'Build Green', topic: 'Waste Management Optimizer' },
-      { name: 'Tech Titans', topic: 'Urban Expansion Analysis Dashboard' }
+      { name: 'Zeroday', topic: 'Tisese Blantyre Waste Management Optimizer' }
     ]
   },
   {
     country: 'Nigeria',
     name: 'Obafemi Awolowo University & Federal University of Technology Akure',
     teams: [
-      { name: 'Delta_X', topic: 'Green Guard Carbon Footprint Tracker' },
-      { name: 'Team_FUTA', topic: 'IoT-enabled smart system to mitigate coastal hazards' },
-      { name: 'GAIATorch', topic: 'Weather-Intelligent Smart Irrigation System' }
+      { name: 'Team_FUTA', topic: 'IoT-enabled smart system to mitigate coastal hazards' }
     ]
   },
   {
     country: 'Senegal',
     name: 'Universite Cheikh Anta Diop',
     teams: [
-      { name: 'SIRIUS', topic: 'Agro Teranga AI system' },
-      { name: 'IUPA-LaboEA', topic: 'Aquaculture water quality monitoring system' },
-      { name: 'VIGIMANG', topic: 'RFID Wristbands for Enhancing Bathers\' Safety' }
+      { name: 'IUPA-LaboEA', topic: 'Aquaculture water quality monitoring system' }
     ]
   },
   {
     country: 'Togo',
     name: 'Université de Lomé',
     teams: [
-      { name: 'Terra Vigil', topic: 'IoT-Based Early Detection System for Bushfires' },
-      { name: 'AlerionAqua', topic: 'Smart monitoring for sustainable Aquaculture' },
-      { name: 'Bitecrafters', topic: 'Digital Platforms and Interactive Applications for Waste Management' }
+      { name: 'Terra Vigil', topic: 'IoT-Based Early Detection System for Bushfires' }
     ]
   },
   {
     country: 'Tunisia',
     name: 'Higher School of Communication',
     teams: [
-      { name: 'Tak_Tic', topic: 'CarbonSense carbon emission monitoring system' },
-      { name: 'Nexus', topic: 'Intelligentcoastal monitoring and potential fishing zone prediction system' },
-      { name: 'G-Code', topic: 'B-ZOU plastic waste monitoring system' }
+      { name: 'Tak_Tic', topic: 'CarbonSense carbon emission monitoring system' }
     ]
   },
   {
     country: 'Uganda',
     name: 'Makerere University',
     teams: [
-      { name: 'GeoSpech', topic: 'Flood risk early warning app' },
-      { name: 'GeoSmart Agric Solutions', topic: 'Smart agricultural monitoring system' },
       { name: 'NextGen Geominds', topic: 'Smart irrigation adviser' }
     ]
   }
@@ -166,11 +136,11 @@ export function GAIAthonResults() {
             <FaTrophy className="h-12 w-12 text-yellow-500" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            GAIAthon'25: 45 Teams Advance to the Next Stage
+            GAIAthon'25 Finalists
           </h2>
           <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            Round One of GAIAthon'25 concluded on 23 May 2025. From 112 teams across 15 universities, 
-            45 top teams have advanced to develop their solutions by 27 June 2025.
+            Round Two of GAIAthon'25 ended on 27 June 2025. From 112 teams across 16 universities, 
+            15 finalists will compete for the trophy at the GAIAfest Awards on 21 August in Accra.
           </p>
         </motion.div>
 
