@@ -50,9 +50,9 @@ const finalists: Finalist[] = [
     institution: 'Kwame Nkrumah University of Science and Technology'
   },
   {
-    name: 'Intellectual Powerhouse',
+    name: 'Aquafix',
     country: 'Ghana',
-    photo: '/images/finalists/Intellectual_Powerhouse.png',
+    photo: '/images/finalists/Aquafix.png',
     institution: 'University of Mines and Technology'
   },
   {
