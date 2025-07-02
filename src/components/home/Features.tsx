@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Categories } from '@/components/home/Categories';
 import { Partners } from '@/components/home/Partners';
-import { WebinarSeries } from './WebinarSeries';
+import { Finalists } from './Finalists';
 import { GAIAthonResults } from './GAIAthonResults';
 import { 
   ChartBarIcon,
@@ -95,8 +95,8 @@ export function Features() {
       {/* GAIAthon Results Section */}
       <GAIAthonResults />
 
-      {/* Webinar Series Section */}
-      <WebinarSeries />
+      {/* Finalists Section */}
+      <Finalists />
 
       {/* Partners Section */}
       <Partners />
