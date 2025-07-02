@@ -60,7 +60,7 @@ const institutions: Institution[] = [
     country: 'Ghana',
     name: 'University of Mines and Technology',
     teams: [
-      { name: 'Aquafix', topic: 'Powerhive real-time AI-powered hybrid renewable energy system' }
+      { name: 'Intellectual Powerhouse', topic: 'Powerhive real-time AI-powered hybrid renewable energy system' }
     ]
   },
   {
