@@ -140,7 +140,7 @@ export function GAIAthonResults() {
           </h2>
           <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
             Round Two of GAIAthon'25 ended on 27 June 2025. From 112 teams across 16 universities, 
-            15 finalists will compete for the trophy at the GAIAfest Awards on 21 August in Accra.
+            15 finalists will compete for the trophy at the GAIAfest Awards on 20 August in Accra.
           </p>
         </motion.div>
 
