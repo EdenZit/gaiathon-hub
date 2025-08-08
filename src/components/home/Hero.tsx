@@ -69,6 +69,18 @@ export function Hero() {
                     Register Now
                   </Link>
                   <Link
+                    href="/programme"
+                    className={clsx(
+                      'inline-flex items-center justify-center px-6 py-3',
+                      'rounded-lg bg-green-600 text-base font-medium text-white',
+                      'shadow-lg shadow-green-600/30',
+                      'transition-all duration-300 ease-in-out',
+                      'hover:bg-green-500 hover:shadow-green-500/30 hover:scale-105'
+                    )}
+                  >
+                    View Programme
+                  </Link>
+                  <Link
                     href="#innovation-tracks"
                     onClick={scrollToTracks}
                     className={clsx(

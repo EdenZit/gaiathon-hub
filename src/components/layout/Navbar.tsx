@@ -88,6 +88,7 @@ export const Navbar = memo(function Navbar() {
       { name: 'Home', href: '/' },
       { name: 'About', href: '/company/about' },
       { name: 'Events', href: '/company/events' },
+      { name: 'Programme', href: '/programme' },
       { name: 'Gallery', href: '/gallery' },
     ],
     resources: [
