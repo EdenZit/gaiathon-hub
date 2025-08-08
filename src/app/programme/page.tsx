@@ -29,46 +29,46 @@ const programme: DaySchedule[] = [
     action: 'Judges will engage with GAIAthon\'25 finalists',
     events: [
       {
-        time: '0900 - 1000',
+        time: '0830 - 0900',
         title: 'Arrival of Guest & Registration',
         type: 'ceremony'
       },
       {
-        time: '1000 - 1100',
+        time: '0900 - 1000',
         title: 'Opening Ceremony',
         description: '• Welcome Address – Reg. Environment Office\n• Introduction of Participants – All\n• Brief Presentation on GAIA Initiative – Edenway Foundation\n• Keynote Address – Excellency Charge d\'Affaires, US Embassy\n• Group Photograph',
         type: 'ceremony'
       },
       {
-        time: '1100 - 1120',
+        time: '1000 - 1100',
         title: 'Pitch Defence: Digital Innovation',
         participants: ['Green Pulse (Cameroon)', 'Tak_Tic (Tunisia)', 'NextGen Geominds (Uganda)', 'Geovisionaries (Kenya)', 'Zeroday (Malawi)'],
         type: 'pitch_defence'
       },
       {
-        time: '1120 - 1220',
+        time: '1100 - 1120',
         title: 'Break',
         type: 'break'
       },
       {
-        time: '1220 - 1240',
+        time: '1120 - 1220',
         title: 'Pitch Defence: Smart IoT Systems',
         participants: ['Sustainable Innovators (Benin)', 'IUPA-LaboEA (Senegal)', 'Terra Vigil (Togo)', 'CAD (Ghana)', 'Intellectual Powerhouse (Ghana)'],
         type: 'pitch_defence'
       },
       {
-        time: '1240 - 1340',
+        time: '1220 - 1240',
         title: 'Break',
         type: 'break'
       },
       {
-        time: '1340 - 1400',
+        time: '1240 - 1340',
         title: 'Pitch Defence: Smart IoT Systems',
         participants: ['Pharaonic Minds (Egypt)', 'EcoFarmIQ (Ethiopia)', 'GCTU-XI (Ghana)', 'Mavericks (Ghana)', 'Team_FUTA (Nigeria)'],
         type: 'pitch_defence'
       },
       {
-        time: '1400',
+        time: '1340 - 1400',
         title: 'Closing Ceremony',
         type: 'ceremony'
       },
@@ -85,14 +85,19 @@ const programme: DaySchedule[] = [
     action: 'Public Participation in the Award Ceremony',
     events: [
       {
-        time: '0830 - 1100',
+        time: '0830 - 0900',
         title: 'Arrival of Guests & Registration',
-        description: '• Opening Ceremony\n• Welcome Address\n• Introduction of Chair & remarks by Chair\n• Statements by Partners (University of Ghana, US Embassy, Accra, Delegation of the European Union, African Space Agency)\n• Keynote Speaker – Minister for Environment, Science & Technology, Ghana\n• The GAIA Initiative & GAIAthon Series\n• Chair\'s closing remarks\n• Group Photograph\n• Snack break & Media Engagement',
         type: 'ceremony'
       },
       {
-        time: '1100 - 1600',
-        title: 'Presentations & Future of GAIA Initiative',
+        time: '0900 - 1100',
+        title: 'Opening Ceremony',
+        description: '• Welcome Address\n• Introduction of Chair & remarks by Chair\n• Statements by Partners (University of Ghana, US Embassy, Accra, Delegation of the European Union, African Space Agency)\n• Keynote Speaker – Minister for Environment, Science & Technology, Ghana\n• The GAIA Initiative & GAIAthon Series\n• Chair\'s closing remarks\n• Group Photograph\n• Snack break & Media Engagement',
+        type: 'ceremony'
+      },
+      {
+        time: '1100 - 1400',
+        title: 'Presentation & Future of GAIA Initiative',
         description: '• Presentation 1: Digital Platforms and Interactive Applications\n• The Future of GAIA Initiative: Engagement with Stakeholders\n• Presentation 2: IoT-Enabled Smart Systems',
         type: 'presentation'
       },
