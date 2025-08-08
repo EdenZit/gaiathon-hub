@@ -12,7 +12,7 @@ interface Event {
   title: string;
   description?: string;
   participants?: string[];
-  type?: 'ceremony' | 'evaluation' | 'break' | 'presentation' | 'award';
+  type?: 'ceremony' | 'pitch_defence' | 'break' | 'presentation' | 'award';
 }
 
 interface DaySchedule {
@@ -41,9 +41,9 @@ const programme: DaySchedule[] = [
       },
       {
         time: '1100 - 1120',
-        title: 'Evaluation of Digital Innovation Pitch Solutions',
+        title: 'Pitch Defence: Digital Innovation',
         participants: ['Green Pulse (Cameroon)', 'Tak_Tic (Tunisia)', 'NextGen Geominds (Uganda)', 'Geovisionaries (Kenya)', 'Zeroday (Malawi)'],
-        type: 'evaluation'
+        type: 'pitch_defence'
       },
       {
         time: '1120 - 1220',
@@ -52,9 +52,9 @@ const programme: DaySchedule[] = [
       },
       {
         time: '1220 - 1240',
-        title: 'Evaluation of Digital Innovation Pitch Solutions',
+        title: 'Pitch Defence: Smart IoT Systems',
         participants: ['Sustainable Innovators (Benin)', 'IUPA-LaboEA (Senegal)', 'Terra Vigil (Togo)', 'CAD (Ghana)', 'Intellectual Powerhouse (Ghana)'],
-        type: 'evaluation'
+        type: 'pitch_defence'
       },
       {
         time: '1240 - 1340',
@@ -63,9 +63,9 @@ const programme: DaySchedule[] = [
       },
       {
         time: '1340 - 1400',
-        title: 'Evaluation of Smart IoT System Pitch Solutions',
+        title: 'Pitch Defence: Smart IoT Systems',
         participants: ['Pharaonic Minds (Egypt)', 'EcoFarmIQ (Ethiopia)', 'GCTU-XI (Ghana)', 'Mavericks (Ghana)', 'Team_FUTA (Nigeria)'],
-        type: 'evaluation'
+        type: 'pitch_defence'
       },
       {
         time: '1400',
@@ -209,7 +209,7 @@ export default function ProgrammePage() {
                             <div>
                               <div className="flex items-center gap-2 mb-2">
                                 {event.type === 'ceremony' && <TrophyIcon className="h-5 w-5 text-yellow-500" />}
-                                {event.type === 'evaluation' && <StarIcon className="h-5 w-5 text-blue-500" />}
+                                {event.type === 'pitch_defence' && <StarIcon className="h-5 w-5 text-blue-500" />}
                                 {event.type === 'presentation' && <UsersIcon className="h-5 w-5 text-green-500" />}
                                 {event.type === 'award' && <TrophyIcon className="h-5 w-5 text-yellow-500" />}
                                 <span className="text-sm font-medium text-gray-500">{event.time}</span>
@@ -218,7 +218,7 @@ export default function ProgrammePage() {
                             </div>
                             <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                               event.type === 'ceremony' ? 'bg-yellow-100 text-yellow-800' :
-                              event.type === 'evaluation' ? 'bg-blue-100 text-blue-800' :
+                              event.type === 'pitch_defence' ? 'bg-blue-100 text-blue-800' :
                               event.type === 'presentation' ? 'bg-green-100 text-green-800' :
                               event.type === 'award' ? 'bg-purple-100 text-purple-800' :
                               'bg-gray-100 text-gray-800'
