@@ -36,7 +36,7 @@ const programme: DaySchedule[] = [
       {
         time: '1000 - 1100',
         title: 'Opening Ceremony',
-        description: 'Welcome Address – Reg. Environment Office, Introduction of Participants, Brief Presentation on GAIA Initiative – Edenway Foundation, Keynote Address – Excellency Charge d\'Affaires, US Embassy, Group Photograph',
+        description: '• Welcome Address – Reg. Environment Office\n• Introduction of Participants – All\n• Brief Presentation on GAIA Initiative – Edenway Foundation\n• Keynote Address – Excellency Charge d\'Affaires, US Embassy\n• Group Photograph',
         type: 'ceremony'
       },
       {
@@ -87,13 +87,13 @@ const programme: DaySchedule[] = [
       {
         time: '0830 - 1100',
         title: 'Arrival of Guests & Registration',
-        description: 'Opening Ceremony, Welcome Address, Introduction of Chair & remarks by Chair, Statements by Partners (University of Ghana, US Embassy, Accra, Delegation of the European Union, African Space Agency), Keynote Speaker – Minister for Environment, Science & Technology, Ghana, The GAIA Initiative & GAIAthon Series, Chair\'s closing remarks, Group Photograph, Snack break & Media Engagement',
+        description: '• Opening Ceremony\n• Welcome Address\n• Introduction of Chair & remarks by Chair\n• Statements by Partners (University of Ghana, US Embassy, Accra, Delegation of the European Union, African Space Agency)\n• Keynote Speaker – Minister for Environment, Science & Technology, Ghana\n• The GAIA Initiative & GAIAthon Series\n• Chair\'s closing remarks\n• Group Photograph\n• Snack break & Media Engagement',
         type: 'ceremony'
       },
       {
         time: '1100 - 1600',
         title: 'Presentations & Future of GAIA Initiative',
-        description: 'Presentation 1: Digital Platforms and Interactive Applications, The Future of GAIA Initiative: Engagement with Stakeholders, Presentation 2: IoT-Enabled Smart Systems',
+        description: '• Presentation 1: Digital Platforms and Interactive Applications\n• The Future of GAIA Initiative: Engagement with Stakeholders\n• Presentation 2: IoT-Enabled Smart Systems',
         type: 'presentation'
       },
       {
@@ -104,7 +104,7 @@ const programme: DaySchedule[] = [
       {
         time: '1600 - 1900',
         title: 'Awards Ceremony & Cocktail',
-        description: 'Welcome Address, Introduction of Chair and Remarks, Keynote Speaker – President of Council of African Space Agency, The GAIAthon Journey, Presentation to Coordinators & Certificates to their participants, Social Media Awards, GAIAthon\'25 Judges, Announcement of 1st & 2nd Place Winners & Prizes, Closing remarks by Chair, Vote of Thanks',
+        description: '• Welcome Address\n• Introduction of Chair and Remarks\n• Keynote Speaker – President of Council of African Space Agency\n• The GAIAthon Journey\n• Presentation to Coordinators & Certificates to their participants\n• Social Media Awards\n• GAIAthon\'25 Judges\n• Announcement of 1st & 2nd Place Winners & Prizes\n• Closing remarks by Chair\n• Vote of Thanks',
         type: 'award'
       }
     ]
@@ -223,7 +223,7 @@ export default function ProgrammePage() {
                               event.type === 'award' ? 'bg-purple-100 text-purple-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
-                              {event.type?.charAt(0).toUpperCase() + event.type?.slice(1)}
+                              {event.type ? event.type.charAt(0).toUpperCase() + event.type.slice(1) : 'Event'}
                             </div>
                           </div>
 
@@ -271,7 +271,7 @@ export default function ProgrammePage() {
                 Back to Home
               </Link>
               <Link
-                href="/gallery?category=teams"
+                href="/#finalists"
                 className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
               >
                 View Finalist Teams

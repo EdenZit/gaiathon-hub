@@ -57,18 +57,6 @@ export function Hero() {
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
                   <Link
-                    href="/register"
-                    className={clsx(
-                      'inline-flex items-center justify-center px-6 py-3',
-                      'rounded-lg bg-blue-600 text-base font-medium text-white',
-                      'shadow-lg shadow-blue-600/30',
-                      'transition-all duration-300 ease-in-out',
-                      'hover:bg-blue-500 hover:shadow-blue-500/30 hover:scale-105'
-                    )}
-                  >
-                    Register Now
-                  </Link>
-                  <Link
                     href="/programme"
                     className={clsx(
                       'inline-flex items-center justify-center px-6 py-3',
@@ -78,7 +66,7 @@ export function Hero() {
                       'hover:bg-green-500 hover:shadow-green-500/30 hover:scale-105'
                     )}
                   >
-                    View Programme
+                    GAIAfest
                   </Link>
                   <Link
                     href="#innovation-tracks"
