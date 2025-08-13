@@ -25,7 +25,7 @@ interface DaySchedule {
 const programme: DaySchedule[] = [
   {
     date: 'Tuesday 19 August 2025',
-    venue: 'US Embassy, Accra',
+    venue: 'Mensvic Hotel, East Legon',
     action: 'Judges will engage with GAIAthon\'25 finalists',
     events: [
       {
