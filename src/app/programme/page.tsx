@@ -36,7 +36,7 @@ const programme: DaySchedule[] = [
       {
         time: '0900 - 1000',
         title: 'Opening Ceremony',
-        description: '• Welcome Address – Reg. Environment Office\n• Introduction of Participants – All\n• Brief Presentation on GAIA Initiative – Edenway Foundation\n• Keynote Address – Excellency Charge d\'Affaires, US Embassy\n• Group Photograph',
+        description: '• Welcome Address\n• Introduction of Participants\n• Presentation on GAIA Initiative\n• Group Photograph',
         type: 'ceremony'
       },
       {
