@@ -31,7 +31,7 @@ const faqData = [
   },
   {
     question: "When and where will the GAIAthon '25 awards ceremony take place?",
-    answer: "The GAIAthon '25 Awards Ceremony is referred to as GAIAfest and this will take place in Accra, Ghana from 18 – 21 August 2025."
+    answer: "The GAIAthon '25 Awards Ceremony details will be announced closer to the event date."
   }
 ];
 

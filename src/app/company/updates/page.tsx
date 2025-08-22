@@ -51,7 +51,7 @@ const importantDates = [
   { date: 'May 1, 2025', event: 'Project Development Begins' },
   { date: 'June 15, 2025', event: 'Project Submissions Due' },
   { date: 'July 1, 2025', event: 'Finalists Announced' },
-  { date: 'August 18-21, 2025', event: 'GAIAfest Awards Ceremony' }
+  { date: 'TBD', event: 'GAIAthon\'25 Awards Ceremony' }
 ];
 
 export default function UpdatesPage() {

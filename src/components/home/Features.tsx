@@ -3,8 +3,6 @@
 import { motion } from 'framer-motion';
 import { Categories } from '@/components/home/Categories';
 import { Partners } from '@/components/home/Partners';
-import { Finalists } from './Finalists';
-import { GAIAthonResults } from './GAIAthonResults';
 import { 
   ChartBarIcon,
   UserGroupIcon,
@@ -91,12 +89,6 @@ export function Features() {
       >
         <Categories />
       </motion.div>
-
-      {/* GAIAthon Results Section */}
-      <GAIAthonResults />
-
-      {/* Finalists Section */}
-      <Finalists />
 
       {/* Partners Section */}
       <Partners />

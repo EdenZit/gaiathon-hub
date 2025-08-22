@@ -45,7 +45,7 @@ export default async function EventsPage() {
     { date: '23 May – 27 June', event: 'Development of Solution/Prototypes' },
     { date: '27 June', event: 'Submission of Final Products' },
     { date: '1 July', event: 'Announcement of Local Winner' },
-    { date: '18 – 21 August', event: 'GAIAfest (Accra, Ghana)' }
+    { date: 'TBD', event: 'GAIAthon\'25 Awards Ceremony' }
   ];
 
   return (

@@ -18,7 +18,7 @@ async function updateAnnouncements() {
         { date: new Date('2025-05-23'), description: 'Development of Solution/Prototypes' },
         { date: new Date('2025-06-27'), description: 'Submission of Final Products' },
         { date: new Date('2025-07-01'), description: 'Announcement of Local Winner' },
-        { date: new Date('2025-08-18'), description: 'GAIAfest (Accra, Ghana)' }
+        { date: new Date('2025-08-18'), description: 'GAIAthon\'25 Awards Ceremony' }
       ]
     };
 
