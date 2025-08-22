@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Categories } from '@/components/home/Categories';
 import { Partners } from '@/components/home/Partners';
+import { Winners } from './Winners';
 import { 
   ChartBarIcon,
   UserGroupIcon,
@@ -30,6 +31,9 @@ const highlights = [
 export function Features() {
   return (
     <div className="relative overflow-hidden">
+      {/* Winners Section */}
+      <Winners />
+
       {/* Innovation Tracks Section */}
       <div className="relative overflow-hidden py-24">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent" />
